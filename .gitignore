@@ -1,0 +1,17 @@
+# ── Environment & Secrets ──
+.env
+
+# ── OS Files ──
+.DS_Store
+Thumbs.db
+
+# ── IDE ──
+.vscode/
+.idea/
+
+# ── Archives (no need to push large zips) ──
+*.zip
+
+# ── Temp files ──
+*.log
+*.tmp

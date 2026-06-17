@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Get in touch with Nova SS Trading. Submit inquiries, contact our Mirpur DOHS office, or request custom fabric/trim samples.">
+    <meta name="keywords" content="Contact Nova SS Trading, Inquiry, Garments Sourcing, Dhaka, Bangladesh, Mirpur DOHS">
+    <meta name="author" content="Nova SS Trading">
+    
+    <!-- Open Graph SEO -->
+    <meta property="og:title" content="Contact Us | Nova SS Trading - Mirpur DOHS, Dhaka">
+    <meta property="og:description" content="Submit inquiries, contact our Mirpur DOHS office, or request custom fabric/trim samples.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://novasstrading.com/contact">
+    <meta property="og:image" content="assets/images/pdf_NOVA_SS_TRADING_Company_Profile_p1_img54.png">
+    
+    <link rel="canonical" href="https://novasstrading.com/contact">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <title>Contact Us | Nova SS Trading - Mirpur DOHS, Dhaka</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <header class="site-header" id="header" role="banner">
+        <div class="nav-container">
+            <a href="index" class="logo" aria-label="Nova SS Trading Home">
+                <i class="fa-solid fa-industry"></i> NOVA SS <span>TRADING</span>
+            </a>
+            <nav role="navigation">
+                <ul class="nav-menu" id="nav-menu">
+                    <li><a href="index" class="nav-link">Home</a></li>
+                    <li><a href="divisions" class="nav-link">Divisions</a></li>
+                    <li><a href="sourcing" class="nav-link">Apparel Sourcing</a></li>
+                    <li><a href="compliance" class="nav-link">Quality & Compliance</a></li>
+                    <li><a href="profiles" class="nav-link">Company Profiles</a></li>
+                    <li><a href="contact" class="nav-link active">Contact</a></li>
+                    <li><a href="contact" class="nav-cta">Inquire Now</a></li>
+                </ul>
+            </nav>
+            <button class="mobile-toggle" id="mobile-toggle" aria-label="Toggle Navigation" aria-expanded="false" aria-controls="nav-menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <main role="main">
+        <!-- Page Header -->
+        <section class="hero" aria-labelledby="hero-title" style="min-height: 40vh; padding: 4rem 2rem; background: linear-gradient(135deg, rgba(11, 25, 44, 0.95), rgba(11, 25, 44, 0.85)), url('assets/images/pdf_NOVA_SS_TRADING_Company_Profile_p1_img54.png') center/cover no-repeat;">
+            <div class="hero-content">
+                <span class="hero-subtitle">Connect With Us</span>
+                <h1 id="hero-title">Get In Touch</h1>
+                <p>Send us your garments sourcing specs, fabric needs, or trims inquiry and receive details in 24 hours.</p>
+            </div>
+        </section>
+
+        <!-- Contact Grid -->
+        <section class="section section-bg-white" aria-labelledby="contact-form-title">
+            <div class="container">
+                <div class="contact-grid">
+                    
+                    <!-- Info Cards & Map -->
+                    <div class="contact-info-cards">
+                        <div class="info-card">
+                            <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                            <div>
+                                <h4>Call / WhatsApp</h4>
+                                <p>+880 1683-809975</p>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                            <div>
+                                <h4>E-Mail Address</h4>
+                                <p>info@novasstrading.com</p>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                            <div>
+                                <h4>Our Office Address</h4>
+                                <p>House 142, Road 11, Avenue 5, Mirpur DOHS, Dhaka-1216, Bangladesh.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Interactive Leaflet Map -->
+                        <div id="locked-map" aria-label="Map showing office location" style="height: 300px; width: 100%; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); z-index: 1;"></div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="contact-form-card">
+                        <h3 id="contact-form-title" style="font-size: 1.8rem; margin-bottom: 2rem;">Send An Inquiry</h3>
+                        <form action="process_form.php" method="POST" id="inquiry-form">
+                            <!-- Honeypot: invisible to humans, catches bots -->
+                            <div style="position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden;" aria-hidden="true">
+                                <label for="fax_number">Fax</label>
+                                <input type="text" id="fax_number" name="fax_number" tabindex="-1" autocomplete="off">
+                            </div>
+                            <!-- Hidden source tracker -->
+                            <input type="hidden" name="form_source" value="Website Contact Page">
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="user-name">Your Name <span style="color: var(--accent);">*</span></label>
+                                    <input type="text" class="form-input" id="user-name" name="name" required placeholder="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="user-email">Email Address <span style="color: var(--accent);">*</span></label>
+                                    <input type="email" class="form-input" id="user-email" name="email" required placeholder="john@example.com">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="user-company">Company Name</label>
+                                    <input type="text" class="form-input" id="user-company" name="company" placeholder="Example Ltd">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="user-phone">Phone / WhatsApp</label>
+                                    <input type="tel" class="form-input" id="user-phone" name="phone" placeholder="+880 1XXX-XXXXXX">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label" for="user-country">Country</label>
+                                    <input type="text" class="form-input" id="user-country" name="country" placeholder="e.g. Germany, USA, UK">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="user-subject">Inquiry Subject</label>
+                                    <select class="form-input" id="user-subject" name="subject">
+                                        <option value="Trims & Accessories">Trims & Accessories Division</option>
+                                        <option value="Fabrics Division">Fabrics Division</option>
+                                        <option value="Garments Sourcing">Garments Sourcing / buying house</option>
+                                        <option value="Other">Other Inquiry</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="user-message">Message Details <span style="color: var(--accent);">*</span></label>
+                                <textarea class="form-textarea" id="user-message" name="message" rows="5" required placeholder="Specify your fabric type, trim sizes, quantities, and target timelines..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Submit Inquiry</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-container">
+            <div class="footer-col footer-about">
+                <h3>NOVA SS TRADING</h3>
+                <p>A premier garments buying house and single-window partner for premium trims, accessories, and fabrics in Bangladesh.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="index">Home</a></li>
+                    <li><a href="divisions">Our Divisions</a></li>
+                    <li><a href="sourcing">Apparel Sourcing</a></li>
+                    <li><a href="compliance">Quality & Compliance</a></li>
+                    <li><a href="profiles">Company Profiles</a></li>
+                    <li><a href="contact">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col footer-contact">
+                <h3>Contact Info</h3>
+                <p><i class="fa-solid fa-phone"></i> +880 1683-809975</p>
+                <p><i class="fa-solid fa-envelope"></i> info@novasstrading.com</p>
+                <p><i class="fa-solid fa-location-dot"></i> House 142, Road 11, Avenue 5, Mirpur DOHS, Dhaka-1216, Bangladesh</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 <span>Nova SS Trading</span>. All Rights Reserved.</p>
+            <p>Developed with Premium Aesthetics</p>
+        </div>
+    </footer>
+
+    <!-- Leaflet JS and Map Loader -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        // Initialize Map pointing to Mirpur DOHS Dhaka Bangladesh (approx lat 23.8378, lng 90.3578)
+        const map = L.map('locked-map').setView([23.8378, 90.3578], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        const marker = L.marker([23.8378, 90.3578]).addTo(map);
+        marker.bindPopup("<b>Nova SS Trading Office</b><br>House 142, Road 11, Avenue 5, Mirpur DOHS").openPopup();
+
+        // Mobile burger toggle
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const navMenu = document.getElementById('nav-menu');
+        
+        mobileToggle.addEventListener('click', () => {
+            if (navMenu.style.display === 'flex') {
+                navMenu.style.display = 'none';
+                mobileToggle.setAttribute('aria-expanded', 'false');
+            } else {
+                navMenu.style.display = 'flex';
+                navMenu.style.flexDirection = 'column';
+                navMenu.style.position = 'absolute';
+                navMenu.style.top = '100%';
+                navMenu.style.left = '0';
+                navMenu.style.width = '100%';
+                navMenu.style.background = 'rgba(11, 25, 44, 0.98)';
+                navMenu.style.padding = '2rem';
+                navMenu.style.gap = '1.5rem';
+                navMenu.style.borderBottom = '2px solid var(--accent)';
+                mobileToggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+
+        // ── Fetch CSRF token when page loads ────────────────────────
+        let csrfToken = '';
+
+        async function initForm() {
+            try {
+                const res = await fetch('get_csrf.php', { credentials: 'include' });
+                const data = await res.json();
+                csrfToken = data.csrf_token;
+            } catch (e) {
+                console.warn('CSRF token fetch failed:', e);
+            }
+        }
+
+        initForm();
+
+        // ── Form Submission Handler ──────────────────────────────────
+        document.getElementById('inquiry-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const btn = document.getElementById('submit-btn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Sending…';
+            btn.disabled = true;
+
+            // Build FormData and inject CSRF token
+            const formData = new FormData(this);
+            formData.append('csrf_token', csrfToken);
+
+            try {
+                const response = await fetch('process_form.php', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include',  // needed so session cookie is sent
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success state
+                    btn.textContent = '✓ Inquiry Sent';
+                    btn.style.background = '#16a34a';
+                    this.reset();
+
+                    // Refresh CSRF token for next submission
+                    await initForm();
+
+                    // Reset button after 5 seconds
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.style.background = '';
+                        btn.disabled = false;
+                    }, 5000);
+                } else {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    alert(result.message || 'Something went wrong. Please try again.');
+                }
+
+            } catch (err) {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                alert('Network error. Please check your connection and try again.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- A stylized industry/building icon representing Nova SS Trading -->
+  <rect width="512" height="512" rx="100" fill="#0B192C" />
+  <path fill="#FF6B6B" d="M384 192v224H128V288l64-64v64l64-64v104l64-64v-72z" />
+  <path fill="#FF6B6B" d="M128 416h256v32H128z" />
+</svg>

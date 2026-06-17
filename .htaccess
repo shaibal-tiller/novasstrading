@@ -1,0 +1,54 @@
+# ----------------------------------------------------------------------
+# 1. Force HTTPS and non-WWW Redirect (SEO Best Practice)
+# ----------------------------------------------------------------------
+RewriteEngine On
+
+# Redirect www to non-www
+RewriteCond %{HTTP_HOST} ^www\.novasstrading\.com [NC]
+RewriteRule ^(.*)$ https://novasstrading.com/$1 [L,R=301,NE]
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301,NE]
+
+# Set Default Charset for HTTP Headers (SEO Best Practice)
+AddDefaultCharset UTF-8
+
+# ----------------------------------------------------------------------
+# 2. Remove .html Extension (Clean URLs) - LiteSpeed Safe
+# ----------------------------------------------------------------------
+RewriteEngine On
+
+# 1. If a user explicitly types "filename.html", redirect them to the clean "filename" URL
+RewriteCond %{THE_REQUEST} /([^/]+)\.html [NC]
+RewriteRule ^([^\.]+)\.html$ %{REQUEST_SCHEME}://%{HTTP_HOST}/$1 [R=301,L,NE]
+
+# 2. Internally map the clean URL back to the actual .html file behind the scenes
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.html -f
+RewriteRule ^([^/]+)$ $1.html [L]
+
+# ----------------------------------------------------------------------
+# 3. GZIP Compression (Speeds up loading times)
+# ----------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript
+</IfModule>
+
+# ----------------------------------------------------------------------
+# 4. Browser Caching (Stores assets locally on visitor's device)
+# ----------------------------------------------------------------------
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType text/x-javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-shockwave-flash "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresDefault "access plus 2 days"
+</IfModule>
