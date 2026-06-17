@@ -7,9 +7,11 @@
 session_start();
 
 // ── LOAD .ENV FILE ──────────────────────────────────────────
-// Simple .env parser — no external dependencies needed.
+// Simple .env parser — returns an associative array.
+// Does NOT rely on putenv/getenv (disabled on many cPanel hosts).
 function load_env($path) {
-    if (!file_exists($path)) return;
+    $vars = [];
+    if (!file_exists($path)) return $vars;
     $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
         $line = trim($line);
@@ -17,20 +19,18 @@ function load_env($path) {
         if (strpos($line, '=') === false) continue;            // skip malformed
         [$key, $value] = array_map('trim', explode('=', $line, 2));
         $value = trim($value, '"\'');                          // strip quotes
-        if (!array_key_exists($key, $_ENV)) {
-            putenv("{$key}={$value}");
-            $_ENV[$key] = $value;
-        }
+        $vars[$key] = $value;
     }
+    return $vars;
 }
 
-load_env(__DIR__ . '/.env');
+$env = load_env(__DIR__ . '/.env');
 
 // ── CONFIGURATION ───────────────────────────────────────────
-$to            = getenv('CONTACT_EMAIL') ?: "info@novasstrading.com";
-$site          = getenv('SITE_NAME')     ?: "Nova SS Trading";
-$domain        = getenv('SITE_DOMAIN')   ?: "novasstrading.com";
-$brevo_api_key = getenv('BREVO_API_KEY') ?: "";
+$to            = $env['CONTACT_EMAIL'] ?? "info@novasstrading.com";
+$site          = $env['SITE_NAME']     ?? "Nova SS Trading";
+$domain        = $env['SITE_DOMAIN']   ?? "novasstrading.com";
+$brevo_api_key = $env['BREVO_API_KEY'] ?? "";
 
 // Rate limit config
 $RATE_LIMIT_MAX      = 3;    // max submissions allowed
@@ -232,32 +232,101 @@ if (!empty($errors)) {
     respond(false, implode(' ', $errors), 400);
 }
 
-// ── BUILD ADMIN EMAIL BODY ───────────────────────────────────
-$sep = str_repeat("─", 52);
-
-$admin_body  = "New inquiry received via the {$site} website.\n";
-$admin_body .= "Source : {$form_source}\n";
-$admin_body .= "{$sep}\n\n";
-
-$admin_body .= "CONTACT DETAILS\n";
-$admin_body .= "Name         : {$name}\n";
-$admin_body .= "Company      : " . ($company ?: "—") . "\n";
-$admin_body .= "Email        : {$email}\n";
-$admin_body .= "Phone        : " . ($phone   ?: "—") . "\n";
-$admin_body .= "Country      : " . ($country ?: "—") . "\n";
-$admin_body .= "Subject      : {$subject}\n\n";
-
-$admin_body .= "MESSAGE\n";
-$admin_body .= wordwrap($message, 72, "\n", true) . "\n\n";
-$admin_body .= "{$sep}\n\n";
-
-$admin_body .= "SUBMISSION METADATA  (internal — not shown to customer)\n";
+// ── BUILD ADMIN EMAIL (HTML) ─────────────────────────────────
+$meta_rows = '';
 foreach ($meta as $label => $value) {
-    $admin_body .= sprintf("%-18s: %s\n", $label, $value);
+    $meta_rows .= "<tr><td style='padding:6px 12px;color:#64748b;font-size:13px;white-space:nowrap;'>{$label}</td><td style='padding:6px 12px;color:#334155;font-size:13px;'>{$value}</td></tr>";
 }
 
-$admin_body .= "\n{$sep}\n";
-$admin_body .= "Sent via verified Brevo API  |  CSRF verified: " . ($csrf_verified ? 'Yes' : 'No') . "\n";
+$admin_html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+  <!-- Header -->
+  <tr><td style="background:linear-gradient(135deg,#0b192c,#1a365d);padding:28px 32px;">
+    <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:600;">📨 New Inquiry Received</h1>
+    <p style="margin:6px 0 0;color:#94a3b8;font-size:13px;">via {$form_source} &nbsp;•&nbsp; {$meta['Submitted At']}</p>
+  </td></tr>
+
+  <!-- Contact Details -->
+  <tr><td style="padding:28px 32px 0;">
+    <h2 style="margin:0 0 16px;font-size:14px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Contact Details</h2>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+      <tr style="background:#f8fafc;">
+        <td style="padding:12px 16px;color:#64748b;font-size:13px;width:120px;">Name</td>
+        <td style="padding:12px 16px;color:#0f172a;font-size:15px;font-weight:600;">{$name}</td>
+      </tr>
+      <tr>
+        <td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #f1f5f9;">Company</td>
+        <td style="padding:12px 16px;color:#334155;font-size:14px;border-top:1px solid #f1f5f9;">COMPANY_VAL</td>
+      </tr>
+      <tr style="background:#f8fafc;">
+        <td style="padding:12px 16px;color:#64748b;font-size:13px;">Email</td>
+        <td style="padding:12px 16px;font-size:14px;"><a href="mailto:{$email}" style="color:#2563eb;text-decoration:none;">{$email}</a></td>
+      </tr>
+      <tr>
+        <td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #f1f5f9;">Phone</td>
+        <td style="padding:12px 16px;color:#334155;font-size:14px;border-top:1px solid #f1f5f9;">PHONE_VAL</td>
+      </tr>
+      <tr style="background:#f8fafc;">
+        <td style="padding:12px 16px;color:#64748b;font-size:13px;">Country</td>
+        <td style="padding:12px 16px;color:#334155;font-size:14px;">COUNTRY_VAL</td>
+      </tr>
+      <tr>
+        <td style="padding:12px 16px;color:#64748b;font-size:13px;border-top:1px solid #f1f5f9;">Subject</td>
+        <td style="padding:12px 16px;color:#0f172a;font-size:14px;font-weight:600;border-top:1px solid #f1f5f9;">{$subject}</td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- Message -->
+  <tr><td style="padding:24px 32px 0;">
+    <h2 style="margin:0 0 12px;font-size:14px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Message</h2>
+    <div style="background:#f8fafc;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:20px;color:#334155;font-size:14px;line-height:1.7;">
+      MESSAGE_CONTENT
+    </div>
+  </td></tr>
+
+  <!-- Quick Reply -->
+  <tr><td style="padding:20px 32px 0;" align="center">
+    <a href="mailto:{$email}?subject=Re: {$subject}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">↩ Reply to {$name}</a>
+  </td></tr>
+
+  <!-- Metadata -->
+  <tr><td style="padding:28px 32px 0;">
+    <details style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+      <summary style="padding:12px 16px;background:#f8fafc;color:#64748b;font-size:13px;cursor:pointer;font-weight:600;">🔍 Submission Metadata (internal)</summary>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        {$meta_rows}
+      </table>
+    </details>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="padding:24px 32px;border-top:1px solid #f1f5f9;margin-top:20px;">
+    <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">
+      CSRF verified: CSRF_STATUS &nbsp;•&nbsp; Sent via Brevo API &nbsp;•&nbsp; {$site}
+    </p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+HTML;
+
+// Replace placeholders (avoids complex escaping in heredoc)
+$admin_html = str_replace('COMPANY_VAL', $company ?: '—', $admin_html);
+$admin_html = str_replace('PHONE_VAL', $phone ?: '—', $admin_html);
+$admin_html = str_replace('COUNTRY_VAL', $country ?: '—', $admin_html);
+$admin_html = str_replace('MESSAGE_CONTENT', nl2br(wordwrap($message, 80, "\n", true)), $admin_html);
+$admin_html = str_replace('CSRF_STATUS', $csrf_verified ? 'Yes ✅' : 'No ⚠️', $admin_html);
 
 // ── SEND ADMIN NOTIFICATION ──────────────────────────────────
 $url = 'https://api.brevo.com/v3/smtp/email';
@@ -265,8 +334,8 @@ $url = 'https://api.brevo.com/v3/smtp/email';
 $admin_email_data = [
     'sender'      => ['name' => $site, 'email' => "noreply@{$domain}"],
     'to'          => [['email' => $to, 'name' => $site]],
-    'subject'     => "[{$site}] New Inquiry: {$subject} | {$client_ip}",
-    'textContent' => $admin_body,
+    'subject'     => "📨 [{$site}] New Inquiry: {$subject}",
+    'htmlContent' => $admin_html,
     'replyTo'     => ['email' => $email, 'name' => $name],
 ];
 
@@ -279,22 +348,97 @@ $ctx = stream_context_create(['http' => [
 $admin_result = file_get_contents($url, false, $ctx);
 $admin_status = json_decode($admin_result, true);
 
-// ── SEND AUTO-REPLY TO CUSTOMER ──────────────────────────────
-$reply_body  = "Hi {$name},\n\n";
-$reply_body .= "Thank you for reaching out to Nova SS Trading. We have received your message regarding \"{$subject}\" and our sourcing team is reviewing your details now.\n\n";
-$reply_body .= "We will follow up with you within 1–2 business days.\n\n";
-$reply_body .= "If you need immediate assistance, feel free to reply to this email or reach us at:\n";
-$reply_body .= "  Phone / WhatsApp : +880 1683-809975\n";
-$reply_body .= "  Email            : info@{$domain}\n\n";
-$reply_body .= "Warm regards,\n";
-$reply_body .= "The Nova SS Trading Team\n";
-$reply_body .= "www.{$domain}\n";
+// ── SEND AUTO-REPLY TO CUSTOMER (HTML) ───────────────────────
+$reply_html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:24px 0;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+  <!-- Header -->
+  <tr><td style="background:linear-gradient(135deg,#0b192c,#1a365d);padding:32px;text-align:center;">
+    <h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:700;letter-spacing:0.5px;">NOVA SS TRADING</h1>
+    <p style="margin:8px 0 0;color:#60a5fa;font-size:13px;letter-spacing:2px;">PREMIUM SOURCING PARTNER</p>
+  </td></tr>
+
+  <!-- Greeting -->
+  <tr><td style="padding:32px 32px 0;">
+    <h2 style="margin:0 0 8px;color:#0f172a;font-size:20px;">Hi {$name},</h2>
+    <p style="margin:0;color:#475569;font-size:15px;line-height:1.7;">
+      Thank you for reaching out to us! We've received your inquiry and our sourcing team is already reviewing your details.
+    </p>
+  </td></tr>
+
+  <!-- Inquiry Summary Card -->
+  <tr><td style="padding:24px 32px 0;">
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:20px;">
+      <p style="margin:0 0 4px;color:#0369a1;font-size:12px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Your Inquiry</p>
+      <p style="margin:0;color:#0c4a6e;font-size:16px;font-weight:600;">{$subject}</p>
+    </div>
+  </td></tr>
+
+  <!-- Timeline -->
+  <tr><td style="padding:24px 32px 0;">
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:20px;text-align:center;">
+      <p style="margin:0;color:#15803d;font-size:14px;font-weight:600;">⏱ Expected Response Time</p>
+      <p style="margin:8px 0 0;color:#166534;font-size:22px;font-weight:700;">1–2 Business Days</p>
+    </div>
+  </td></tr>
+
+  <!-- Contact Options -->
+  <tr><td style="padding:24px 32px 0;">
+    <p style="margin:0 0 16px;color:#475569;font-size:14px;">Need immediate assistance? Reach us directly:</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding:12px 16px;background:#f8fafc;border-radius:8px 8px 0 0;border:1px solid #e2e8f0;border-bottom:none;">
+          <span style="color:#64748b;font-size:13px;">📱 Phone / WhatsApp</span><br>
+          <a href="https://wa.me/8801683809975" style="color:#2563eb;font-size:15px;font-weight:600;text-decoration:none;">+880 1683-809975</a>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:12px 16px;background:#ffffff;border-radius:0 0 8px 8px;border:1px solid #e2e8f0;">
+          <span style="color:#64748b;font-size:13px;">✉️ Email</span><br>
+          <a href="mailto:info@{$domain}" style="color:#2563eb;font-size:15px;font-weight:600;text-decoration:none;">info@{$domain}</a>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- Sign-off -->
+  <tr><td style="padding:28px 32px 0;">
+    <p style="margin:0;color:#475569;font-size:14px;line-height:1.6;">
+      Warm regards,<br>
+      <strong style="color:#0f172a;">The Nova SS Trading Team</strong>
+    </p>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="padding:24px 32px;margin-top:16px;">
+    <div style="border-top:1px solid #e2e8f0;padding-top:20px;text-align:center;">
+      <p style="margin:0 0 4px;color:#94a3b8;font-size:12px;">
+        Nova SS Trading &nbsp;•&nbsp; House 142, Road 11, Avenue 5, Mirpur DOHS, Dhaka-1216
+      </p>
+      <p style="margin:0;color:#94a3b8;font-size:12px;">
+        <a href="https://www.{$domain}" style="color:#60a5fa;text-decoration:none;">www.{$domain}</a>
+      </p>
+    </div>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+HTML;
 
 $customer_email_data = [
     'sender'      => ['name' => $site, 'email' => "info@{$domain}"],
     'to'          => [['email' => $email, 'name' => $name]],
     'subject'     => "Re: Your Inquiry with Nova SS Trading – {$subject}",
-    'textContent' => $reply_body,
+    'htmlContent' => $reply_html,
 ];
 
 $ctx2 = stream_context_create(['http' => [
