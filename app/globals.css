@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gutter: clamp(0.75rem, 3vw, 2rem);
+  --card-radius: clamp(1.25rem, 2.4vw, 2.25rem);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: #b08a4f;
+    color: #16191f;
+  }
+
+  :focus-visible {
+    outline: 2px solid #b08a4f;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  /* ---- Layout shells ---- */
+  .shell {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 5vw, 4rem);
+  }
+
+  /* Floating rounded section card — the template's core structural device */
+  .section-wrap {
+    padding-inline: var(--gutter);
+    scroll-margin-top: 5.5rem;
+  }
+  .section-card {
+    width: 100%;
+    max-width: 84rem;
+    margin-inline: auto;
+    border-radius: var(--card-radius);
+    padding: clamp(2.75rem, 6vw, 6rem) clamp(1.5rem, 5vw, 5rem);
+  }
+  .section-card--cream {
+    background-color: #efe7dd;
+  }
+  .section-card--light {
+    background-color: #f8f5ef;
+  }
+  .section-card--ink {
+    background-color: #16191f;
+    color: #f6f3ed;
+  }
+  .section-card--loom {
+    background-color: #1e4d4a;
+    color: #f6f3ed;
+  }
+
+  /* ---- Eyebrow ---- */
+  .eyebrow {
+    @apply font-mono text-[0.7rem] uppercase tracking-eyebrow text-brass-dark;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.75rem;
+    height: 1px;
+    background-color: currentColor;
+    display: inline-block;
+  }
+  .eyebrow--light {
+    @apply text-brass-light;
+  }
+
+  /* ---- Signature: stitched seam divider ---- */
+  .stitch {
+    height: 0;
+    border: 0;
+    border-top: 1.5px dashed rgba(176, 138, 79, 0.55);
+    margin: 0;
+  }
+
+  /* ---- Signature: black pill with colored dot ---- */
+  .pill {
+    @apply inline-flex items-center gap-3 rounded-full bg-ink py-2.5 pl-3 pr-5 text-sm font-medium text-ivory;
+    box-shadow: 0 8px 20px -12px rgba(22, 25, 31, 0.5);
+  }
+  .pill-dot {
+    @apply h-3.5 w-3.5 flex-shrink-0 rounded-full;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+  }
+
+  /* Rotated vertical section label */
+  .vlabel {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    @apply font-mono text-[0.7rem] font-medium uppercase tracking-[0.25em] text-ink-muted;
+  }
+
+  /* ---- Type scale ---- */
+  .display-xl {
+    @apply font-display font-semibold leading-[1.04] tracking-[-0.015em];
+    font-size: clamp(2.4rem, 6vw, 4.6rem);
+    font-optical-sizing: auto;
+  }
+  .display-lg {
+    @apply font-display font-semibold leading-[1.07] tracking-[-0.01em];
+    font-size: clamp(1.9rem, 4vw, 3.1rem);
+  }
+  .display-md {
+    @apply font-display font-medium leading-[1.15];
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  }
+  .lede {
+    @apply text-ink-muted;
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+    line-height: 1.7;
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-sans text-sm font-semibold tracking-wide transition-all duration-300;
+    padding: 0.95rem 1.6rem;
+    border-radius: 999px;
+  }
+  .btn-primary {
+    @apply bg-ink text-ivory;
+  }
+  .btn-primary:hover {
+    @apply bg-brass-dark;
+  }
+  .btn-accent {
+    @apply bg-brass text-ink;
+  }
+  .btn-accent:hover {
+    @apply bg-brass-light;
+  }
+  .btn-outline {
+    @apply border border-ink/25 text-ink;
+  }
+  .btn-outline:hover {
+    @apply border-brass bg-brass/10;
+  }
+
+  /* ---- Forms (rounded, template-style) ---- */
+  .field-label {
+    @apply font-mono text-[0.7rem] uppercase tracking-[0.18em] text-ink-muted;
+  }
+  .field {
+    @apply w-full rounded-2xl border border-ink/15 bg-canvas px-5 py-3.5 text-ink transition-colors;
+    @apply placeholder:text-ink-muted/50;
+  }
+  .field:focus {
+    @apply border-brass outline-none ring-2 ring-brass/30;
+  }
+}
+
+@layer utilities {
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
