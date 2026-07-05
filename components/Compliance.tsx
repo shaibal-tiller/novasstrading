@@ -1,5 +1,4 @@
 import { compliance } from "@/lib/content";
-import Image from "next/image";
 import { Reveal } from "./Reveal";
 
 export function Compliance() {
@@ -7,40 +6,22 @@ export function Compliance() {
     <section id="compliance" className="section-wrap">
       <div className="section-card">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-center">
-          {/* Image collage */}
+          {/* Image collage placeholders */}
           <Reveal>
             <div className="relative h-[24rem] w-full sm:h-[28rem]">
               <div className="absolute left-0 top-0 w-[55%] z-10">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/garment-quality-inspection.png"
-                    alt="QA officer inspecting garments under inspection lights"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 55vw, 28vw"
-                  />
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#d8ccc0] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
               <div className="absolute right-0 top-[8%] w-[48%] z-20">
-                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/oeko-tex-standard-100-logo.png"
-                    alt="OEKO-TEX Standard 100 certification"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 48vw, 24vw"
-                  />
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-[#cebfb2] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
               <div className="absolute bottom-0 left-[18%] w-[52%] z-30">
-                <div className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/fsc-certified-logo.png"
-                    alt="FSC Forest Stewardship Council certification"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 52vw, 26vw"
-                  />
+                <div className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl bg-[#e3dcd1] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
             </div>
@@ -54,14 +35,16 @@ export function Compliance() {
                 <p key={p.slice(0, 24)}>{p}</p>
               ))}
             </div>
-            <ul className="mt-6 space-y-2">
-              {compliance.certifications.map((c) => (
-                <li key={c} className="flex items-center gap-2 text-sm font-medium text-ink">
-                  <span className="h-2 w-2 rounded-full bg-accent" />
-                  {c}
-                </li>
-              ))}
-            </ul>
+            {compliance.certifications.length > 0 && (
+              <ul className="mt-6 space-y-2">
+                {compliance.certifications.map((c) => (
+                  <li key={c} className="flex items-center gap-2 text-sm font-medium text-ink">
+                    <span className="h-2 w-2 rounded-full bg-accent" />
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            )}
           </Reveal>
         </div>
 

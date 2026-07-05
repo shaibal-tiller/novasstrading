@@ -1,39 +1,30 @@
 "use client";
 
 import { globalPresence } from "@/lib/content";
-import Image from "next/image";
 import { Reveal } from "./Reveal";
 import { useState } from "react";
-
-const locationImages = [
-  { src: "/assets/garment-factory-sewing-floor.png", alt: "Dhaka headquarters and factory operations" },
-  { src: "/assets/nova-ss-trading-team-reviewing-samples.png", alt: "Team reviewing samples at office" },
-  { src: "/assets/premium-fabric-rolls-textures.png", alt: "Fabric sourcing network" },
-];
 
 export function GlobalPresence() {
   const [current, setCurrent] = useState(0);
 
-  const prev = () => setCurrent((c) => (c === 0 ? locationImages.length - 1 : c - 1));
-  const next = () => setCurrent((c) => (c === locationImages.length - 1 ? 0 : c + 1));
+  const prev = () => setCurrent((c) => (c === 0 ? globalPresence.locations.length - 1 : c - 1));
+  const next = () => setCurrent((c) => (c === globalPresence.locations.length - 1 ? 0 : c + 1));
 
   return (
     <section id="presence" className="section-wrap">
       <div className="section-card">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-center">
-          {/* Image slider */}
+          {/* Image slider placeholder */}
           <Reveal>
             <div className="relative">
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone/40">
-                {locationImages.map((img, i) => (
-                  <Image
-                    key={img.src}
-                    src={img.src}
-                    alt={img.alt}
-                    fill
-                    className={`object-cover transition-opacity duration-500 ${i === current ? "opacity-100" : "opacity-0"}`}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#d8ccc0]">
+                {globalPresence.locations.map((loc, i) => (
+                  <div
+                    key={loc.name}
+                    className={`absolute inset-0 flex items-center justify-center text-ink/40 font-mono text-sm uppercase tracking-widest transition-opacity duration-500 ${i === current ? "opacity-100" : "opacity-0"}`}
+                  >
+                    [ Map/Location {i + 1} Placeholder ]
+                  </div>
                 ))}
               </div>
 

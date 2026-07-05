@@ -1,5 +1,4 @@
 import { people } from "@/lib/content";
-import Image from "next/image";
 import { Reveal } from "./Reveal";
 
 export function PeopleCulture() {
@@ -16,40 +15,22 @@ export function PeopleCulture() {
             </div>
           </Reveal>
 
-          {/* Overlapping image collage */}
+          {/* Overlapping image collage placeholders */}
           <Reveal delay={100}>
             <div className="relative h-[24rem] w-full sm:h-[28rem]">
               <div className="absolute left-0 top-0 w-[55%] z-10">
-                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/nova-ss-trading-team-reviewing-samples.png"
-                    alt="Nova SS Trading team reviewing fabric and trim samples"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 55vw, 28vw"
-                  />
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[#d8ccc0] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
               <div className="absolute right-0 top-[10%] w-[50%] z-20">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/garment-factory-sewing-floor.png"
-                    alt="Garment sewing floor in operation"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                  />
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#e3dcd1] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
               <div className="absolute bottom-0 left-[20%] w-[50%] z-30">
-                <div className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/designer-inspecting-labels-swatches.png"
-                    alt="Quality inspection of garment labels"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 50vw, 25vw"
-                  />
+                <div className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl bg-[#cebfb2] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
             </div>

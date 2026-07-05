@@ -3,11 +3,11 @@ import { Hero } from "@/components/Hero";
 import { About } from "@/components/About";
 import { PeopleCulture } from "@/components/PeopleCulture";
 import { GlobalPresence } from "@/components/GlobalPresence";
-import { Divisions } from "@/components/Divisions";
+import { DesignPD } from "@/components/DesignPD";
 import { ProductMix } from "@/components/ProductMix";
 import { Compliance } from "@/components/Compliance";
 import { TechnicalQA } from "@/components/TechnicalQA";
-import { Sourcing } from "@/components/Sourcing";
+import { ESG } from "@/components/ESG";
 import { Customers } from "@/components/Customers";
 import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
@@ -24,11 +24,11 @@ export default function Home() {
         <About />
         <PeopleCulture />
         <GlobalPresence />
-        <Divisions />
+        <DesignPD />
         <ProductMix />
         <Compliance />
         <TechnicalQA />
-        <Sourcing />
+        <ESG />
         <Customers />
         <Contact />
       </main>

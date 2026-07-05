@@ -1,26 +1,12 @@
 "use client";
 
 import { productMix } from "@/lib/content";
-import Image from "next/image";
 import { Reveal } from "./Reveal";
 import { useState } from "react";
 import { clsx } from "@/lib/utils";
 
-const categoryImages: Record<string, { src: string; alt: string }[]> = {
-  mens: [
-    { src: "/assets/menswear-apparel-sourcing.png", alt: "Menswear collection — polos, shirts, chinos" },
-  ],
-  ladies: [
-    { src: "/assets/womenswear-apparel-sourcing.png", alt: "Womenswear collection — dresses, blouses, knit tops" },
-  ],
-  kids: [
-    { src: "/assets/kidswear-apparel-sourcing.png", alt: "Kidswear collection — rompers, hoodies, organic basics" },
-  ],
-};
-
 export function ProductMix() {
   const [activeTab, setActiveTab] = useState("mens");
-  const images = categoryImages[activeTab] || [];
 
   return (
     <section id="products" className="section-wrap">
@@ -51,7 +37,7 @@ export function ProductMix() {
               {productMix.categories
                 .filter((c) => c.id === activeTab)
                 .map((cat) => (
-                  <ul key={cat.id} className="grid grid-cols-2 gap-3">
+                  <ul key={cat.id} className="grid gap-3">
                     {cat.items.map((item) => (
                       <li
                         key={item}
@@ -66,21 +52,19 @@ export function ProductMix() {
             </div>
           </Reveal>
 
-          {/* Product image */}
+          {/* Product image placeholder */}
           <Reveal delay={100}>
-            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-stone/40">
-              {Object.entries(categoryImages).map(([key, imgs]) => (
-                <Image
-                  key={key}
-                  src={imgs[0].src}
-                  alt={imgs[0].alt}
-                  fill
+            <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-[#d8ccc0]">
+              {productMix.categories.map((cat) => (
+                <div
+                  key={cat.id}
                   className={clsx(
-                    "object-cover transition-opacity duration-500",
-                    activeTab === key ? "opacity-100" : "opacity-0",
+                    "absolute inset-0 flex items-center justify-center text-ink/40 font-mono text-sm uppercase tracking-widest transition-opacity duration-500",
+                    activeTab === cat.id ? "opacity-100" : "opacity-0",
                   )}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
+                >
+                  [ {cat.label} Placeholder ]
+                </div>
               ))}
             </div>
           </Reveal>

@@ -1,5 +1,4 @@
 import { technicalQA } from "@/lib/content";
-import Image from "next/image";
 import { Reveal } from "./Reveal";
 
 export function TechnicalQA() {
@@ -17,29 +16,17 @@ export function TechnicalQA() {
             </div>
           </Reveal>
 
-          {/* Image collage */}
+          {/* Image collage placeholders */}
           <Reveal delay={100}>
             <div className="relative h-[22rem] w-full sm:h-[26rem]">
               <div className="absolute left-0 top-0 w-[58%] z-10">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/garment-quality-inspection.png"
-                    alt="Quality assurance team inspecting garment stitching"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 58vw, 29vw"
-                  />
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#cebfb2] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
               <div className="absolute right-0 bottom-0 w-[55%] z-20">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-stone/40">
-                  <Image
-                    src="/assets/premium-fabric-rolls-textures.png"
-                    alt="Fabric testing and quality measurement"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 55vw, 28vw"
-                  />
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-[#d8ccc0] flex items-center justify-center text-ink/40 font-mono text-xs text-center p-4 uppercase tracking-widest">
+                  [ Placeholder ]
                 </div>
               </div>
             </div>

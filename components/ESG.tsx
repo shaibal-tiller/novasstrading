@@ -1,23 +1,35 @@
-import { sourcing } from "@/lib/content";
+import { esg } from "@/lib/content";
 import { Reveal } from "./Reveal";
 
-export function Sourcing() {
+export function ESG() {
   return (
-    <section id="sourcing" className="section-wrap">
+    <section id="esg" className="section-wrap">
       <div className="section-card">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-center">
           {/* Text + CTA */}
           <Reveal>
-            <h2 className="display-lg text-ink">{sourcing.heading}</h2>
-            <p className="lede mt-6">{sourcing.body}</p>
+            <h2 className="display-lg text-ink">{esg.heading}</h2>
+            <div className="lede mt-6 space-y-4">
+              {esg.body.map((p) => (
+                <p key={p.slice(0, 24)}>{p}</p>
+              ))}
+            </div>
             <div className="mt-8 flex flex-wrap gap-3">
               <a
-                href={sourcing.downloadHref}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={esg.cta1.href}
                 className="btn btn-primary"
               >
-                {sourcing.downloadLabel}
+                {esg.cta1.label}
+              </a>
+            </div>
+
+            <p className="lede mt-8">{esg.reportText}</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <a
+                href={esg.cta2.href}
+                className="btn btn-primary"
+              >
+                {esg.cta2.label}
               </a>
             </div>
           </Reveal>
@@ -25,7 +37,7 @@ export function Sourcing() {
           {/* Pillar pills */}
           <Reveal delay={100}>
             <div className="flex flex-col gap-4">
-              {sourcing.pillars.map((p) => (
+              {esg.pillars.map((p) => (
                 <span key={p.label} className="pill text-base py-4 px-6">
                   <span
                     className="pill-dot"
