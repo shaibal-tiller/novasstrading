@@ -1,20 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Cormorant_Garamond, Montserrat, IBM_Plex_Mono } from "next/font/google";
 import { site } from "@/lib/content";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
-  variable: "--font-fraunces",
+  variable: "--font-cormorant",
   display: "swap",
 });
 
-const hanken = Hanken_Grotesk({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-hanken",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -28,7 +28,7 @@ const plexMono = IBM_Plex_Mono({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#16191F",
+  themeColor: "#1a1a1a",
 };
 
 export const metadata: Metadata = {
@@ -56,6 +56,8 @@ export const metadata: Metadata = {
     "Denim",
     "OEKO-TEX",
     "FSC",
+    "Design Led Apparel",
+    "Fashion Solutions",
   ],
   category: "business",
   alternates: {
@@ -161,12 +163,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${hanken.variable} ${plexMono.variable}`}
+      className={`${cormorant.variable} ${montserrat.variable} ${plexMono.variable}`}
     >
       <body>
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-ink focus:px-4 focus:py-2 focus:text-ivory"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded focus:bg-ink focus:px-4 focus:py-2 focus:text-white"
         >
           Skip to content
         </a>

@@ -36,74 +36,46 @@ export function Contact() {
 
   return (
     <section id="contact" className="section-wrap">
-      <div className="section-card section-card--cream">
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
+      <div className="section-card">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-24">
           <div>
-            <p className="eyebrow">{contact.eyebrow}</p>
-            <h2 className="display-lg mt-5 text-ink">{contact.title}</h2>
-            <p className="lede mt-5 max-w-md">{contact.intro}</p>
-
-            <div className="mt-10 space-y-5">
-              {contact.cards.map((c) => (
-                <div key={c.label}>
-                  <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-brass-dark">
-                    {c.label}
-                  </p>
-                  {c.href ? (
-                    <a
-                      href={c.href}
-                      target={c.href.startsWith("http") ? "_blank" : undefined}
-                      rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                      className="mt-1 block font-display text-lg text-ink transition-colors hover:text-brass-dark"
-                    >
-                      {c.value}
-                    </a>
-                  ) : (
-                    <p className="mt-1 max-w-xs text-ink-muted">{c.value}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10">
-              <a
-                href={site.address.mapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative block overflow-hidden rounded-xl border border-ink/10 transition-colors hover:border-brass focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
-                aria-label="View office location on Google Maps"
-              >
-                <div className="absolute inset-0 z-10 bg-transparent" aria-hidden="true" />
-                <iframe
-                  src="https://maps.google.com/maps?q=Dhaka,+%E5%8F%B7%E8%B7%AFGround+Floor.%E4%B8%80%E6%A5%BC%EF%BC%8CHouse-357%E6%88%BF%EF%BC%8CRoad%E4%B9%90%E6%80%9D%E8%9C%80-%E9%BA%BB%E8%BE%A3%E9%A6%99%E9%94%85%26%E9%B8%A1%E5%85%AC%E7%85%B2%E9%82%AE%E6%94%BF%E7%BC%96%E7%A0%81:+1206&t=&z=16&ie=UTF8&iwloc=&output=embed"
-                  width="100%"
-                  height="220"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="bg-stone/40 transition-all duration-500"
-                  title="Office Location Map"
-                  tabIndex={-1}
-                />
-                <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 rounded-full border border-ink/10 bg-ivory/95 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-ink shadow-[0_4px_12px_rgba(0,0,0,0.1)] backdrop-blur transition-transform duration-300 group-hover:scale-105">
-                  <span>Open Map</span>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 10L10 2M10 2H4.5M10 2V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-              </a>
+            <h2 className="display-lg text-ink">{contact.heading}</h2>
+            <p className="lede mt-6 max-w-md">{contact.body}</p>
+            
+            <div className="mt-12 space-y-6">
+              <div>
+                <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">
+                  Email
+                </p>
+                <a
+                  href={`mailto:${site.email}`}
+                  className="mt-2 block font-display text-xl text-ink transition-colors hover:text-accent"
+                >
+                  {site.email}
+                </a>
+              </div>
+              <div>
+                <p className="font-sans text-xs font-bold uppercase tracking-[0.12em] text-ink-muted">
+                  Phone
+                </p>
+                <a
+                  href={`tel:${site.phoneHref}`}
+                  className="mt-2 block font-display text-xl text-ink transition-colors hover:text-accent"
+                >
+                  {site.phone}
+                </a>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-ink/10 bg-canvas p-6 sm:p-8">
+          <div className="rounded-card border border-ink/10 bg-white p-8 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.06)]">
             {status === "success" ? (
               <div
                 role="status"
                 className="flex h-full min-h-[20rem] flex-col items-center justify-center text-center"
               >
-                <span className="grid h-14 w-14 place-items-center rounded-full bg-brass/15 text-brass-dark">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <span className="grid h-16 w-16 place-items-center rounded-full bg-accent/15 text-accent-dark">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M5 13l4 4 10-11"
                       stroke="currentColor"
@@ -113,16 +85,16 @@ export function Contact() {
                     />
                   </svg>
                 </span>
-                <h3 className="mt-5 font-display text-2xl text-ink">
+                <h3 className="mt-6 font-display text-2xl text-ink">
                   Inquiry received
                 </h3>
-                <p className="mt-2 max-w-sm text-sm text-ink-muted">
+                <p className="mt-3 max-w-sm text-sm text-ink-muted">
                   Thank you. Our team will respond within 24 hours at the email
                   you provided.
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} noValidate className="space-y-5">
+              <form onSubmit={handleSubmit} noValidate className="space-y-8">
                 <input
                   type="text"
                   name="company_website"
@@ -132,54 +104,48 @@ export function Contact() {
                   className="absolute left-[-9999px] h-0 w-0 opacity-0"
                 />
 
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-8 sm:grid-cols-2">
                   <Field name="name" label="Your name" required />
                   <Field name="email" label="Email address" type="email" required />
                 </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field name="companyName" label="Company name" />
-                  <Field name="phone" label="Phone / WhatsApp" type="tel" />
-                </div>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <Field name="country" label="Country" />
-                  <div>
-                    <label htmlFor="subject" className="field-label">
-                      Inquiry subject
-                    </label>
-                    <select
-                      id="subject"
-                      name="subject"
-                      className="field mt-2 appearance-none"
-                      defaultValue=""
-                    >
-                      <option value="" disabled>
-                        Select a subject
+                
+                <div>
+                  <label htmlFor="subject" className="field-label block mb-2">
+                    Inquiry subject
+                  </label>
+                  <select
+                    id="subject"
+                    name="subject"
+                    className="field appearance-none"
+                    defaultValue=""
+                  >
+                    <option value="" disabled>
+                      Select a subject...
+                    </option>
+                    {contact.subjects.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
                       </option>
-                      {contact.subjects.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="field-label">
-                    Message details <span className="text-brass-dark">*</span>
+                  <label htmlFor="message" className="field-label block mb-2">
+                    Message details <span className="text-accent">*</span>
                   </label>
                   <textarea
                     id="message"
                     name="message"
                     required
                     rows={4}
-                    className="field mt-2 resize-y"
-                    placeholder="Tell us about your sourcing specs, fabric needs, or trims inquiry…"
+                    className="field resize-y bg-transparent"
+                    placeholder="Tell us about your requirements..."
                   />
                 </div>
 
                 {status === "error" && (
-                  <p role="alert" className="text-sm text-brass-dark">
+                  <p role="alert" className="text-sm text-accent-dark">
                     Something went wrong. Please email{" "}
                     <a href={`mailto:${site.email}`} className="underline">
                       {site.email}
@@ -192,11 +158,11 @@ export function Contact() {
                   type="submit"
                   disabled={status === "submitting"}
                   className={clsx(
-                    "btn btn-accent w-full sm:w-auto",
+                    "btn btn-primary w-full",
                     status === "submitting" && "cursor-wait opacity-70",
                   )}
                 >
-                  {status === "submitting" ? "Sending…" : "Submit inquiry"}
+                  {status === "submitting" ? "Sending..." : "Submit inquiry"}
                 </button>
               </form>
             )}
@@ -220,8 +186,8 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={name} className="field-label">
-        {label} {required && <span className="text-brass-dark">*</span>}
+      <label htmlFor={name} className="field-label block mb-2">
+        {label} {required && <span className="text-accent">*</span>}
       </label>
       <input
         id={name}
@@ -237,7 +203,7 @@ function Field({
                 ? "tel"
                 : "off"
         }
-        className="field mt-2"
+        className="field"
       />
     </div>
   );

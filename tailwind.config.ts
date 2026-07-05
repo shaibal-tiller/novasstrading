@@ -10,21 +10,24 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          DEFAULT: "#16191F",
-          soft: "#22272F",
-          muted: "#3A4049",
+          DEFAULT: "#1a1a1a",
+          soft: "#2d2d2d",
+          muted: "#5a5a5a",
         },
-        paper: "#FCFBF7",
-        ivory: {
-          DEFAULT: "#F6F3ED",
-          light: "#F8F5EF",
-          deep: "#EFE7DD",
+        page: "#EBEBEB",
+        card: {
+          DEFAULT: "#F4F0EF",
+          light: "#F8F5F3",
         },
         canvas: "#FFFFFF",
-        brass: {
+        accent: {
           DEFAULT: "#B08A4F",
           light: "#C6A268",
           dark: "#8C6C3A",
+        },
+        ivory: {
+          DEFAULT: "#F6F3ED",
+          deep: "#EFE7DD",
         },
         loom: {
           DEFAULT: "#1E4D4A",
@@ -36,12 +39,15 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "Georgia", "serif"],
-        sans: ["var(--font-hanken)", "system-ui", "sans-serif"],
+        display: ["var(--font-cormorant)", "Georgia", "serif"],
+        sans: ["var(--font-montserrat)", "system-ui", "sans-serif"],
         mono: ["var(--font-plex-mono)", "ui-monospace", "monospace"],
       },
       maxWidth: {
-        shell: "78rem",
+        shell: "82rem",
+      },
+      borderRadius: {
+        card: "1.5rem",
       },
       letterSpacing: {
         eyebrow: "0.28em",
@@ -55,10 +61,15 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(18px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
+        "slide-left": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
       },
       animation: {
         marquee: "marquee 38s linear infinite",
         "fade-up": "fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "slide-left": "slide-left 30s linear infinite",
       },
     },
   },

@@ -1,92 +1,84 @@
 import { compliance } from "@/lib/content";
-import { ContentMedia } from "./ContentMedia";
+import Image from "next/image";
 import { Reveal } from "./Reveal";
 
 export function Compliance() {
   return (
     <section id="compliance" className="section-wrap">
-      <div className="section-card section-card--light">
-        <div className="max-w-2xl">
-          <p className="eyebrow">{compliance.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{compliance.title}</h2>
-          <p className="lede mt-5">{compliance.intro}</p>
-        </div>
-
-        <div className="mt-14 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+      <div className="section-card">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 lg:items-center">
+          {/* Image collage */}
           <Reveal>
-            <h3 className="display-md text-ink">{compliance.protocolTitle}</h3>
-            <div className="mt-4 space-y-4 text-ink-muted">
-              {compliance.protocolBody.map((p) => (
-                <p key={p.slice(0, 20)}>{p}</p>
-              ))}
+            <div className="relative h-[24rem] w-full sm:h-[28rem]">
+              <div className="absolute left-0 top-0 w-[55%] z-10">
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-stone/40">
+                  <Image
+                    src="/assets/garment-quality-inspection.png"
+                    alt="QA officer inspecting garments under inspection lights"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 55vw, 28vw"
+                  />
+                </div>
+              </div>
+              <div className="absolute right-0 top-[8%] w-[48%] z-20">
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-stone/40">
+                  <Image
+                    src="/assets/oeko-tex-standard-100-logo.png"
+                    alt="OEKO-TEX Standard 100 certification"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 48vw, 24vw"
+                  />
+                </div>
+              </div>
+              <div className="absolute bottom-0 left-[18%] w-[52%] z-30">
+                <div className="relative aspect-[5/4] w-full overflow-hidden rounded-2xl bg-stone/40">
+                  <Image
+                    src="/assets/fsc-certified-logo.png"
+                    alt="FSC Forest Stewardship Council certification"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 52vw, 26vw"
+                  />
+                </div>
+              </div>
             </div>
-
-            <ol className="mt-8 space-y-px overflow-hidden rounded-sm border border-ink/10">
-              {compliance.checks.map((c, i) => (
-                <li
-                  key={c.title}
-                  className="flex gap-4 bg-canvas p-4 sm:p-5"
-                >
-                  <span className="font-mono text-sm text-brass-dark">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div>
-                    <h4 className="font-sans text-sm font-semibold text-ink">
-                      {c.title}
-                    </h4>
-                    <p className="mt-1 text-sm text-ink-muted">{c.body}</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
           </Reveal>
 
-          <div>
-            <Reveal>
-              <ContentMedia
-                src="garment-quality-inspection"
-                alt="QA officer inspecting garments / measuring fabric under inspection lights"
-                aspect="aspect-[4/3]"
-              />
-            </Reveal>
+          {/* Text */}
+          <Reveal delay={100}>
+            <h2 className="display-lg text-ink">{compliance.heading}</h2>
+            <div className="lede mt-6 space-y-4">
+              {compliance.body.map((p) => (
+                <p key={p.slice(0, 24)}>{p}</p>
+              ))}
+            </div>
+            <ul className="mt-6 space-y-2">
+              {compliance.certifications.map((c) => (
+                <li key={c} className="flex items-center gap-2 text-sm font-medium text-ink">
+                  <span className="h-2 w-2 rounded-full bg-accent" />
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
 
-            <Reveal delay={80} className="mt-8">
-              <h3 className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-loom">
-                Certifications & memberships
-              </h3>
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                {compliance.certifications.map((c, i) => (
-                  <div
-                    key={c.name}
-                    className="rounded-sm border border-ink/10 bg-canvas p-4 text-center"
-                  >
-                    <ContentMedia
-                      src={
-                        i === 0 ? "oeko-tex-standard-100-logo" :
-                        i === 1 ? "fsc-certified-logo" :
-                        "bsci-wrap-audit-logos"
-                      }
-                      alt={`${c.name} certification badge`}
-                      kind="logo"
-                      aspect="aspect-[3/2]"
-                    />
-                    <p className="mt-3 font-display text-base font-semibold text-ink">
-                      {c.name}
-                    </p>
-                    <p className="mt-0.5 text-xs text-ink-muted">{c.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </Reveal>
-
-            <Reveal delay={120}>
-              <p className="mt-8 border-l-2 border-brass pl-5 text-sm leading-relaxed text-ink-muted">
-                {compliance.footnote}
-              </p>
-            </Reveal>
-          </div>
+        <div className="mt-8 flex justify-end">
+          <a href="#home" className="up-btn">
+            <UpArrow /> Up
+          </a>
         </div>
       </div>
     </section>
+  );
+}
+
+function UpArrow() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
+      <path d="M5 9V1M1 5l4-4 4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
