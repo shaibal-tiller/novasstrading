@@ -1,55 +1,9 @@
-<<<<<<< Updated upstream
-# ── Environment & Secrets ──
-.env
-
-# ── OS Files ──
-.DS_Store
-Thumbs.db
-
-# ── IDE ──
-.vscode/
-.idea/
-
-# ── Archives (no need to push large zips) ──
-*.zip
-
-# ── Temp files ──
-*.log
-*.tmp
-=======
-# dependencies
 /node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
+/.next
+/out
 /build
-
-# misc
 .DS_Store
 *.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# local env files
-.env*.local
-.env
-
-# vercel
+.env*
 .vercel
-
-# typescript
-*.tsbuildinfo
 next-env.d.ts
->>>>>>> Stashed changes
