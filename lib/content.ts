@@ -15,13 +15,12 @@ export const site = {
   phone: "+880 1683-809975",
   phoneHref: "+8801683809975",
   address: {
-    street: "House 142, Road 11, Avenue 5, Mirpur DOHS",
+    street: "Road #5, House No #357, Baridhara DOHS",
     city: "Dhaka",
-    postalCode: "1216",
+    postalCode: "1206",
     country: "Bangladesh",
-    full: "House 142, Road 11, Avenue 5, Mirpur DOHS, Dhaka-1216, Bangladesh",
-    mapUrl:
-      "https://www.google.com/maps?q=House+142,+Road+11,+Avenue+5,+Mirpur+DOHS,+Dhaka+1216,+Bangladesh",
+    full: "Baridhara DOHS, Road #5, House No #357, Dhaka, Bangladesh",
+    mapUrl: "https://maps.app.goo.gl/Gh1gSDdGhawUp8HN7",
   },
   social: {
     linkedin: "#",
