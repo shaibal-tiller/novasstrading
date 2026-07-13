@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { blurData } from "@/lib/blurData";
 import { portfolio } from "@/lib/content";
 import { clsx } from "@/lib/utils";
 import { Reveal } from "./Reveal";
@@ -20,6 +21,18 @@ export function Portfolio() {
       ),
     [photos.length],
   );
+
+  // Prefetch the neighbouring lightbox images so arrow navigation is instant
+  useEffect(() => {
+    if (lightbox === null) return;
+    [1, -1].forEach((dir) => {
+      const next = photos[(lightbox + dir + photos.length) % photos.length];
+      [1080, 1920].forEach((w) => {
+        const img = new window.Image();
+        img.src = `/_next/image?url=${encodeURIComponent(`/assets/${next.src}`)}&w=${w}&q=75`;
+      });
+    });
+  }, [lightbox, photos]);
 
   // Keyboard controls + scroll lock while the lightbox is open
   useEffect(() => {
@@ -111,6 +124,8 @@ export function Portfolio() {
                   alt={p.alt}
                   fill
                   loading="lazy"
+                  placeholder={blurData[p.src] ? "blur" : "empty"}
+                  blurDataURL={blurData[p.src]}
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
@@ -206,6 +221,8 @@ export function Portfolio() {
                 alt={photos[lightbox].alt}
                 fill
                 sizes="90vw"
+                placeholder={blurData[photos[lightbox].src] ? "blur" : "empty"}
+                blurDataURL={blurData[photos[lightbox].src]}
                 className="animate-fade-up object-contain"
                 priority
               />

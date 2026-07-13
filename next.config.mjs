@@ -5,6 +5,8 @@ const nextConfig = {
   compress: true,
   images: {
     formats: ["image/avif", "image/webp"],
+    // Cache optimized images for 31 days — sources are versioned by filename.
+    minimumCacheTTL: 2678400,
     // When you replace placeholders with real hosted media, whitelist the host here.
     remotePatterns: [],
   },
@@ -19,6 +21,16 @@ const nextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+      {
+        // Static media rarely changes; serve from browser/CDN cache for a week.
+        source: "/assets/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=86400",
           },
         ],
       },

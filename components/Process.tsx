@@ -1,4 +1,5 @@
 import { process } from "@/lib/content";
+import { LazyVideo } from "./LazyVideo";
 import { Reveal } from "./Reveal";
 
 export function Process() {
@@ -12,15 +13,11 @@ export function Process() {
             <p className="lede mt-5">{process.intro}</p>
           </div>
           <Reveal>
-            <video
-              className="w-full rounded-2xl shadow-lg"
+            <LazyVideo
+              className="aspect-video w-full rounded-2xl object-cover shadow-lg"
               src="/assets/vid-01.mp4"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              aria-label="Short company film: buying-house workflow from sampling to shipment"
+              poster="/assets/vid-01-poster.jpg"
+              label="Short company film: buying-house workflow from sampling to shipment"
             />
           </Reveal>
         </div>

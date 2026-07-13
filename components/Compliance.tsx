@@ -65,6 +65,7 @@ export function Compliance() {
                       alt={`${c.name} membership badge`}
                       kind="logo"
                       aspect="aspect-[3/2]"
+                      sizes="160px"
                     />
                     <p className="mt-3 font-display text-base font-semibold text-ink">
                       {c.name}

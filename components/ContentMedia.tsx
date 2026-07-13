@@ -3,9 +3,11 @@
 import { clsx } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
+import { blurData } from "@/lib/blurData";
+import { LazyVideo } from "./LazyVideo";
 
 type ContentMediaProps = {
-  /** Filename in /public/assets without extension */
+  /** Filename in /public/assets — bare names default to .png */
   src: string;
   /** Descriptive alt text for SEO and accessibility */
   alt: string;
@@ -17,6 +19,10 @@ type ContentMediaProps = {
   tone?: "ivory" | "ink";
   /** Whether to prioritize loading this media (disables lazy loading) */
   priority?: boolean;
+  /** Responsive sizes hint — set to the rendered slot width for best srcset selection */
+  sizes?: string;
+  /** Poster image for videos, path relative to /public/assets */
+  poster?: string;
 };
 
 export function ContentMedia({
@@ -27,10 +33,13 @@ export function ContentMedia({
   className,
   tone = "ivory",
   priority = false,
+  sizes = "(max-width: 768px) 100vw, 50vw",
+  poster,
 }: ContentMediaProps) {
   const isVideo = kind === "video" || src.toLowerCase().startsWith("vid-");
   // Bare names default to .png; paths with an extension are used as-is.
   const fileName = src.includes(".") ? src : `${src}.png`;
+  const blur = blurData[fileName];
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -44,18 +53,11 @@ export function ContentMedia({
       )}
     >
       {isVideo ? (
-        <video
+        <LazyVideo
           src={`/assets/${src.includes(".") ? src : `${src}.mp4`}`}
-          className={clsx(
-            "absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out",
-            isLoaded ? "opacity-100" : "opacity-0"
-          )}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-label={alt}
-          onLoadedData={() => setIsLoaded(true)}
+          poster={poster ? `/assets/${poster}` : undefined}
+          label={alt}
+          className="absolute inset-0 h-full w-full object-cover"
         />
       ) : (
         <Image
@@ -63,12 +65,16 @@ export function ContentMedia({
           alt={alt}
           fill
           priority={priority}
+          placeholder={blur ? "blur" : "empty"}
+          blurDataURL={blur}
           className={clsx(
             kind === "logo" ? "object-contain p-2" : "object-cover",
-            "transition-opacity duration-700 ease-in-out",
-            isLoaded ? "opacity-100" : "opacity-0"
+            // Blur placeholder already covers progressive display; only
+            // fade in when there is no placeholder to show.
+            !blur && "transition-opacity duration-700 ease-in-out",
+            !blur && (isLoaded ? "opacity-100" : "opacity-0"),
           )}
-          sizes="(max-width: 768px) 100vw, 50vw"
+          sizes={sizes}
           onLoad={() => setIsLoaded(true)}
         />
       )}

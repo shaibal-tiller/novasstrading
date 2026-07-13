@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { blurData } from "@/lib/blurData";
 import { clsx } from "@/lib/utils";
 
 type Slot = {
@@ -78,6 +79,12 @@ export function HeroCollage() {
                   aria-hidden={i !== active}
                   fill
                   priority={s < 2 && i === 0}
+                  placeholder={
+                    blurData[img.src.replace("/assets/", "")]
+                      ? "blur"
+                      : "empty"
+                  }
+                  blurDataURL={blurData[img.src.replace("/assets/", "")]}
                   sizes="(max-width: 768px) 60vw, 30vw"
                   className={clsx(
                     "object-cover transition-opacity duration-[1400ms] ease-in-out",
