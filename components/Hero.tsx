@@ -19,13 +19,26 @@ export function Hero() {
           {/* Copy */}
           <div className="animate-fade-up">
             <p className="eyebrow">{hero.eyebrow}</p>
-            <h1 className="display-xl mt-6 text-ink">
-              <span className="mb-3 block font-sans text-2xl font-normal leading-snug tracking-normal text-ink-muted sm:text-3xl lg:text-4xl">
-                {hero.titlePrefix}
-              </span>
-              {hero.title}
-            </h1>
+            <h1 className="display-xl mt-6 text-ink">{hero.title}</h1>
+            <p className="mt-4 font-sans text-2xl font-normal leading-snug text-ink-muted sm:text-3xl lg:text-[2.15rem]">
+              {hero.titleSuffix}
+            </p>
             <p className="lede mt-6 max-w-xl">{hero.body}</p>
+
+            <ul className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[0.65rem] uppercase tracking-[0.15em] text-ink-muted">
+              {hero.ranges.map((r, i) => (
+                <li key={r} className="flex items-center gap-3">
+                  {i > 0 && (
+                    <span
+                      aria-hidden
+                      className="h-1 w-1 rounded-full bg-brass-dark/50"
+                    />
+                  )}
+                  {r}
+                </li>
+              ))}
+            </ul>
+
             <div className="mt-9 flex flex-wrap gap-3">
               <a href={hero.primaryCta.href} className="btn btn-primary">
                 {hero.primaryCta.label}

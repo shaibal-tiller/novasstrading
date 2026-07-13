@@ -40,10 +40,17 @@ export const nav = [
 ] as const;
 
 export const hero = {
-  eyebrow: "A Leading Garments Buying House in Bangladesh",
-  titlePrefix: "Sourcing high-quality garments across",
-  title: "knitwear, woven, sweaters, accessories & home textile",
-  body: "We source from trusted manufacturers in Bangladesh and deliver to retailers and wholesalers worldwide — superior-quality garments at competitive prices, with the highest standards of professionalism and ethics.",
+  eyebrow: "Garments Buying House — Dhaka, Bangladesh",
+  title: "Nova SS Trading",
+  titleSuffix: "A leading garments buying house.",
+  body: "We specialise in sourcing high-quality garments from manufacturers and delivering them to retailers and wholesalers — superior quality at competitive prices, with the highest standards of professionalism and ethics.",
+  ranges: [
+    "Knitwear",
+    "Woven",
+    "Sweaters",
+    "Accessories",
+    "Home Textile",
+  ],
   primaryCta: { label: "Explore our products", href: "#products" },
   secondaryCta: { label: "Our services", href: "#sourcing" },
   stats: [
