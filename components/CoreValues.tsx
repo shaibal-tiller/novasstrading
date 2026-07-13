@@ -1,13 +1,11 @@
 import { coreValues } from "@/lib/content";
 import { PillList } from "./PillList";
 import { Reveal } from "./Reveal";
-import { SectionParticles } from "./SectionParticles";
 
 export function CoreValues() {
   return (
     <section id="values" className="section-wrap">
-      <div className="section-card section-card--cream section-card--particled">
-        <SectionParticles seed={3} />
+      <div className="section-card section-card--cream">
         <div className="max-w-2xl">
           <p className="eyebrow">{coreValues.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{coreValues.title}</h2>

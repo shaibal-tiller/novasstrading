@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { partners } from "@/lib/content";
-import { SectionParticles } from "./SectionParticles";
 
 export function Partners() {
   // Repeat the logo set so the marquee loop stays dense.
@@ -9,8 +8,7 @@ export function Partners() {
 
   return (
     <section id="partners" className="section-wrap">
-      <div className="section-card section-card--cream overflow-hidden section-card--particled">
-        <SectionParticles seed={11} />
+      <div className="section-card section-card--cream overflow-hidden">
         <div className="max-w-2xl">
           <p className="eyebrow">{partners.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{partners.title}</h2>

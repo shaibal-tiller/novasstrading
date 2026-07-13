@@ -1,13 +1,11 @@
 import { process } from "@/lib/content";
 import { LazyVideo } from "./LazyVideo";
 import { Reveal } from "./Reveal";
-import { SectionParticles } from "./SectionParticles";
 
 export function Process() {
   return (
     <section id="process" className="section-wrap">
-      <div className="section-card section-card--cream section-card--particled">
-        <SectionParticles seed={8} />
+      <div className="section-card section-card--cream">
         <div className="grid items-center gap-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div className="max-w-xl">
             <p className="eyebrow">{process.eyebrow}</p>

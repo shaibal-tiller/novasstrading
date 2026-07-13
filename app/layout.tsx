@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { PageParticles } from "@/components/PageParticles";
 import { site } from "@/lib/content";
 import "./globals.css";
 
@@ -170,6 +171,7 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+        <PageParticles />
         {children}
         <script
           type="application/ld+json"

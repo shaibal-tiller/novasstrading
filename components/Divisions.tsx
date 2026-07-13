@@ -2,7 +2,6 @@ import { divisions } from "@/lib/content";
 import { ContentMedia } from "./ContentMedia";
 import { Reveal } from "./Reveal";
 import { LeadTimeTable } from "./LeadTimeTable";
-import { SectionParticles } from "./SectionParticles";
 
 const placeholders = [
   { src: "trims-accessories-flat-lay", alt: "Flat-lay of trims & accessories — buttons, zippers, woven labels, threads" },
@@ -12,8 +11,7 @@ const placeholders = [
 export function Divisions() {
   return (
     <section id="divisions" className="section-wrap">
-      <div className="section-card section-card--cream section-card--particled">
-        <SectionParticles seed={9} />
+      <div className="section-card section-card--cream">
         <div className="max-w-2xl">
           <p className="eyebrow">{divisions.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{divisions.title}</h2>

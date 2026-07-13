@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { contact, site } from "@/lib/content";
 import { clsx } from "@/lib/utils";
-import { SectionParticles } from "./SectionParticles";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -37,8 +36,7 @@ export function Contact() {
 
   return (
     <section id="contact" className="section-wrap">
-      <div className="section-card section-card--cream section-card--particled">
-        <SectionParticles seed={13} />
+      <div className="section-card section-card--cream">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
           <div>
             <p className="eyebrow">{contact.eyebrow}</p>

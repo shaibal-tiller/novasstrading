@@ -1,13 +1,11 @@
 import { products } from "@/lib/content";
 import { ContentMedia } from "./ContentMedia";
 import { Reveal } from "./Reveal";
-import { SectionParticles } from "./SectionParticles";
 
 export function ProductRange() {
   return (
     <section id="products" className="section-wrap">
-      <div className="section-card section-card--cream section-card--particled">
-        <SectionParticles seed={5} />
+      <div className="section-card section-card--cream">
         <div className="max-w-2xl">
           <p className="eyebrow">{products.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{products.title}</h2>

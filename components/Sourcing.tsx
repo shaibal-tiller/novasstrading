@@ -1,13 +1,11 @@
 import { sourcing } from "@/lib/content";
 import { PillList } from "./PillList";
 import { Reveal } from "./Reveal";
-import { SectionParticles } from "./SectionParticles";
 
 export function Sourcing() {
   return (
     <section id="sourcing" className="section-wrap">
-      <div className="section-card section-card--light section-card--particled">
-        <SectionParticles seed={7} />
+      <div className="section-card section-card--light">
         <div className="max-w-2xl">
           <p className="eyebrow">{sourcing.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{sourcing.title}</h2>

@@ -64,27 +64,22 @@
     border-radius: var(--card-radius);
     padding: clamp(2.75rem, 6vw, 6rem) clamp(1.5rem, 5vw, 5rem);
   }
-  /* Sections hosting ambient thread particles: content stays above them */
-  .section-card--particled {
-    position: relative;
-  }
-  .section-card--particled > :not(.section-particles) {
-    position: relative;
-    z-index: 1;
-  }
-  .section-particles {
-    position: absolute;
+  /* Page-wide ambient thread layer: floats across every section, gutter
+     and margin. Sits above the opaque section cards but below the header
+     (z-50) and the gallery lightbox (z-100). */
+  .page-particles {
+    position: fixed;
     inset: 0;
-    z-index: 0;
+    z-index: 30;
     overflow: hidden;
-    border-radius: inherit;
     pointer-events: none;
   }
-  .section-particles span {
+  .page-particles span {
     position: absolute;
-    bottom: -3rem;
+    bottom: -8vh;
     border-radius: 999px;
     opacity: 0;
+    will-change: transform, opacity;
     animation-name: thread-drift;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
@@ -221,21 +216,30 @@
   }
 }
 
-/* Upward drift for ambient fabric-thread particles */
+/* Ambient fabric threads rising the full height of the viewport,
+   swaying laterally as they go. */
 @keyframes thread-drift {
   0% {
-    transform: translateY(0) rotate(var(--rot, 0deg));
+    transform: translate3d(0, 0, 0) rotate(var(--rot, 0deg));
     opacity: 0;
   }
-  10% {
+  8% {
     opacity: 1;
   }
-  80% {
-    opacity: 0.5;
+  50% {
+    transform: translate3d(
+        calc(var(--drift, 0vw) * 0.5),
+        -58vh,
+        0
+      )
+      rotate(calc(var(--rot, 0deg) + 90deg));
+  }
+  88% {
+    opacity: 0.85;
   }
   100% {
-    transform: translateY(calc(-1 * var(--rise, 18rem)))
-      rotate(calc(var(--rot, 0deg) + 45deg));
+    transform: translate3d(var(--drift, 0vw), -118vh, 0)
+      rotate(calc(var(--rot, 0deg) + 190deg));
     opacity: 0;
   }
 }

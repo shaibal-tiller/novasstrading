@@ -1,6 +1,5 @@
 import { whyUs } from "@/lib/content";
 import { Reveal } from "./Reveal";
-import { SectionParticles } from "./SectionParticles";
 
 const icons = [
   NetworkIcon,
@@ -14,8 +13,7 @@ const icons = [
 export function WhyUs() {
   return (
     <section className="section-wrap">
-      <div className="section-card section-card--light section-card--particled">
-        <SectionParticles seed={4} />
+      <div className="section-card section-card--light">
         <div className="grid gap-8 lg:grid-cols-[1fr_1.4fr] lg:items-end">
           <div>
             <p className="eyebrow">{whyUs.eyebrow}</p>
