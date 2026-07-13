@@ -7,3 +7,7 @@
 .env*
 .vercel
 next-env.d.ts
+
+# local
+Products.zip
+.claude/settings.local.json

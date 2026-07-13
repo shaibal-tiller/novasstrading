@@ -29,7 +29,8 @@ export function ContentMedia({
   priority = false,
 }: ContentMediaProps) {
   const isVideo = kind === "video" || src.toLowerCase().startsWith("vid-");
-  const fileName = src;
+  // Bare names default to .png; paths with an extension are used as-is.
+  const fileName = src.includes(".") ? src : `${src}.png`;
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -44,7 +45,7 @@ export function ContentMedia({
     >
       {isVideo ? (
         <video
-          src={`/assets/${fileName}.mp4`}
+          src={`/assets/${src.includes(".") ? src : `${src}.mp4`}`}
           className={clsx(
             "absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out",
             isLoaded ? "opacity-100" : "opacity-0"
@@ -58,12 +59,13 @@ export function ContentMedia({
         />
       ) : (
         <Image
-          src={`/assets/${fileName}.png`}
+          src={`/assets/${fileName}`}
           alt={alt}
           fill
           priority={priority}
           className={clsx(
-            "object-cover transition-opacity duration-700 ease-in-out",
+            kind === "logo" ? "object-contain p-2" : "object-cover",
+            "transition-opacity duration-700 ease-in-out",
             isLoaded ? "opacity-100" : "opacity-0"
           )}
           sizes="(max-width: 768px) 100vw, 50vw"

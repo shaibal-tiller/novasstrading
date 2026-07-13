@@ -1,5 +1,5 @@
 import { hero } from "@/lib/content";
-import { ContentMedia } from "./ContentMedia";
+import { HeroCollage } from "./HeroCollage";
 
 export function Hero() {
   return (
@@ -37,11 +37,7 @@ export function Hero() {
             </div>
 
             <dl className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-ink/10 pt-6">
-              {[
-                { v: "02", l: "Specialized divisions" },
-                { v: "08", l: "Stage QA workflow" },
-                { v: "24h", l: "Inquiry response" },
-              ].map((s) => (
+              {hero.stats.map((s) => (
                 <div key={s.l}>
                   <dt className="font-display text-2xl font-semibold text-brass-dark">
                     {s.v}
@@ -54,37 +50,8 @@ export function Hero() {
             </dl>
           </div>
 
-          {/* Scattered, overlapping collage */}
-          <div className="relative mx-auto h-[30rem] w-full max-w-lg animate-fade-up [animation-delay:120ms] sm:h-[34rem]">
-            <div className="absolute right-0 top-0 w-[58%]">
-              <ContentMedia
-                src="brass-trims-zippers-buttons"
-                alt="Macro of premium brass trims — zippers & buttons"
-                aspect="aspect-[4/5]"
-              />
-            </div>
-            <div className="absolute left-0 top-[14%] w-[42%]">
-              <ContentMedia
-                src="stacked-premium-fabric-rolls"
-                alt="Stacked rolls of premium fabric"
-                aspect="aspect-[3/4]"
-              />
-            </div>
-            <div className="absolute bottom-[6%] left-[8%] w-[46%]">
-              <ContentMedia
-                src="garment-factory-sewing-floor"
-                alt="Garment factory sewing floor in operation"
-                aspect="aspect-square"
-              />
-            </div>
-            <div className="absolute bottom-0 right-[4%] w-[44%]">
-              <ContentMedia
-                src="designer-inspecting-labels-swatches"
-                alt="Designer inspecting woven labels & swatches"
-                aspect="aspect-[5/4]"
-              />
-            </div>
-          </div>
+          {/* Scattered, overlapping collage of real product photos */}
+          <HeroCollage />
         </div>
       </div>
     </section>

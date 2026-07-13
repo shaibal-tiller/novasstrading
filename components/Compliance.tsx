@@ -55,18 +55,14 @@ export function Compliance() {
                 Certifications & memberships
               </h3>
               <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                {compliance.certifications.map((c, i) => (
+                {compliance.certifications.map((c) => (
                   <div
                     key={c.name}
                     className="rounded-sm border border-ink/10 bg-canvas p-4 text-center"
                   >
                     <ContentMedia
-                      src={
-                        i === 0 ? "oeko-tex-standard-100-logo" :
-                        i === 1 ? "fsc-certified-logo" :
-                        "bsci-wrap-audit-logos"
-                      }
-                      alt={`${c.name} certification badge`}
+                      src={c.src}
+                      alt={`${c.name} membership badge`}
                       kind="logo"
                       aspect="aspect-[3/2]"
                     />

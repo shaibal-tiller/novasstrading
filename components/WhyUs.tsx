@@ -1,7 +1,14 @@
 import { whyUs } from "@/lib/content";
 import { Reveal } from "./Reveal";
 
-const icons = [QualityIcon, CustomIcon, ClockIcon];
+const icons = [
+  NetworkIcon,
+  QualityIcon,
+  ClockIcon,
+  CustomIcon,
+  TeamIcon,
+  LeafIcon,
+];
 
 export function WhyUs() {
   return (
@@ -40,6 +47,58 @@ export function WhyUs() {
   );
 }
 
+function NetworkIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="12" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="5" cy="18" r="2.2" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="19" cy="18" r="2.2" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M10.8 6.8L6.2 16m7-9.2l4.6 9.2M7.2 18h9.6"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function TeamIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <circle cx="9" cy="8.5" r="3" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M3.5 19c.7-3 3-4.5 5.5-4.5s4.8 1.5 5.5 4.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <path
+        d="M15.5 5.9a3 3 0 110 5.2M17.4 14.7c1.6.6 2.8 1.9 3.2 4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+function LeafIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M5 19c0-8 5-14 14-14 0 9-5 14-14 14z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M5 19c3-5 7-9 11-11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 function QualityIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>

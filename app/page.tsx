@@ -3,6 +3,8 @@ import { Hero } from "@/components/Hero";
 import { About } from "@/components/About";
 import { CoreValues } from "@/components/CoreValues";
 import { WhyUs } from "@/components/WhyUs";
+import { ProductRange } from "@/components/ProductRange";
+import { Portfolio } from "@/components/Portfolio";
 import { Divisions } from "@/components/Divisions";
 import { Sourcing } from "@/components/Sourcing";
 import { Process } from "@/components/Process";
@@ -25,9 +27,11 @@ export default function Home() {
         <About />
         <CoreValues />
         <WhyUs />
-        <Divisions />
+        <ProductRange />
+        <Portfolio />
         <Sourcing />
         <Process />
+        <Divisions />
         <Compliance />
         <Partners />
         <Profiles />

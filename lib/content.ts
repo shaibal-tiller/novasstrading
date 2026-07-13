@@ -1,25 +1,27 @@
 // ---------------------------------------------------------------------------
 // Nova SS Trading — single source of truth for site content.
 // Edit copy here; components read from this file.
+// Source documents: template.pdf (company profile) + Products.zip content.
 // ---------------------------------------------------------------------------
 
 export const site = {
   name: "Nova SS Trading",
   legalName: "Nova SS Trading",
-  tagline: "Garments Buying House & Textile Solutions",
+  tagline: "Garments Buying House — Bangladesh",
   url: "https://www.novasstrading.com",
   description:
-    "Nova SS Trading is Bangladesh's premier garments buying house and single-window partner for premium trims, accessories, and fabrics.",
+    "Nova SS Trading is a leading garments buying house in Bangladesh, sourcing high-quality knitwear, woven, sweaters, accessories & home textile from trusted manufacturers for retailers and wholesalers worldwide.",
   email: "info@novasstrading.com",
   phone: "+880 1683-809975",
   phoneHref: "+8801683809975",
   address: {
-    street: "Road #5, House #357, Baridhara DOHS",
+    street: "House 142, Road 11, Avenue 5, Mirpur DOHS",
     city: "Dhaka",
-    postalCode: "1206",
+    postalCode: "1216",
     country: "Bangladesh",
-    full: "Road #5, House #357, Baridhara DOHS, Dhaka, Bangladesh",
-    mapUrl: "https://www.google.com/maps?q=Dhaka,+%E5%8F%B7%E8%B7%AFGround+Floor.%E4%B8%80%E6%A5%BC%EF%BC%8CHouse-357%E6%88%BF%EF%BC%8CRoad%E4%B9%90%E6%80%9D%E8%9C%80-%E9%BA%BB%E8%BE%A3%E9%A6%99%E9%94%85%26%E9%B8%A1%E5%85%AC%E7%85%B2%E9%82%AE%E6%94%BF%E7%BC%96%E7%A0%81:+1206&ftid=0x3755c7bc1a191521:0xb6d963abf029eb7b&entry=gps&shh=CAE&lucs=,100820945,94297699,94231188,94280568,47071704,94218641,94282134,100813469,94286869&g_ep=CAISEjI2LjI1LjMuOTMyMTI1MTg3MBgAIIgnKlMsMTAwODIwOTQ1LDk0Mjk3Njk5LDk0MjMxMTg4LDk0MjgwNTY4LDQ3MDcxNzA0LDk0MjE4NjQxLDk0MjgyMTM0LDEwMDgxMzQ2OSw5NDI4Njg2OUICQkQ%3D&skid=f3e380e1-0337-43cc-8496-a010f3671344&g_st=iw",
+    full: "House 142, Road 11, Avenue 5, Mirpur DOHS, Dhaka-1216, Bangladesh",
+    mapUrl:
+      "https://www.google.com/maps?q=House+142,+Road+11,+Avenue+5,+Mirpur+DOHS,+Dhaka+1216,+Bangladesh",
   },
   social: {
     linkedin: "#",
@@ -30,96 +32,282 @@ export const site = {
 export const nav = [
   { label: "About", href: "#about" },
   { label: "Values", href: "#values" },
-  { label: "Divisions", href: "#divisions" },
-  { label: "Sourcing", href: "#sourcing" },
+  { label: "Products", href: "#products" },
+  { label: "Portfolio", href: "#portfolio" },
+  { label: "Services", href: "#sourcing" },
   { label: "Process", href: "#process" },
-  { label: "Compliance", href: "#compliance" },
-  { label: "Profiles", href: "#profiles" },
+  { label: "Divisions", href: "#divisions" },
   { label: "Contact", href: "#contact" },
 ] as const;
 
 export const hero = {
-  eyebrow: "Complete Garments Buying House",
-  titlePrefix: "Your single-window partner for",
-  title: "premium trims, accessories & fabrics",
-  body: "We bridge the gap between global brands and reliable manufacturers, delivering products shaped around quality, innovation, and on-time execution.",
-  primaryCta: { label: "Our product divisions", href: "#divisions" },
-  secondaryCta: { label: "Apparel sourcing", href: "#sourcing" },
+  eyebrow: "A Leading Garments Buying House in Bangladesh",
+  titlePrefix: "Sourcing high-quality garments across",
+  title: "knitwear, woven, sweaters, accessories & home textile",
+  body: "We source from trusted manufacturers in Bangladesh and deliver to retailers and wholesalers worldwide — superior-quality garments at competitive prices, with the highest standards of professionalism and ethics.",
+  primaryCta: { label: "Explore our products", href: "#products" },
+  secondaryCta: { label: "Our services", href: "#sourcing" },
+  stats: [
+    { v: "05", l: "Core product ranges" },
+    { v: "08", l: "Stage working process" },
+    { v: "24h", l: "Inquiry response" },
+  ],
 };
 
 export const about = {
   eyebrow: "About Nova SS Trading",
-  title: "Delivering the perfect touch & sourcing solutions",
+  title: "A trusted garments buying house in Bangladesh",
   body: [
-    "Established as a trusted partner in the global apparel supply chain, Nova SS Trading operates two specialized divisions — Trims & Accessories and Fabrics — alongside our core Garments Buying House services in Bangladesh.",
-    "We support clothing designers and apparel manufacturers worldwide with world-class accessories, premium knitted and woven fabrics, and comprehensive end-to-end production monitoring, ensuring a smooth, single-window sourcing experience.",
+    "Nova SS Trading is a leading garments buying house specialising in sourcing high-quality garments from manufacturers and delivering them to retailers and wholesalers. Our experienced team is dedicated to providing the best service to our clients — delivering superior-quality garments at competitive prices while maintaining the highest standards of professionalism and ethics.",
+    "We work with all kinds of garments and apparel across a product range of knitwear, woven, sweaters, accessories and home textile — always following the buyer's requirement. Acting as the bridge between international buyers and reliable local manufacturers, our team manages design, sampling, production monitoring and shipment support for a smooth, single-window experience.",
   ],
   highlights: [
-    "Global standard quality assurance",
-    "Unmatched customization & rapid design prototypes",
-    "Commitment to sustainability and responsible sourcing",
+    "Knitwear, woven, sweaters, accessories & home textile",
+    "Experienced merchandising, QA & production follow-up team",
+    "Transparency, professionalism and on-time delivery",
   ],
   mission: {
     title: "Our Mission",
-    body: "To deliver high-quality fabrics, trims, and accessories that empower apparel manufacturers and fashion brands with innovative, sustainable, and reliable solutions — ensuring style, durability, and global competitiveness.",
+    body: "To deliver world-class clothing solutions by connecting global buyers with dependable Bangladeshi manufacturers — ensuring quality, ethical practice and timely delivery while growing long-term partnerships built on trust and transparency.",
   },
   vision: {
     title: "Our Vision",
-    body: "To become a trusted global leader in fabrics and accessories by setting new standards in quality, innovation, and sustainability, while contributing to the growth of Bangladesh's apparel and textile industry.",
+    body: "To be a leading global buying house from Bangladesh, known for innovation, sustainability and excellence in apparel sourcing — empowering clients with a competitive edge while promoting ethical growth across the textile and garment sector.",
   },
 };
 
 export const coreValues = {
   eyebrow: "Our Compass",
-  title: "Core business beliefs",
+  title: "Core business values",
   intro:
-    "What guides our team daily to exceed international benchmarks and build reliable supply networks.",
+    "At Nova SS Trading, we believe in shaping a better tomorrow. Quality, trust and timely delivery define our commitment, while innovation and sustainability guide the journey ahead.",
   values: [
     {
+      title: "Integrity",
+      body: "Honesty and transparency in every dealing.",
+    },
+    {
       title: "Quality Excellence",
-      body: "We hold world-class standards in every product, ensuring durability, consistency, and a premium finish.",
+      body: "Delivering superior products and services is our priority.",
+    },
+    {
+      title: "Customer Focus",
+      body: "Understanding and exceeding client expectations.",
+    },
+    {
+      title: "Collaboration",
+      body: "Strong teamwork with partners, clients and employees.",
     },
     {
       title: "Innovation",
-      body: "We continuously explore new ideas, designs, and technologies to meet the changing needs of the fashion industry.",
+      body: "Embracing creativity and new ideas in sourcing and production.",
     },
     {
       title: "Sustainability",
-      body: "We prioritize eco-friendly materials and responsible production to protect the environment for future generations.",
+      body: "Promoting ethical practices and eco-friendly solutions.",
     },
     {
-      title: "Integrity",
-      body: "We believe in honesty, transparency, and fairness across every single part of our business operations.",
+      title: "Reliability",
+      body: "On-time delivery and dependable service, every time.",
+    },
+    {
+      title: "Continuous Improvement",
+      body: "Constantly refining our processes, skills and performance.",
     },
   ],
 };
 
 export const whyUs = {
-  eyebrow: "Why Nova SS Trading",
-  title: "A partnership built for high-yield supply chains",
+  eyebrow: "Why Choose Us",
+  title: "Reliable apparel sourcing, end to end",
   intro:
-    "Collaborating with us offers high-yield supply chains, unmatched responsiveness, and complete peace of mind.",
+    "We provide reliable, high-quality apparel sourcing with a focus on timely delivery, ethical practice and long-term client satisfaction — offering seamless production, sourcing and export support for global buyers.",
   reasons: [
     {
-      title: "High-Quality Standards",
-      body: "Both Fabrics and Trims divisions run separate, rigorous QA checks conforming to international benchmarks before shipping.",
+      title: "Trusted Supplier Network",
+      body: "Strong partnerships with leading garment factories for reliable sourcing and high-quality products.",
     },
     {
-      title: "Customization",
-      body: "Tailor-made solutions developed exactly to your brief, with quick prototype design and fast sampling lead times.",
+      title: "Strict Quality Control",
+      body: "Every product passes rigorous inspection to meet international standards and buyer expectations.",
     },
     {
       title: "On-Time Delivery",
-      body: "We respect tight fashion-season timelines, guaranteeing prompt communication and timely shipment dispatch.",
+      body: "We prioritise punctuality and deliver every order within the agreed timeline.",
+    },
+    {
+      title: "Custom & Private Label",
+      body: "Tailored products and packaging to client specification, supporting your brand identity.",
+    },
+    {
+      title: "Professional Team",
+      body: "Experienced experts who manage sourcing, production and export efficiently.",
+    },
+    {
+      title: "Sustainability & Ethics",
+      body: "A firm commitment to ethical sourcing and eco-friendly manufacturing.",
     },
   ],
 };
 
+export const products = {
+  eyebrow: "Our Product Range",
+  title: "Five core ranges, every buyer requirement",
+  intro:
+    "We work with all kinds of garments and apparel — knitwear, woven, sweaters, accessories & home textile — always built to the buyer's requirement.",
+  items: [
+    {
+      title: "Knitwear",
+      body: "T-shirts, polos, hoodies, sweatshirts and full knit programs for women, men and kids.",
+      image: "products/categories/knitwear-1.jpg",
+      alt: "Knitwear — fine-gauge knitted top",
+    },
+    {
+      title: "Woven",
+      body: "Shirts, trousers, denim, jackets and outerwear developed in trusted woven factories.",
+      image: "products/categories/denim-1.jpg",
+      alt: "Woven & denim garments",
+    },
+    {
+      title: "Sweaters",
+      body: "Pullovers, cardigans, turtlenecks and heavy-gauge winter knits across all yarn counts.",
+      image: "products/men/men-turtleneck-sweater-grey.jpg",
+      alt: "Grey turtleneck sweater, front and back",
+    },
+    {
+      title: "Accessories",
+      body: "Fashion accessories plus complete trims support — labels, tags, buttons, zippers and packaging.",
+      image: "trims-accessories-flat-lay.png",
+      alt: "Flat-lay of garment accessories and trims",
+    },
+    {
+      title: "Home Textile",
+      body: "Bedding, towels, kitchen linen and woven home-textile programs to buyer specification.",
+      image: "stacked-premium-fabric-rolls.png",
+      alt: "Stacked rolls of home-textile fabrics",
+    },
+  ],
+};
+
+export const portfolio = {
+  eyebrow: "Sourcing Portfolio",
+  title: "Woman, man & kids — every category covered",
+  intro:
+    "Across our factory network we produce all major clothing categories to Western retail standards. A snapshot of recent developments and production follows.",
+  tabs: [
+    {
+      key: "woman",
+      label: "Woman",
+      categories: [
+        "Dresses",
+        "T-Shirts | Sweatshirts",
+        "Shirts",
+        "Tops | Bodies",
+        "Shorts | Skorts",
+        "Trousers",
+        "Jeans",
+        "Skirts",
+        "Knitwear",
+        "Jackets | Blazers",
+        "Cardigans | Jumpers",
+      ],
+      photos: [
+        { src: "products/categories/womenswear-1.jpg", alt: "Womenswear — tailored co-ord set" },
+        { src: "products/categories/womenswear-2.jpg", alt: "Womenswear — navy blazer over white blouse" },
+        { src: "products/categories/denim-1.jpg", alt: "Womenswear — washed denim romper" },
+        { src: "products/categories/knitwear-1.jpg", alt: "Womenswear — red open-knit jumper" },
+        { src: "products/categories/activewear-1.jpg", alt: "Womenswear — activewear leggings and top" },
+        { src: "products/categories/sleepwear-2.jpg", alt: "Womenswear — printed pyjama set" },
+      ],
+    },
+    {
+      key: "man",
+      label: "Man",
+      categories: [
+        "Linen",
+        "T-Shirts",
+        "Shirts",
+        "Shorts | Jorts",
+        "Trousers",
+        "Jeans",
+        "Summer Knits",
+        "Summer Shirts",
+        "Polo Shirts",
+        "Swimwear",
+        "Jackets | Coats",
+        "Leather",
+        "Sweaters | Cardigans",
+        "Hoodies | Sweatshirts",
+        "Suits",
+        "Matching Sets",
+        "Overshirts | Blazers",
+        "Wintery Garments",
+      ],
+      photos: [
+        { src: "products/men/men-hooded-puffer-olive-black.jpg", alt: "Menswear — olive & black hooded puffer jacket" },
+        { src: "products/men/men-quilted-puffer-jacket-black.jpg", alt: "Menswear — black quilted puffer jacket" },
+        { src: "products/men/men-hybrid-softshell-jacket-black.jpg", alt: "Menswear — black hybrid softshell jacket" },
+        { src: "products/men/men-track-jacket-olive.jpg", alt: "Menswear — olive zip-through track jacket" },
+        { src: "products/men/men-quilted-hybrid-jacket-black.jpg", alt: "Menswear — quilted hybrid jacket" },
+        { src: "products/men/men-puffer-jacket-black-slim.jpg", alt: "Menswear — slim black puffer jacket" },
+        { src: "products/men/men-hooded-puffer-olive-mannequin.jpg", alt: "Menswear — hooded puffer on mannequin" },
+        { src: "products/men/men-crew-tshirts-grey.jpg", alt: "Menswear — grey crew-neck t-shirts, front & back" },
+        { src: "products/men/men-polo-shirt-beige.jpg", alt: "Menswear — beige polo shirt, front & back" },
+        { src: "products/men/men-turtleneck-sweater-grey.jpg", alt: "Menswear — grey turtleneck sweater" },
+        { src: "products/men/men-vneck-sweater-grey.jpg", alt: "Menswear — grey v-neck sweater" },
+        { src: "products/men/men-half-zip-sweater-cream.jpg", alt: "Menswear — cream half-zip sweater" },
+        { src: "products/men/men-henley-tshirt-brown.jpg", alt: "Menswear — brown henley t-shirt" },
+        { src: "products/men/men-turtleneck-sweater-charcoal.jpg", alt: "Menswear — charcoal turtleneck sweater" },
+      ],
+    },
+    {
+      key: "kids",
+      label: "Kids",
+      categories: [
+        "Dresses | Dungarees | Rompers",
+        "T-Shirts",
+        "Shirts",
+        "Bodysuits",
+        "Sweatshirts",
+        "Briefs | Bermuda Shorts",
+        "Trousers | Leggings",
+        "Coats | One-Piece Suits",
+        "Knitwear",
+        "Shoes | Bags",
+        "Underwear | Pyjamas",
+        "Accessories",
+      ],
+      photos: [
+        { src: "products/kids/kids-striped-dungaree-yellow.jpg", alt: "Kidswear — yellow striped jersey dungaree" },
+        { src: "products/kids/kids-strawberry-frill-romper.jpg", alt: "Kidswear — strawberry-print frill romper" },
+        { src: "products/kids/kids-car-print-tshirt-green.jpg", alt: "Kidswear — green adventure-car print t-shirt" },
+        { src: "products/kids/kids-jungle-print-sleepsuit-red.jpg", alt: "Kidswear — red jungle-print footed sleepsuit" },
+        { src: "products/kids/kids-star-print-sleepsuit.jpg", alt: "Kidswear — star-print sleepsuit" },
+        { src: "products/kids/kids-floral-sleepsuit-pink.jpg", alt: "Kidswear — pink floral sleepsuit" },
+        { src: "products/kids/kids-bodysuit-mauve.jpg", alt: "Kidswear — mauve long-sleeve bodysuit" },
+        { src: "products/kids/kids-car-graphic-tshirt-orange.jpg", alt: "Kidswear — orange car graphic t-shirt" },
+        { src: "products/kids/kids-dungaree-dress-beige.jpg", alt: "Kidswear — beige twill dungaree dress" },
+        { src: "products/kids/kids-animal-print-tshirt.jpg", alt: "Kidswear — safari animal print t-shirt" },
+        { src: "products/kids/kids-pocket-print-tshirt-blue.jpg", alt: "Kidswear — light blue pocket-print t-shirt" },
+        { src: "products/kids/kids-tie-dye-tshirt-orange.jpg", alt: "Kidswear — orange tie-dye graphic t-shirt" },
+        { src: "products/kids/kids-skater-graphic-tshirt-teal.jpg", alt: "Kidswear — teal skater graphic t-shirt" },
+        { src: "products/kids/kids-teddy-graphic-tshirt-red.jpg", alt: "Kidswear — red teddy graphic t-shirt" },
+        { src: "products/kids/kids-dino-graphic-tshirt-navy.jpg", alt: "Kidswear — navy dinosaur graphic t-shirt" },
+        { src: "products/kids/kids-yacht-club-tshirt-green.jpg", alt: "Kidswear — green yacht-club print t-shirt" },
+      ],
+    },
+  ],
+  extra: {
+    label: "Also covering",
+    items: ["Activewear", "Sleepwear", "Denim", "Knitwear", "Lingerie", "Jackets & Outerwear"],
+  },
+};
+
 export const divisions = {
-  eyebrow: "Our Specializations",
+  eyebrow: "Our Divisions",
   title: "Trims, accessories & fabrics divisions",
   intro:
-    "A comprehensive overview of our product lines, custom creations, and production capabilities.",
+    "Alongside our core garments buying-house operations, two specialised supply divisions give buyers a complete single-window source for trims, accessories and fabrics.",
   items: [
     {
       index: "Division 01",
@@ -171,59 +359,57 @@ export const leadTime = {
 };
 
 export const sourcing = {
-  eyebrow: "RMG Supply Chain Services",
-  title: "Garments sourcing & export operations",
+  eyebrow: "Our Services",
+  title: "End-to-end buying house services",
   intro:
-    "Acting as the bridge between international retail buyers and certified local apparel manufacturers in Bangladesh, we manage the entire lifecycle of apparel design, manufacture, quality inspection, and global shipment support.",
+    "From first tech pack to final delivery — we manage sourcing, development, production and export so every buyer enjoys a seamless, single-window experience.",
   services: [
     {
       title: "Product Sourcing",
-      body: "We connect buyers with the best manufacturers in Bangladesh, sourcing natural and synthetic textiles at competitive pricing.",
+      body: "We connect clients with the finest manufacturers in Bangladesh, sourcing a wide range of garments to international standards, with access to premium fabrics, on-trend designs and competitive pricing.",
     },
     {
-      title: "Sampling & Development",
-      body: "Building exact-fit samples, refining specifications, and developing custom styles according to your brand design requirements.",
+      title: "Sampling & Product Development",
+      body: "Our design and development team works closely with factories to build accurate samples, refine specifications and make sure design, fit and fabric quality meet every client expectation.",
     },
     {
       title: "Production Monitoring",
-      body: "Continuous supervisors checking cutting, sewing, and finishing in factories to enforce timelines and prevent bottlenecks.",
+      body: "We supervise production at every stage — from cutting and stitching to finishing — enforcing strict quality standards, minimising defects and protecting delivery dates.",
     },
     {
-      title: "Logistics & Export",
-      body: "Handling customs clearance, freight shipping arrangements, escrow accounts, L/C, and FOB / CFR / CIF terms safely.",
+      title: "Compliance & Ethical Practice",
+      body: "We partner only with factories that uphold safe working conditions, fair labour practices and environmental responsibility.",
     },
     {
-      title: "Private Label Solutions",
-      body: "Bespoke packaging, brand hangtags, custom print runs, and unique clothing details specifically for your brand label.",
+      title: "Shipment & Export Support",
+      body: "From packaging to shipping, we handle logistics, documentation and customs so your products reach global destinations efficiently and securely.",
     },
     {
-      title: "Trend & Market Insights",
-      body: "Sharing fashion industry trends, local yarn-rate developments, and sourcing logistics updates to keep you ahead.",
+      title: "Custom & Private-Label Solutions",
+      body: "Tailored manufacturing for clients seeking unique designs, branding or private-label apparel — helping businesses build distinctive collections.",
+    },
+    {
+      title: "Trend Analysis & Market Insight",
+      body: "We share market insight, fashion-trend updates and competitive analysis, helping clients make informed sourcing decisions and stay ahead.",
+    },
+    {
+      title: "After-Sales Support & Client Care",
+      body: "We sustain long-term relationships with responsive after-sales support, quick issue resolution and continuous improvement based on client feedback.",
     },
   ],
-  portfolio: {
-    title: "Our apparel sourcing portfolio",
-    intro:
-      "Across our factory networks, we produce all clothing categories conforming to major Western retailers.",
-    categories: [
-      {
-        title: "Menswear",
-        body: "Polos, tees, shirts, corporate trousers, outerwear, chinos, and basics.",
-      },
-      {
-        title: "Womenswear",
-        body: "Fashion tops, dresses, cardigans, blouses, knit tees, activewear, and sleepwear.",
-      },
-      {
-        title: "Kidswear",
-        body: "Comfy knit rompers, shirts, jeans, hoodies, pyjamas, and organic basics.",
-      },
-      {
-        title: "Knitwear & Denim",
-        body: "Heavy denim trousers, jackets, fleece hoodies, cotton sweatpants, and knitwear.",
-      },
-    ],
-  },
+  checklistLabel: "We also ensure",
+  checklist: [
+    "Factory Evaluation",
+    "Fully Compliant Manufacturing Units",
+    "Merchandising & Daily Production Follow-Up",
+    "Product Analysis",
+    "Raw Materials Sourcing",
+    "Fabric Sourcing & Quality Testing",
+    "Bulk Production & Quality Monitoring",
+    "In-Line Checks",
+    "Initial Production Checks",
+    "In-House Materials",
+  ],
 };
 
 export const process = {
@@ -235,42 +421,42 @@ export const process = {
     {
       n: "01",
       title: "Requirement Analysis",
-      body: "We start by understanding your exact specifications: product type, design sheets, quantity, fabric, target pricing, and timelines.",
+      body: "We start by understanding the client's exact needs — product type, design, quantity, fabric and budget.",
     },
     {
       n: "02",
       title: "Supplier & Fabric Sourcing",
-      body: "We engage trusted mills and production units to secure raw fabrics and trims matching specifications.",
+      body: "We engage trusted manufacturers and suppliers, selecting premium fabrics and dependable production partners.",
     },
     {
       n: "03",
       title: "Sampling & Development",
-      body: "Creating visual and fit samples for buyer approval, tweaking measurements and colours prior to booking bulk production.",
+      body: "Samples are built to client specifications, refining design, fit and material quality before bulk.",
     },
     {
       n: "04",
-      title: "Production Monitoring",
-      body: "Daily milestone reports during sewing and dyeing to prevent bottlenecks and protect agreed shipment seasons.",
+      title: "Production Planning & Monitoring",
+      body: "We schedule production and monitor each stage — cutting, stitching, finishing — for tight quality control and on-time output.",
     },
     {
       n: "05",
       title: "Quality Inspection",
-      body: "Rigorous inline and final inspections using AQL standards, checking stitching accuracy and fabric strength.",
+      body: "Every batch passes rigorous checks: fabric inspection, stitching accuracy and final product approval.",
     },
     {
       n: "06",
       title: "Packing & Logistics",
-      body: "Carton packing to exact packaging briefs, shipping document preparation, L/C handling, and export code verification.",
+      body: "Goods are packed and prepared for shipment following client packaging instructions and export rules.",
     },
     {
       n: "07",
       title: "Shipment & Delivery",
-      body: "Managing safe loading at Chittagong Port, freight tracking, and customs documents for secure port clearance.",
+      body: "We manage all logistics and shipping so products arrive at global destinations safely and on time.",
     },
     {
       n: "08",
       title: "After-Sales Support",
-      body: "Quick resolution, feedback collection, and client care to ensure our partnerships persist for decades.",
+      body: "Our relationship continues after delivery — support, issue resolution and feedback for continuous improvement.",
     },
   ],
 };
@@ -279,16 +465,16 @@ export const compliance = {
   eyebrow: "Standards & Integrity",
   title: "Quality assurance & compliance",
   intro:
-    "We enforce strict quality protocols and eco-friendly standards across all manufacturing partners.",
+    "We enforce strict quality protocols and ethical standards across all manufacturing partners.",
   protocolTitle: "Our quality assurance protocol",
   protocolBody: [
-    "At Nova SS Trading, quality sits at the heart of everything we do. Both our Fabrics and Trims & Accessories divisions follow strict quality-assurance protocols so that every product meets international benchmarks.",
-    "Our experienced in-house QA officers inspect raw materials, supervise cutting and stitching tables, and perform tests prior to any third-party inspection (SGS, Intertek, and others).",
+    "At Nova SS Trading, quality sits at the heart of everything we do. Every order follows a strict quality-assurance protocol so that each garment meets international benchmarks and buyer expectations.",
+    "Our experienced in-house QA officers inspect raw materials, supervise cutting and stitching tables, and perform inspections prior to any third-party inspection (SGS, Intertek, and others).",
   ],
   checks: [
     {
       title: "Material Inspection",
-      body: "Thorough checking of raw yarns, chemicals, and trims.",
+      body: "Thorough checking of raw yarns, fabrics, and trims.",
     },
     {
       title: "Process Monitoring",
@@ -308,59 +494,62 @@ export const compliance = {
     },
   ],
   certifications: [
-    { name: "OEKO-TEX®", detail: "Standard 100 Certified" },
-    { name: "FSC®", detail: "Forest Stewardship Council" },
-    { name: "BSCI / WRAP", detail: "Ethical Audits Compliant" },
+    { name: "BGMEA", detail: "Bangladesh Garment Manufacturers & Exporters Association", src: "logos/member-1.png" },
+    { name: "DCCI", detail: "Dhaka Chamber of Commerce & Industry", src: "logos/member-2.png" },
+    { name: "BGBA", detail: "Bangladesh Garments Buying House Association", src: "logos/member-3.png" },
   ],
   footnote:
-    "Nova SS Trading promotes eco-friendly manufacturing. Our products conform to the strictest hazardous-chemical bans, safeguarding both factory workers and retail consumers worldwide.",
+    "Nova SS Trading partners only with factories that uphold safe working conditions, fair labour practices and environmental responsibility — safeguarding both factory workers and retail consumers worldwide.",
 };
 
 export const profiles = {
   eyebrow: "Official Documents",
-  title: "Our company profiles",
+  title: "Our company profile",
   intro:
-    "Download our official corporate profiles to explore our manufacturing capabilities and sourcing strategies.",
+    "Download our official corporate profile to explore our product range, services and working process.",
   documents: [
     {
       title: "Corporate Company Profile",
-      body: "Complete overview of our Trims & Accessories Division and Fabrics Division. Includes product catalogs and lead times.",
+      body: "Complete overview of our garments buying-house operations — product range, services, working process, portfolio and memberships.",
       href: "/company-profile/NOVA_SS_TRADING_Company_Profile.pdf",
-    },
-    {
-      title: "Apparel Sourcing Profile",
-      body: "Detailed insights into our Garments Buying House operations, product categories, and working process.",
-      href: "/company-profile/NOVA_SS_TRADING_Sourcing_Profile.pdf",
     },
   ],
 };
 
 export const partners = {
-  eyebrow: "Trusted By",
-  title: "Brands & manufacturers we serve",
+  eyebrow: "Our Clients",
+  title: "Brands & retailers we serve",
   intro:
-    "We partner with global brands, retailers, and certified manufacturers across the apparel value chain.",
-  // Replace each with a real partner logo — see MEDIA_PROMPTS.md (LOGO-01 … LOGO-10)
-  count: 10,
+    "We are trusted by international brands and retailers across the apparel value chain.",
+  logos: [
+    { name: "LPP", src: "logos/client-1.png" },
+    { name: "CATO", src: "logos/client-2.png" },
+    { name: "Jeunesse", src: "logos/client-3.png" },
+  ],
+  memberships: [
+    { name: "BGMEA", src: "logos/member-1.png" },
+    { name: "DCCI", src: "logos/member-2.png" },
+    { name: "BGBA", src: "logos/member-3.png" },
+  ],
 };
 
 export const contact = {
   eyebrow: "Connect With Us",
   title: "Get in touch",
   intro:
-    "Send us your garments sourcing specs, fabric needs, or trims inquiry and receive details within 24 hours.",
+    "Send us your garments sourcing specs, tech packs, or product inquiry and receive details within 24 hours.",
   cards: [
     { label: "Call / WhatsApp", value: site.phone, href: `tel:${site.phoneHref}` },
     { label: "E-mail address", value: site.email, href: `mailto:${site.email}` },
     { label: "Office address", value: site.address.full, href: site.address.mapUrl },
   ],
   subjects: [
-    "Trims & Accessories Division",
-    "Fabrics Division",
-    "Garments Sourcing / Buying House",
+    "Knitwear / Woven / Sweaters",
+    "Accessories & Home Textile",
+    "Trims & Fabrics Divisions",
     "Other Inquiry",
   ],
 };
 
 export const footerBlurb =
-  "A premier garments buying house and single-window partner for premium trims, accessories, and fabrics in Bangladesh.";
+  "A leading garments buying house in Bangladesh — sourcing high-quality knitwear, woven, sweaters, accessories & home textile for retailers and wholesalers worldwide.";

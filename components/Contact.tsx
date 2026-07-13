@@ -75,7 +75,7 @@ export function Contact() {
               >
                 <div className="absolute inset-0 z-10 bg-transparent" aria-hidden="true" />
                 <iframe
-                  src="https://maps.google.com/maps?q=Dhaka,+%E5%8F%B7%E8%B7%AFGround+Floor.%E4%B8%80%E6%A5%BC%EF%BC%8CHouse-357%E6%88%BF%EF%BC%8CRoad%E4%B9%90%E6%80%9D%E8%9C%80-%E9%BA%BB%E8%BE%A3%E9%A6%99%E9%94%85%26%E9%B8%A1%E5%85%AC%E7%85%B2%E9%82%AE%E6%94%BF%E7%BC%96%E7%A0%81:+1206&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                  src="https://maps.google.com/maps?q=House+142,+Road+11,+Avenue+5,+Mirpur+DOHS,+Dhaka+1216,+Bangladesh&t=&z=16&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="220"
                   style={{ border: 0 }}

@@ -29,8 +29,8 @@ export function About() {
           <div className="relative pb-6">
             <Reveal className="lg:pr-16">
               <ContentMedia
-                src="nova-ss-trading-team-reviewing-samples"
-                alt="Nova SS Trading team reviewing fabric & trim samples on a studio table"
+                src="products/categories/kidswear-1.jpg"
+                alt="Kidswear production — teal tracksuit sets from our factory network"
                 aspect="aspect-[4/5]"
               />
             </Reveal>
