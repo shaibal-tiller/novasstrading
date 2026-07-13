@@ -1,10 +1,12 @@
 import { profiles } from "@/lib/content";
 import { Reveal } from "./Reveal";
+import { SectionParticles } from "./SectionParticles";
 
 export function Profiles() {
   return (
     <section id="profiles" className="section-wrap">
-      <div className="section-card section-card--light">
+      <div className="section-card section-card--light section-card--particled">
+        <SectionParticles seed={12} />
         <div className="max-w-2xl">
           <p className="eyebrow">{profiles.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{profiles.title}</h2>

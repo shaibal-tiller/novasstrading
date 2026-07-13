@@ -1,10 +1,12 @@
 import { hero } from "@/lib/content";
 import { HeroCollage } from "./HeroCollage";
+import { SectionParticles } from "./SectionParticles";
 
 export function Hero() {
   return (
     <section id="home" className="section-wrap pt-[5.75rem]">
-      <div className="section-card section-card--cream relative overflow-hidden">
+      <div className="section-card section-card--cream relative overflow-hidden section-card--particled">
+        <SectionParticles seed={1} />
         {/* ambient warp lines */}
         <div
           aria-hidden

@@ -1,11 +1,13 @@
 import { compliance } from "@/lib/content";
 import { ContentMedia } from "./ContentMedia";
 import { Reveal } from "./Reveal";
+import { SectionParticles } from "./SectionParticles";
 
 export function Compliance() {
   return (
     <section id="compliance" className="section-wrap">
-      <div className="section-card section-card--light">
+      <div className="section-card section-card--light section-card--particled">
+        <SectionParticles seed={10} />
         <div className="max-w-2xl">
           <p className="eyebrow">{compliance.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{compliance.title}</h2>

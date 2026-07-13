@@ -64,6 +64,32 @@
     border-radius: var(--card-radius);
     padding: clamp(2.75rem, 6vw, 6rem) clamp(1.5rem, 5vw, 5rem);
   }
+  /* Sections hosting ambient thread particles: content stays above them */
+  .section-card--particled {
+    position: relative;
+  }
+  .section-card--particled > :not(.section-particles) {
+    position: relative;
+    z-index: 1;
+  }
+  .section-particles {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .section-particles span {
+    position: absolute;
+    bottom: -3rem;
+    border-radius: 999px;
+    opacity: 0;
+    animation-name: thread-drift;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+
   .section-card--cream {
     background-color: #efe7dd;
   }
@@ -192,6 +218,25 @@
   .reveal.is-visible {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Upward drift for ambient fabric-thread particles */
+@keyframes thread-drift {
+  0% {
+    transform: translateY(0) rotate(var(--rot, 0deg));
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(calc(-1 * var(--rise, 18rem)))
+      rotate(calc(var(--rot, 0deg) + 45deg));
+    opacity: 0;
   }
 }
 

@@ -1,8 +1,10 @@
 import { footerBlurb, nav, site } from "@/lib/content";
+import { SectionParticles } from "./SectionParticles";
 
 export function Footer() {
   return (
-    <footer className="bg-ivory-deep text-ink">
+    <footer className="relative overflow-hidden bg-ivory-deep text-ink section-card--particled">
+      <SectionParticles seed={14} count={8} />
       <div className="shell py-16">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1.2fr]">
           <div>

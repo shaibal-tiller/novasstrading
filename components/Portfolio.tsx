@@ -6,6 +6,7 @@ import { blurData } from "@/lib/blurData";
 import { portfolio } from "@/lib/content";
 import { clsx } from "@/lib/utils";
 import { Reveal } from "./Reveal";
+import { SectionParticles } from "./SectionParticles";
 
 export function Portfolio() {
   const [active, setActive] = useState(portfolio.tabs[0].key);
@@ -53,7 +54,8 @@ export function Portfolio() {
 
   return (
     <section id="portfolio" className="section-wrap">
-      <div className="section-card section-card--light">
+      <div className="section-card section-card--light section-card--particled">
+        <SectionParticles seed={6} />
         <div className="max-w-2xl">
           <p className="eyebrow">{portfolio.eyebrow}</p>
           <h2 className="display-lg mt-5 text-ink">{portfolio.title}</h2>

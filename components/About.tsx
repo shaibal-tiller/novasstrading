@@ -1,11 +1,13 @@
 import { about } from "@/lib/content";
 import { ContentMedia } from "./ContentMedia";
 import { Reveal } from "./Reveal";
+import { SectionParticles } from "./SectionParticles";
 
 export function About() {
   return (
     <section id="about" className="section-wrap">
-      <div className="section-card section-card--light">
+      <div className="section-card section-card--light section-card--particled">
+        <SectionParticles seed={2} />
         <div className="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
           <Reveal className="lg:sticky lg:top-28 lg:self-start">
             <p className="eyebrow">{about.eyebrow}</p>
