@@ -118,6 +118,7 @@ const jsonLd = {
       description: site.description,
       email: site.email,
       telephone: site.phone,
+      sameAs: [site.social.linkedin],
       address: {
         "@type": "PostalAddress",
         streetAddress: site.address.street,

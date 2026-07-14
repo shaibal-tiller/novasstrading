@@ -14,6 +14,10 @@ export const site = {
   email: "info@novasstrading.com",
   phone: "+880 1683-809975",
   phoneHref: "+8801683809975",
+  // wa.me requires the number in international format, digits only.
+  whatsapp: "8801683809975",
+  whatsappUrl:
+    "https://wa.me/8801683809975?text=Hello%20Nova%20SS%20Trading%2C%20I%20would%20like%20to%20enquire%20about%20your%20garments%20sourcing%20services.",
   address: {
     street: "Road #5, House No #357, Baridhara DOHS",
     city: "Dhaka",
@@ -23,8 +27,7 @@ export const site = {
     mapUrl: "https://maps.app.goo.gl/Gh1gSDdGhawUp8HN7",
   },
   social: {
-    linkedin: "#",
-    instagram: "#",
+    linkedin: "https://www.linkedin.com/company/nova-ss-trading/",
   },
 } as const;
 
@@ -556,7 +559,8 @@ export const contact = {
   intro:
     "Send us your garments sourcing specs, tech packs, or product inquiry and receive details within 24 hours.",
   cards: [
-    { label: "Call / WhatsApp", value: site.phone, href: `tel:${site.phoneHref}` },
+    { label: "Call us", value: site.phone, href: `tel:${site.phoneHref}` },
+    { label: "WhatsApp", value: site.phone, href: site.whatsappUrl },
     { label: "E-mail address", value: site.email, href: `mailto:${site.email}` },
     { label: "Office address", value: site.address.full, href: site.address.mapUrl },
   ],

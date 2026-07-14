@@ -52,6 +52,17 @@ export function Footer() {
               </li>
               <li>
                 <a
+                  href={site.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 transition-colors hover:text-brass-dark"
+                >
+                  <WhatsAppIcon />
+                  WhatsApp
+                </a>
+              </li>
+              <li>
+                <a
                   href={`mailto:${site.email}`}
                   className="transition-colors hover:text-brass-dark"
                 >
@@ -72,7 +83,9 @@ export function Footer() {
           <div className="flex gap-3">
             <a
               href={site.social.linkedin}
-              aria-label="LinkedIn"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${site.name} on LinkedIn`}
               className="grid h-9 w-9 place-items-center rounded-full border border-ink/20 text-ink/70 transition-colors hover:border-brass hover:text-brass-dark"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -80,19 +93,25 @@ export function Footer() {
               </svg>
             </a>
             <a
-              href={site.social.instagram}
-              aria-label="Instagram"
+              href={site.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Message ${site.name} on WhatsApp`}
               className="grid h-9 w-9 place-items-center rounded-full border border-ink/20 text-ink/70 transition-colors hover:border-brass hover:text-brass-dark"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" strokeWidth="1.6" />
-                <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.6" />
-                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-              </svg>
+              <WhatsAppIcon />
             </a>
           </div>
         </div>
       </div>
     </footer>
+  );
+}
+
+function WhatsAppIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.87 9.87 0 004.79 1.22h.01c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0012.04 2zm0 18.15h-.01a8.2 8.2 0 01-4.18-1.15l-.3-.18-3.11.82.83-3.04-.2-.31a8.18 8.18 0 01-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24a8.19 8.19 0 015.82 2.42 8.18 8.18 0 012.41 5.83c0 4.54-3.69 8.23-8.24 8.23zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.15.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.44.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.44-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.16 0-.43.06-.65.31-.23.25-.86.84-.86 2.05s.88 2.38 1 2.54c.12.17 1.73 2.65 4.2 3.71.59.25 1.04.4 1.4.52.59.18 1.12.16 1.54.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.08.15-1.18-.06-.11-.23-.17-.48-.29z" />
+    </svg>
   );
 }
