@@ -40,9 +40,9 @@ export const nav = [
 ] as const;
 
 export const hero = {
-  eyebrow: "A Leading Garments Buying House in Bangladesh",
-  titlePrefix: "Sourcing high-quality garments across",
-  title: "knitwear, woven, sweaters, accessories & home textile",
+  eyebrow: "Bangladesh's Premier Garments Buying House",
+  companyName: "Nova SS Trading",
+  tagline: "Where Quality Meets Global Fashion.",
   body: "We source from trusted manufacturers in Bangladesh and deliver to retailers and wholesalers worldwide — superior-quality garments at competitive prices, with the highest standards of professionalism and ethics.",
   primaryCta: { label: "Explore our products", href: "#products" },
   secondaryCta: { label: "Our services", href: "#sourcing" },
@@ -361,7 +361,29 @@ export const sourcing = {
   eyebrow: "Our Services",
   title: "End-to-end buying house services",
   intro:
-    "From first tech pack to final delivery — we manage sourcing, development, production and export so every buyer enjoys a seamless, single-window experience.",
+    "We also can ensure you various aspects to meet your manufacturing need according to your requirements.",
+  pillars: [
+    {
+      title: "Quick Service",
+      icon: "clock",
+      body: "Rapid response times and fast turnaround at every stage of the sourcing process.",
+    },
+    {
+      title: "Best Quality",
+      icon: "thumb",
+      body: "Rigorous quality checks ensure every garment meets international retail standards.",
+    },
+    {
+      title: "Communication",
+      icon: "check",
+      body: "Transparent, proactive updates keep buyers informed at every production milestone.",
+    },
+    {
+      title: "Problem Solving",
+      icon: "gear",
+      body: "Our experienced team resolves sourcing, production and logistics challenges efficiently.",
+    },
+  ],
   services: [
     {
       title: "Product Sourcing",
@@ -413,49 +435,45 @@ export const sourcing = {
 
 export const process = {
   eyebrow: "How We Work",
-  title: "Our structured working process",
+  title: "Our working process",
   intro:
-    "Eight stages of rigorous, transparent, and efficient buying-house workflow.",
+    "Six transparent stages — from sourcing to shipment — ensuring every order meets our clients' requirements.",
   steps: [
     {
       n: "01",
-      title: "Requirement Analysis",
-      body: "We start by understanding the client's exact needs — product type, design, quantity, fabric and budget.",
+      icon: "sourcing",
+      title: "Sourcing",
+      body: "We have a network of trusted manufacturers from whom we source high-quality garments that meet our clients' requirements.",
     },
     {
       n: "02",
-      title: "Supplier & Fabric Sourcing",
-      body: "We engage trusted manufacturers and suppliers, selecting premium fabrics and dependable production partners.",
+      icon: "quality",
+      title: "Quality Control",
+      body: "Our experienced quality control team ensures that all garments meet the required standards before shipping.",
     },
     {
       n: "03",
-      title: "Sampling & Development",
-      body: "Samples are built to client specifications, refining design, fit and material quality before bulk.",
+      icon: "design",
+      title: "Design and Development",
+      body: "We have a team of experienced designers who can help clients develop new designs or modify existing ones.",
     },
     {
       n: "04",
-      title: "Production Planning & Monitoring",
-      body: "We schedule production and monitor each stage — cutting, stitching, finishing — for tight quality control and on-time output.",
+      icon: "compliance",
+      title: "Compliance",
+      body: "We ensure that all manufacturers we work with comply with international labour laws and ethical standards. Most of our factories are Oekotex and BSCI Certified.",
     },
     {
       n: "05",
-      title: "Quality Inspection",
-      body: "Every batch passes rigorous checks: fabric inspection, stitching accuracy and final product approval.",
+      icon: "packing",
+      title: "Packing",
+      body: "Only approved goods are packed and the buyer is assured of receiving quality merchandise. All packing instructions of the buyer are fully respected.",
     },
     {
       n: "06",
-      title: "Packing & Logistics",
-      body: "Goods are packed and prepared for shipment following client packaging instructions and export rules.",
-    },
-    {
-      n: "07",
-      title: "Shipment & Delivery",
-      body: "We manage all logistics and shipping so products arrive at global destinations safely and on time.",
-    },
-    {
-      n: "08",
-      title: "After-Sales Support",
-      body: "Our relationship continues after delivery — support, issue resolution and feedback for continuous improvement.",
+      icon: "shipment",
+      title: "Shipment / Cargo Handling",
+      body: "All shipping documents are reviewed and verified as per the buyer's instruction. Cargo is handled by a reputable forwarder, ensuring correct ETD and ETA of vessels — because on-time delivery is as important to us as it is to the buyer.",
     },
   ],
 };

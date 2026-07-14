@@ -1,6 +1,7 @@
 import { sourcing } from "@/lib/content";
 import { PillList } from "./PillList";
 import { Reveal } from "./Reveal";
+import { ServicePillars } from "./ServicePillars";
 
 export function Sourcing() {
   return (
@@ -12,7 +13,10 @@ export function Sourcing() {
           <p className="lede mt-5">{sourcing.intro}</p>
         </div>
 
-        {/* Services */}
+        {/* ── Service Pillars infographic (Quick Service / Best Quality / Communication / Problem Solving) ── */}
+        <ServicePillars />
+
+        {/* ── Detailed service cards ── */}
         <div className="mt-14 grid gap-px overflow-hidden rounded-sm border border-ink/10 bg-ink/10 sm:grid-cols-2 lg:grid-cols-4">
           {sourcing.services.map((s, i) => (
             <Reveal
