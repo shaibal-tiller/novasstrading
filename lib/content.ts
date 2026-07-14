@@ -387,38 +387,41 @@ export const sourcing = {
       body: "Our experienced team resolves sourcing, production and logistics challenges efficiently.",
     },
   ],
+  // All eight services are the client's own (template.pdf, "Our Services").
+  // Bodies are kept to a single tight line so the grid sits beside the
+  // checklist on one screen.
   services: [
     {
       title: "Product Sourcing",
-      body: "We connect clients with the finest manufacturers in Bangladesh, sourcing a wide range of garments to international standards, with access to premium fabrics, on-trend designs and competitive pricing.",
+      body: "Direct access to Bangladesh's finest factories — premium fabrics, on-trend design, competitive pricing.",
     },
     {
-      title: "Sampling & Product Development",
-      body: "Our design and development team works closely with factories to build accurate samples, refine specifications and make sure design, fit and fabric quality meet every client expectation.",
+      title: "Sampling & Development",
+      body: "Accurate samples built with the factory, refined until design, fit and fabric are right.",
     },
     {
       title: "Production Monitoring",
-      body: "We supervise production at every stage — from cutting and stitching to finishing — enforcing strict quality standards, minimising defects and protecting delivery dates.",
+      body: "Supervision from cutting to finishing — fewer defects, delivery dates protected.",
     },
     {
-      title: "Compliance & Ethical Practice",
-      body: "We partner only with factories that uphold safe working conditions, fair labour practices and environmental responsibility.",
+      title: "Compliance & Ethics",
+      body: "Only factories with safe conditions, fair labour and environmental responsibility.",
     },
     {
-      title: "Shipment & Export Support",
-      body: "From packaging to shipping, we handle logistics, documentation and customs so your products reach global destinations efficiently and securely.",
+      title: "Shipment & Export",
+      body: "Packing, logistics, documentation and customs handled through to global delivery.",
     },
     {
-      title: "Custom & Private-Label Solutions",
-      body: "Tailored manufacturing for clients seeking unique designs, branding or private-label apparel — helping businesses build distinctive collections.",
+      title: "Custom & Private Label",
+      body: "Bespoke design, branding and private-label programmes for distinctive collections.",
     },
     {
-      title: "Trend Analysis & Market Insight",
-      body: "We share market insight, fashion-trend updates and competitive analysis, helping clients make informed sourcing decisions and stay ahead.",
+      title: "Trend & Market Insight",
+      body: "Fashion-trend updates and competitive analysis to keep your sourcing ahead.",
     },
     {
-      title: "After-Sales Support & Client Care",
-      body: "We sustain long-term relationships with responsive after-sales support, quick issue resolution and continuous improvement based on client feedback.",
+      title: "After-Sales Support",
+      body: "Responsive aftercare, quick issue resolution and continuous improvement.",
     },
   ],
   checklistLabel: "We also ensure",
