@@ -74,6 +74,14 @@
     overflow: hidden;
     pointer-events: none;
   }
+  /* Parallax depth layers — JS drives their transform on scroll, while each
+     particle inside keeps its own perpetual CSS drift. */
+  .page-particles__layer {
+    position: absolute;
+    /* Overscan top & bottom so a scroll surge never exposes a bare edge. */
+    inset: -35vh 0;
+    will-change: transform;
+  }
   .page-particles span {
     position: absolute;
     bottom: -8vh;
