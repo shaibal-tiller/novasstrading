@@ -19,12 +19,13 @@ export function Hero() {
           {/* Copy */}
           <div className="animate-fade-up">
             <p className="eyebrow">{hero.eyebrow}</p>
-            <h1 className="display-xl mt-6 text-ink">
-              <span className="mb-3 block font-sans text-2xl font-normal leading-snug tracking-normal text-ink-muted sm:text-3xl lg:text-4xl">
-                {hero.titlePrefix}
-              </span>
-              {hero.title}
+            <h1 className="display-xl mt-6 text-ink leading-[1.1]">
+              {hero.companyName}
+              <span className="text-brass-dark">.</span>
             </h1>
+            <p className="mt-4 font-display text-xl font-light italic tracking-wide text-ink-muted sm:text-2xl">
+              {hero.tagline}
+            </p>
             <p className="lede mt-6 max-w-xl">{hero.body}</p>
             <div className="mt-9 flex flex-wrap gap-3">
               <a href={hero.primaryCta.href} className="btn btn-primary">
