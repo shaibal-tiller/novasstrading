@@ -1,17 +1,72 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { blurData } from "@/lib/blurData";
 import { portfolio } from "@/lib/content";
 import { clsx } from "@/lib/utils";
 import { Reveal } from "./Reveal";
 
+/** Rows of photos shown before the grid asks to be expanded. */
+const COLLAPSED_ROWS = 2;
+
 export function Portfolio() {
   const [active, setActive] = useState(portfolio.tabs[0].key);
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  // Measured from the live grid so "two rows" holds at every breakpoint,
+  // where the column count differs (2 / 3 / 4).
+  const [metrics, setMetrics] = useState({
+    perRow: 0,
+    collapsedHeight: 0,
+    fullHeight: 0,
+  });
+  const gridRef = useRef<HTMLDivElement>(null);
+  const gridTopRef = useRef<HTMLDivElement>(null);
+
   const tab = portfolio.tabs.find((t) => t.key === active) ?? portfolio.tabs[0];
   const photos = tab.photos;
+
+  const visibleCount =
+    metrics.perRow > 0 ? metrics.perRow * COLLAPSED_ROWS : photos.length;
+  const isOverflowing = metrics.perRow > 0 && photos.length > visibleCount;
+  const hiddenCount = Math.max(0, photos.length - visibleCount);
+  const isCollapsed = isOverflowing && !expanded;
+
+  // Measure how many cards fit per row and where row two ends. Re-runs on tab
+  // switch (photo counts differ) and on resize (column count changes).
+  useLayoutEffect(() => {
+    const grid = gridRef.current;
+    if (!grid) return;
+
+    const measure = () => {
+      const cards = Array.from(grid.children) as HTMLElement[];
+      if (cards.length === 0) return;
+
+      // offsetTop reflects layout position only. getBoundingClientRect would
+      // fold in the cards' staggered fade-up transforms and mis-count the row.
+      const firstTop = cards[0].offsetTop;
+      const perRow =
+        cards.filter((c) => c.offsetTop === firstTop).length || 1;
+
+      const lastIdx = Math.min(perRow * COLLAPSED_ROWS, cards.length) - 1;
+      const last = cards[lastIdx];
+      const collapsedHeight = last.offsetTop + last.offsetHeight;
+
+      setMetrics({ perRow, collapsedHeight, fullHeight: grid.scrollHeight });
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(grid);
+    return () => ro.disconnect();
+  }, [tab.key]);
 
   const close = useCallback(() => setLightbox(null), []);
   const step = useCallback(
@@ -33,6 +88,25 @@ export function Portfolio() {
       });
     });
   }, [lightbox, photos]);
+
+  // Collapsing from deep in an expanded grid would leave the viewport stranded
+  // below the section, so pull the user back to the top of the photos.
+  const handleToggle = useCallback(() => {
+    setExpanded((wasExpanded) => {
+      if (wasExpanded) {
+        requestAnimationFrame(() =>
+          gridTopRef.current?.scrollIntoView({
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+              .matches
+              ? "auto"
+              : "smooth",
+            block: "start",
+          }),
+        );
+      }
+      return !wasExpanded;
+    });
+  }, []);
 
   // Keyboard controls + scroll lock while the lightbox is open
   useEffect(() => {
@@ -74,6 +148,7 @@ export function Portfolio() {
               onClick={() => {
                 setActive(t.key);
                 setLightbox(null);
+                setExpanded(false);
               }}
               className={clsx(
                 "rounded-full border px-6 py-2.5 font-sans text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-300",
@@ -104,52 +179,108 @@ export function Portfolio() {
           ))}
         </ul>
 
-        {/* Photo grid */}
+        {/* Photo grid — clamped to two rows until expanded */}
+        <div ref={gridTopRef} className="scroll-mt-28" />
         <div
-          key={`grid-${tab.key}`}
-          className="mt-10 grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+          className="relative mt-10 overflow-hidden transition-[max-height] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          style={{
+            maxHeight: !isOverflowing
+              ? undefined
+              : expanded
+                ? metrics.fullHeight
+                : metrics.collapsedHeight,
+          }}
         >
-          {photos.map((p, i) => (
-            <button
-              key={p.src}
-              type="button"
-              onClick={() => setLightbox(i)}
-              aria-label={`View ${p.alt} full screen`}
-              className="group animate-fade-up relative overflow-hidden rounded-sm border border-ink/5 bg-ivory text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
-              style={{ animationDelay: `${i * 45}ms` }}
-            >
-              <div className="relative aspect-[3/4] w-full">
-                <Image
-                  src={`/assets/${p.src}`}
-                  alt={p.alt}
-                  fill
-                  loading="lazy"
-                  placeholder={blurData[p.src] ? "blur" : "empty"}
-                  blurDataURL={blurData[p.src]}
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                />
-              </div>
+          <div
+            key={`grid-${tab.key}`}
+            ref={gridRef}
+            className="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+          >
+            {photos.map((p, i) => {
+              // Cards below the fold are hidden from keyboard & AT while folded.
+              const isHidden = isCollapsed && i >= visibleCount;
+              return (
+                <button
+                  key={p.src}
+                  type="button"
+                  onClick={() => setLightbox(i)}
+                  aria-label={`View ${p.alt} full screen`}
+                  tabIndex={isHidden ? -1 : undefined}
+                  aria-hidden={isHidden || undefined}
+                  className="group animate-fade-up relative overflow-hidden rounded-sm border border-ink/5 bg-ivory text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+                  style={{ animationDelay: `${(i % 8) * 45}ms` }}
+                >
+                  <div className="relative aspect-[3/4] w-full">
+                    <Image
+                      src={`/assets/${p.src}`}
+                      alt={p.alt}
+                      fill
+                      loading="lazy"
+                      placeholder={blurData[p.src] ? "blur" : "empty"}
+                      blurDataURL={blurData[p.src]}
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                    />
+                  </div>
 
-              {/* Hover veil with centred + */}
-              <span
-                aria-hidden
-                className="absolute inset-0 grid place-items-center bg-ink/0 transition-colors duration-300 group-hover:bg-ink/35 group-focus-visible:bg-ink/35"
-              >
-                <span className="grid h-14 w-14 scale-75 place-items-center rounded-full border border-ivory/60 bg-ivory/15 text-ivory opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100">
-                  <PlusIcon />
-                </span>
-              </span>
+                  {/* Hover veil with centred + */}
+                  <span
+                    aria-hidden
+                    className="absolute inset-0 grid place-items-center bg-ink/0 transition-colors duration-300 group-hover:bg-ink/35 group-focus-visible:bg-ink/35"
+                  >
+                    <span className="grid h-14 w-14 scale-75 place-items-center rounded-full border border-ivory/60 bg-ivory/15 text-ivory opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100">
+                      <PlusIcon />
+                    </span>
+                  </span>
 
-              <span
-                aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-ink/70 to-transparent p-3 pt-8 text-xs font-medium text-ivory opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
-              >
-                {p.alt.split("— ")[1] ?? p.alt}
-              </span>
-            </button>
-          ))}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-ink/70 to-transparent p-3 pt-8 text-xs font-medium text-ivory opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+                  >
+                    {p.alt.split("— ")[1] ?? p.alt}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Soft fade at the fold, hinting there is more below */}
+          <div
+            aria-hidden
+            className={clsx(
+              "pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#f8f5ef] via-[#f8f5ef]/80 to-transparent transition-opacity duration-500",
+              isCollapsed ? "opacity-100" : "opacity-0",
+            )}
+          />
         </div>
+
+        {/* Expand / collapse control */}
+        {isOverflowing && (
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <button
+              type="button"
+              onClick={handleToggle}
+              aria-expanded={expanded}
+              className="group inline-flex items-center gap-2.5 rounded-full border border-ink/15 bg-canvas px-7 py-3 font-sans text-sm font-semibold uppercase tracking-[0.08em] text-ink transition-all duration-300 hover:border-brass hover:text-brass-dark hover:shadow-[0_12px_28px_-16px_rgba(176,138,79,0.8)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+            >
+              {expanded ? "Show fewer" : `Show all ${photos.length} styles`}
+              <ChevronIcon
+                className={clsx(
+                  "transition-transform duration-500 ease-out",
+                  expanded ? "rotate-180" : "translate-y-px group-hover:translate-y-1",
+                )}
+              />
+            </button>
+            <p
+              aria-live="polite"
+              className="font-mono text-[0.68rem] uppercase tracking-[0.15em] text-ink-muted"
+            >
+              {expanded
+                ? `Showing all ${photos.length}`
+                : `+${hiddenCount} more`}
+            </p>
+          </div>
+        )}
 
         <Reveal className="mt-12 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-ink/10 pt-6">
           <span className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-loom">
@@ -238,6 +369,27 @@ export function Portfolio() {
         </div>
       )}
     </section>
+  );
+}
+
+function ChevronIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      className={className}
+    >
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
