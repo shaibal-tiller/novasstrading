@@ -7,10 +7,7 @@ const nextConfig = {
     formats: ["image/avif", "image/webp"],
     // Cache optimized images for 31 days — sources are versioned by filename.
     minimumCacheTTL: 2678400,
-    // STANDBY=1 builds the static Exonhost mirror, which has no image
-    // optimizer — <Image> then emits plain /assets/... URLs.
-    unoptimized: process.env.STANDBY === "1",
-    // When you replace placeholders with real hosted media, whitelist the host here.
+    // When you add real hosted media, whitelist the host here.
     remotePatterns: [],
   },
   async headers() {
