@@ -65,14 +65,26 @@
     padding: clamp(2.75rem, 6vw, 6rem) clamp(1.5rem, 5vw, 5rem);
   }
   /* Page-wide ambient thread layer: floats across every section, gutter
-     and margin. Sits above the opaque section cards but below the header
-     (z-50) and the gallery lightbox (z-100). */
+     and margin. Painted ABOVE the opaque card backgrounds but BELOW all
+     content (see the content-lift rules just after), so grains appear
+     only in empty space — never over text, photos or infographics. */
   .page-particles {
     position: fixed;
     inset: 0;
-    z-index: 30;
+    z-index: 1;
     overflow: hidden;
     pointer-events: none;
+  }
+  /* Content-lift: everything inside a section card (and the footer) sits
+     one layer above the grains. Transparent gaps between elements still
+     let the grains show through — only painted pixels cover them. */
+  .section-card > * {
+    position: relative;
+    z-index: 2;
+  }
+  footer > * {
+    position: relative;
+    z-index: 2;
   }
   /* Parallax depth layers — JS drives their transform on scroll, while each
      particle inside keeps its own perpetual CSS drift. */
