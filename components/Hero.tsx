@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { hero } from "@/lib/content";
 import { HeroCollage } from "./HeroCollage";
 
@@ -18,6 +19,14 @@ export function Hero() {
         <div className="relative grid items-center gap-12 lg:grid-cols-[1.02fr_1fr] lg:gap-14">
           {/* Copy */}
           <div className="animate-fade-up">
+            <Image 
+              src="/logo.png" 
+              alt="Nova SS Trading Logo" 
+              width={88} 
+              height={88} 
+              className="mb-8 h-20 w-auto object-contain drop-shadow-sm" 
+              priority
+            />
             <p className="eyebrow">{hero.eyebrow}</p>
             <h1 className="display-xl mt-6 text-ink leading-[1.1]">
               {hero.companyName}

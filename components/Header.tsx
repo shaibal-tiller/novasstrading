@@ -105,16 +105,16 @@ export function Header() {
             <Image
               src="/logo.png"
               alt={`${site.name} logo`}
-              width={48}
-              height={48}
-              className="h-11 w-auto object-contain"
+              width={64}
+              height={64}
+              className="h-16 w-auto object-contain drop-shadow-sm"
               priority
             />
             <div className="flex flex-col leading-none">
-              <span className="font-display text-[1.05rem] font-semibold tracking-tight text-ink">
+              <span className="font-display text-xl font-bold tracking-tight text-ink">
                 NOVA SS<span className="text-brass">.</span>
               </span>
-              <span className="font-mono text-[0.55rem] uppercase tracking-[0.3em] text-ink-muted">
+              <span className="font-mono text-[0.65rem] uppercase tracking-[0.3em] text-ink-muted">
                 Trading
               </span>
             </div>
