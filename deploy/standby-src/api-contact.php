@@ -59,7 +59,11 @@ $hits[] = time();
 
 // ── Extract, clean, validate ────────────────────────────────────
 function clean_field($v): string {
-  return is_string($v) ? mb_substr(trim(strip_tags($v)), 0, 2000) : '';
+  if (!is_string($v)) return '';
+  // Strip CR/LF/NUL — prevents email header injection through any field
+  // that later reaches a mail() header or subject line.
+  $v = preg_replace('/[\r\n\0]+/', ' ', $v);
+  return mb_substr(trim(strip_tags($v)), 0, 2000);
 }
 $name    = clean_field($body['name'] ?? '');
 $email   = clean_field($body['email'] ?? '');
@@ -136,10 +140,17 @@ function send_brevo(string $to, string $toName, string $subj, string $html, stri
 $sent = send_brevo(CONTACT_EMAIL, SITE_NAME, $mailSubject, $adminHtml, $email, $name);
 
 if (!$sent) {
+  // Belt-and-braces: fields are already CR/LF-stripped by clean_field,
+  // but never let anything non-benign into a raw header. The Reply-To
+  // display name also drops <>"() to keep the address grammar intact.
+  $hdrSafe   = function (string $s): string {
+    return preg_replace('/[\r\n\0]+/', ' ', $s);
+  };
+  $replyName = preg_replace('/[<>"()\r\n\0]+/', ' ', $name);
   $headers = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n"
     . 'From: ' . SITE_NAME . ' <noreply@' . SITE_DOMAIN . ">\r\n"
-    . "Reply-To: {$name} <{$email}>\r\n";
-  $sent = @mail(CONTACT_EMAIL, $mailSubject, $adminHtml, $headers);
+    . 'Reply-To: ' . trim($replyName) . " <{$email}>\r\n";
+  $sent = @mail(CONTACT_EMAIL, $hdrSafe($mailSubject), $adminHtml, $headers);
 }
 
 if (!$sent) {
