@@ -173,34 +173,31 @@ export function Contact() {
           </div>
         </div>
 
-        {/* Full-width office location map */}
-        <div className="mt-12">
+        {/* Full-width office location map — the map itself is interactive
+            (pan / zoom); only the Open Map button leaves for Google Maps. */}
+        <div className="group relative mt-12 overflow-hidden rounded-2xl border border-ink/10">
+          <iframe
+            src="https://maps.google.com/maps?q=House+357,+Road+5,+Baridhara+DOHS,+Dhaka+1206,+Bangladesh&ftid=0x3755c7bc1a191521:0xb6d963abf029eb7b&t=&z=16&ie=UTF8&iwloc=&output=embed"
+            width="100%"
+            height="380"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="block h-[280px] w-full bg-stone/40 sm:h-[380px]"
+            title="Office Location Map"
+          />
           <a
             href={site.address.mapUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative block overflow-hidden rounded-2xl border border-ink/10 transition-colors hover:border-brass focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
-            aria-label="View office location on Google Maps"
+            aria-label="Open office location in Google Maps"
+            className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 rounded-full border border-ink/10 bg-ivory/95 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-ink shadow-[0_4px_12px_rgba(0,0,0,0.1)] backdrop-blur transition-transform duration-300 hover:scale-105 hover:text-brass-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
           >
-            <div className="absolute inset-0 z-10 bg-transparent" aria-hidden="true" />
-            <iframe
-              src="https://maps.google.com/maps?q=House+357,+Road+5,+Baridhara+DOHS,+Dhaka+1206,+Bangladesh&ftid=0x3755c7bc1a191521:0xb6d963abf029eb7b&t=&z=16&ie=UTF8&iwloc=&output=embed"
-              width="100%"
-              height="380"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="block h-[280px] w-full bg-stone/40 transition-all duration-500 sm:h-[380px]"
-              title="Office Location Map"
-              tabIndex={-1}
-            />
-            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 rounded-full border border-ink/10 bg-ivory/95 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-ink shadow-[0_4px_12px_rgba(0,0,0,0.1)] backdrop-blur transition-transform duration-300 group-hover:scale-105">
-              <span>Open Map</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 10L10 2M10 2H4.5M10 2V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
+            <span>Open Map</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M2 10L10 2M10 2H4.5M10 2V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </a>
         </div>
       </div>
