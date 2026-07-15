@@ -21,7 +21,27 @@ export function CoreValues() {
           <p className="lede mt-5">{coreValues.intro}</p>
         </div>
 
-        <div className="mt-14 grid gap-12 lg:grid-cols-[auto_1fr] lg:gap-16">
+        {/* Mobile: 2 × 4 compact grid (compass is hover-only, so omitted here) */}
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:hidden">
+          {coreValues.values.map((v, i) => (
+            <div
+              key={v.title}
+              className="rounded-xl border border-ink/10 bg-ivory/60 p-4"
+            >
+              <span className="font-mono text-[0.7rem] text-brass-dark">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h3 className="mt-1 font-display text-sm font-semibold leading-snug text-ink">
+                {v.title}
+              </h3>
+              <p className="mt-1.5 text-[0.75rem] leading-snug text-ink-muted">
+                {v.body}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-14 hidden gap-12 sm:grid lg:grid-cols-[auto_1fr] lg:gap-16">
           {/* ── The compass: needle swings to the value under the cursor ── */}
           <Reveal className="lg:sticky lg:top-28 lg:self-start">
             <Compass active={active} label={current?.title ?? null} />

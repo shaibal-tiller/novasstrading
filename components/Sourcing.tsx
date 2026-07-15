@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { sourcing } from "@/lib/content";
 import { Reveal } from "./Reveal";
 import { ServicePillars } from "./ServicePillars";
@@ -17,32 +18,32 @@ export function Sourcing() {
 
         {/* ── Service cards + "we also ensure" checklist, paired on one screen ── */}
         <div className="mt-14 grid gap-8 lg:grid-cols-[1.6fr_1fr] lg:items-start lg:gap-12">
-          {/* Detailed service cards */}
-          <div className="grid gap-px overflow-hidden rounded-sm border border-ink/10 bg-ink/10 sm:grid-cols-2">
+          {/* Detailed service cards. Mobile: 2 × 4 grid. */}
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-sm border border-ink/10 bg-ink/10">
             {sourcing.services.map((s, i) => (
               <Reveal
                 key={s.title}
                 as="article"
                 delay={(i % 2) * 60}
-                className="group bg-ivory p-5 transition-colors duration-300 hover:bg-canvas sm:p-6"
+                className="group bg-ivory p-3.5 transition-colors duration-300 hover:bg-canvas sm:p-6"
               >
                 <span className="font-mono text-xs text-brass-dark">
                   S{String(i + 1).padStart(2, "0")}
                 </span>
-                <h3 className="mt-3 font-display text-base font-medium leading-snug text-ink">
+                <h3 className="mt-2.5 font-display text-sm font-medium leading-snug text-ink sm:mt-3 sm:text-base">
                   {s.title}
                 </h3>
-                <p className="mt-2 text-[0.82rem] leading-relaxed text-ink-muted">
+                <p className="mt-1.5 line-clamp-4 text-[0.78rem] leading-relaxed text-ink-muted sm:mt-2 sm:line-clamp-none sm:text-[0.82rem]">
                   {s.body}
                 </p>
               </Reveal>
             ))}
           </div>
 
-          {/* Checklist — travels with the cards on tall screens */}
+          {/* Checklist — bullet panel on sm+ (travels with the cards on tall screens) */}
           <Reveal
             delay={80}
-            className="rounded-2xl border border-ink/10 bg-canvas p-7 lg:sticky lg:top-28"
+            className="hidden rounded-2xl border border-ink/10 bg-canvas p-7 sm:block lg:sticky lg:top-28"
           >
             <h3 className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-loom">
               {sourcing.checklistLabel}
@@ -62,6 +63,22 @@ export function Sourcing() {
               ))}
             </ul>
           </Reveal>
+
+          {/* Checklist — mobile: chips justified like a paragraph */}
+          <div className="sm:hidden">
+            <h3 className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-loom">
+              {sourcing.checklistLabel}
+            </h3>
+            <p className="mt-4 text-justify leading-loose [text-align-last:left]">
+              {sourcing.checklist.map((item) => (
+                <Fragment key={item}>
+                  <span className="inline-block rounded-full border border-ink/15 bg-ivory px-3 py-1 text-[0.72rem] font-medium text-ink">
+                    {item}
+                  </span>{" "}
+                </Fragment>
+              ))}
+            </p>
+          </div>
         </div>
       </div>
     </section>

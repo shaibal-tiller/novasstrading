@@ -83,11 +83,11 @@ export function ServicePillars() {
   const positions: Pos[] = ["top", "right", "bottom", "left"];
 
   return (
-    <Reveal className="mt-16 rounded-2xl border border-ink/10 bg-white p-8 shadow-sm lg:p-12">
+    <Reveal className="mt-16 rounded-2xl border border-ink/10 bg-white p-5 shadow-sm sm:p-8 lg:p-12">
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
 
-        {/* Left — orbit infographic */}
-        <div className="flex flex-col items-center">
+        {/* Left — orbit infographic (hidden on mobile; the 2×2 cards carry it) */}
+        <div className="hidden flex-col items-center sm:flex">
           <OrbitRing>
             {sourcing.pillars.map((p, i) => (
               <OrbitBubble
@@ -99,22 +99,24 @@ export function ServicePillars() {
           </OrbitRing>
         </div>
 
-        {/* Right — pillar cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        {/* Right — pillar cards. Mobile: 2 × 2 compact grid. */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-5">
           {sourcing.pillars.map((p, i) => (
             <Reveal
               key={p.title}
               as="article"
               delay={i * 80}
-              className="group flex flex-col gap-3 rounded-xl border border-ink/10 bg-ivory p-6 transition-shadow duration-300 hover:shadow-md"
+              className="group flex flex-col gap-2.5 rounded-xl border border-ink/10 bg-ivory p-4 transition-shadow duration-300 hover:shadow-md sm:gap-3 sm:p-6"
             >
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-brass/15 text-brass-dark transition-colors duration-300 group-hover:bg-brass-dark group-hover:text-ivory">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brass/15 text-brass-dark transition-colors duration-300 group-hover:bg-brass-dark group-hover:text-ivory sm:h-14 sm:w-14">
                 {pillarIcons[p.icon]}
               </div>
-              <h3 className="font-display text-base font-semibold text-ink">
+              <h3 className="font-display text-sm font-semibold leading-snug text-ink sm:text-base">
                 {p.title}
               </h3>
-              <p className="text-sm leading-relaxed text-ink-muted">{p.body}</p>
+              <p className="text-[0.8rem] leading-relaxed text-ink-muted sm:text-sm">
+                {p.body}
+              </p>
             </Reveal>
           ))}
         </div>

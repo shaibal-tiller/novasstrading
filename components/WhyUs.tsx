@@ -24,18 +24,24 @@ export function WhyUs() {
 
         <hr className="stitch my-12" />
 
-        <div className="grid gap-8 md:grid-cols-3">
+        {/* Mobile: 2 × 3 compact grid (icon + title only). Tablet/desktop unchanged. */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-1 sm:gap-8 md:grid-cols-3">
           {whyUs.reasons.map((r, i) => {
             const Icon = icons[i] ?? QualityIcon;
             return (
-              <Reveal key={r.title} as="article" delay={i * 80}>
-                <span className="grid h-12 w-12 place-items-center rounded-sm bg-loom/10 text-loom">
+              <Reveal
+                key={r.title}
+                as="article"
+                delay={i * 80}
+                className="rounded-xl border border-ink/10 bg-ivory/60 p-4 sm:border-0 sm:bg-transparent sm:p-0"
+              >
+                <span className="grid h-10 w-10 place-items-center rounded-sm bg-loom/10 text-loom sm:h-12 sm:w-12">
                   <Icon />
                 </span>
-                <h3 className="mt-5 font-display text-xl font-medium text-ink">
+                <h3 className="mt-3 font-display text-base font-medium leading-snug text-ink sm:mt-5 sm:text-xl">
                   {r.title}
                 </h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+                <p className="mt-3 hidden text-sm leading-relaxed text-ink-muted sm:block">
                   {r.body}
                 </p>
               </Reveal>

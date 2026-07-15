@@ -1,6 +1,13 @@
 import Image from "next/image";
 import { partners } from "@/lib/content";
 
+const MASK = {
+  maskImage:
+    "linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)",
+  WebkitMaskImage:
+    "linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)",
+} as const;
+
 export function Partners() {
   // Repeat the logo set so the marquee loop stays dense.
   const strip = Array.from({ length: 4 }, () => partners.logos).flat();
@@ -15,15 +22,8 @@ export function Partners() {
           <p className="lede mt-5">{partners.intro}</p>
         </div>
 
-        <div
-          className="relative mt-12 flex"
-          style={{
-            maskImage:
-              "linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)",
-            WebkitMaskImage:
-              "linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)",
-          }}
-        >
+        {/* Desktop / tablet: single strip */}
+        <div className="relative mt-12 hidden sm:flex" style={MASK}>
           <ul
             className="flex shrink-0 animate-marquee items-center gap-4 pr-4"
             aria-label="Client brands"
@@ -44,6 +44,31 @@ export function Partners() {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Mobile: two smaller strips scrolling in opposite directions */}
+        <div className="mt-8 space-y-3 sm:hidden" aria-label="Client brands">
+          {(["animate-marquee", "animate-marquee-reverse"] as const).map((anim) => (
+            <div key={anim} className="relative flex" style={MASK}>
+              <ul className={`flex shrink-0 items-center gap-3 pr-3 ${anim}`}>
+                {loop.map((logo, i) => (
+                  <li
+                    key={`${anim}-${logo.name}-${i}`}
+                    aria-hidden
+                    className="grid h-16 w-28 flex-shrink-0 place-items-center rounded-xl border border-ink/10 bg-canvas px-4"
+                  >
+                    <Image
+                      src={`/assets/${logo.src}`}
+                      alt=""
+                      width={96}
+                      height={40}
+                      className="max-h-9 w-auto object-contain"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
         <div className="mt-12 border-t border-ink/10 pt-8">

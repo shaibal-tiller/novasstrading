@@ -68,35 +68,36 @@ export function Process() {
           <p className="lede mt-5">{process.intro}</p>
         </div>
 
-        {/* 3 × 2 icon-card grid — matches client's process_flow layout */}
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {/* 3 × 2 icon-card grid — matches client's process_flow layout.
+            Mobile: 2 columns, compact cards. */}
+        <div className="mt-14 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
           {process.steps.map((step, i) => (
             <Reveal
               key={step.n}
               as="article"
               delay={i * 70}
-              className="group relative overflow-hidden rounded-2xl border border-ink/10 bg-white p-7 shadow-sm transition-shadow duration-300 hover:shadow-md"
+              className="group relative overflow-hidden rounded-2xl border border-ink/10 bg-white p-4 shadow-sm transition-shadow duration-300 hover:shadow-md sm:p-7"
             >
               {/* Step number watermark */}
               <span
-                className="absolute right-4 top-4 font-display text-6xl font-bold leading-none text-ink/5 select-none"
+                className="absolute right-3 top-2 font-display text-4xl font-bold leading-none text-ink/5 select-none sm:right-4 sm:top-4 sm:text-6xl"
                 aria-hidden
               >
                 {step.n}
               </span>
 
               {/* Icon */}
-              <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-brass/15 text-brass-dark transition-colors duration-300 group-hover:bg-brass-dark group-hover:text-ivory">
+              <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brass/15 text-brass-dark transition-colors duration-300 group-hover:bg-brass-dark group-hover:text-ivory sm:mb-5 sm:h-14 sm:w-14">
                 {icons[step.icon]}
               </div>
 
               {/* Title */}
-              <h3 className="font-display text-lg font-semibold text-ink">
+              <h3 className="font-display text-base font-semibold text-ink sm:text-lg">
                 {step.title}
               </h3>
 
               {/* Description */}
-              <p className="mt-2.5 text-sm leading-relaxed text-ink-muted">
+              <p className="mt-2 line-clamp-3 text-[0.82rem] leading-relaxed text-ink-muted sm:mt-2.5 sm:line-clamp-none sm:text-sm">
                 {step.body}
               </p>
 

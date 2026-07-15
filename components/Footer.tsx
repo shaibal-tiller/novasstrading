@@ -3,8 +3,8 @@ import { footerBlurb, nav, site } from "@/lib/content";
 export function Footer() {
   return (
     <footer className="bg-ivory-deep text-ink">
-      <div className="shell py-16">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1.2fr]">
+      <div className="shell py-10 sm:py-16">
+        <div className="grid gap-8 sm:gap-10 md:grid-cols-[1.4fr_1fr_1.2fr]">
           <div>
             <div className="flex flex-col leading-none">
               <span className="font-display text-xl font-semibold tracking-tight">
@@ -23,7 +23,7 @@ export function Footer() {
             <h2 className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-brass-dark">
               Quick links
             </h2>
-            <ul className="mt-4 space-y-2.5">
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:block sm:space-y-2.5">
               {nav.map((item) => (
                 <li key={item.href}>
                   <a

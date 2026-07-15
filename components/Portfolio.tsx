@@ -162,10 +162,10 @@ export function Portfolio() {
           ))}
         </div>
 
-        {/* Category pills */}
+        {/* Category pills — desktop/tablet: wrapped list */}
         <ul
           key={`cats-${tab.key}`}
-          className="mt-8 flex flex-wrap gap-2"
+          className="mt-8 hidden flex-wrap gap-2 sm:flex"
           aria-label={`${tab.label} categories`}
         >
           {tab.categories.map((c, i) => (
@@ -178,6 +178,25 @@ export function Portfolio() {
             </li>
           ))}
         </ul>
+
+        {/* Category pills — mobile: full-bleed infinite marquee */}
+        <div
+          key={`cats-m-${tab.key}`}
+          aria-label={`${tab.label} categories`}
+          className="mt-8 ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] w-screen overflow-hidden sm:hidden"
+        >
+          <ul className="flex w-max animate-marquee-cats gap-2">
+            {[...tab.categories, ...tab.categories].map((c, i) => (
+              <li
+                key={`${c}-${i}`}
+                aria-hidden={i >= tab.categories.length}
+                className="whitespace-nowrap rounded-sm border border-ink/10 bg-canvas px-3.5 py-1.5 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-ink-muted"
+              >
+                {c}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* Photo grid — clamped to two rows until expanded */}
         <div ref={gridTopRef} className="scroll-mt-28" />

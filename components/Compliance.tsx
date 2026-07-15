@@ -54,23 +54,28 @@ export function Compliance() {
               <h3 className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-loom">
                 Certifications & memberships
               </h3>
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              {/* Mobile: 3-across compact strip with smaller logos. */}
+              <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-4">
                 {compliance.certifications.map((c) => (
                   <div
                     key={c.name}
-                    className="rounded-sm border border-ink/10 bg-canvas p-4 text-center"
+                    className="rounded-sm border border-ink/10 bg-canvas p-2 text-center sm:p-4"
                   >
-                    <ContentMedia
-                      src={c.src}
-                      alt={`${c.name} membership badge`}
-                      kind="logo"
-                      aspect="aspect-[3/2]"
-                      sizes="160px"
-                    />
-                    <p className="mt-3 font-display text-base font-semibold text-ink">
+                    <div className="mx-auto max-w-[3.5rem] sm:max-w-none">
+                      <ContentMedia
+                        src={c.src}
+                        alt={`${c.name} membership badge`}
+                        kind="logo"
+                        aspect="aspect-[3/2]"
+                        sizes="160px"
+                      />
+                    </div>
+                    <p className="mt-2 font-display text-xs font-semibold text-ink sm:mt-3 sm:text-base">
                       {c.name}
                     </p>
-                    <p className="mt-0.5 text-xs text-ink-muted">{c.detail}</p>
+                    <p className="mt-0.5 hidden text-xs text-ink-muted sm:block">
+                      {c.detail}
+                    </p>
                   </div>
                 ))}
               </div>
