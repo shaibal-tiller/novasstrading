@@ -286,7 +286,7 @@ function buildAutoReply(name: string, subject: string): string {
     <div class="contact-block">
       <div class="contact-row" style="border-bottom:1px solid #e2e8f0;">
         <span class="c-label" style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;">📱 Phone / WhatsApp</span>
-        <span class="c-value"><a href="https://wa.me/8801683809975" style="color:#2563eb;font-size:15px;font-weight:700;text-decoration:none;">+880 1683-809975</a></span>
+        <span class="c-value"><a href="https://wa.me/8801351153898" style="color:#2563eb;font-size:15px;font-weight:700;text-decoration:none;">+880 1351-153898</a></span>
       </div>
       <div class="contact-row">
         <span class="c-label" style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;">✉️ Email</span>

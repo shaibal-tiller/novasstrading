@@ -12,12 +12,12 @@ export const site = {
   description:
     "Nova SS Trading is a leading garments buying house in Bangladesh, sourcing high-quality knitwear, woven, sweaters, accessories & home textile from trusted manufacturers for retailers and wholesalers worldwide.",
   email: "info@novasstrading.com",
-  phone: "+880 1683-809975",
-  phoneHref: "+8801683809975",
+  phone: "+880 1351-153898",
+  phoneHref: "+8801351153898",
   // wa.me requires the number in international format, digits only.
-  whatsapp: "8801683809975",
+  whatsapp: "8801351153898",
   whatsappUrl:
-    "https://wa.me/8801683809975?text=Hello%20Nova%20SS%20Trading%2C%20I%20would%20like%20to%20enquire%20about%20your%20garments%20sourcing%20services.",
+    "https://wa.me/8801351153898?text=Hello%20Nova%20SS%20Trading%2C%20I%20would%20like%20to%20enquire%20about%20your%20garments%20sourcing%20services.",
   address: {
     street: "Road #5, House No #357, Baridhara DOHS",
     city: "Dhaka",
