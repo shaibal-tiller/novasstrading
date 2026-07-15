@@ -50,8 +50,8 @@ export const hero = {
   primaryCta: { label: "Explore our products", href: "#products" },
   secondaryCta: { label: "Our services", href: "#sourcing" },
   stats: [
-    { v: "05", l: "Core product ranges" },
-    { v: "08", l: "Stage working process" },
+    { v: "5", l: "Core product ranges" },
+    { v: "8", l: "Stage working process" },
     { v: "24h", l: "Inquiry response" },
   ],
 };
@@ -193,13 +193,13 @@ export const products = {
 
 export const portfolio = {
   eyebrow: "Sourcing Portfolio",
-  title: "Woman, man & kids — every category covered",
+  title: "Women, Men & Kids — every category covered",
   intro:
     "Across our factory network we produce all major clothing categories to Western retail standards. A snapshot of recent developments and production follows.",
   tabs: [
     {
       key: "woman",
-      label: "Woman",
+      label: "Women",
       categories: [
         "Dresses",
         "T-Shirts | Sweatshirts",
@@ -224,7 +224,7 @@ export const portfolio = {
     },
     {
       key: "man",
-      label: "Man",
+      label: "Men",
       categories: [
         "Linen",
         "T-Shirts",
