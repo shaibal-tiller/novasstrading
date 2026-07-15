@@ -15,3 +15,7 @@ Products.zip
 # build artifacts
 /tsconfig.tsbuildinfo
 /NOVA_SS_TRADING_Website_Overview.pdf
+
+# standby build output
+/deploy/standby/
+/deploy/standby.zip
