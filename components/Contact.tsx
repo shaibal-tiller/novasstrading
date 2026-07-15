@@ -190,7 +190,7 @@ export function Contact() {
             (pan / zoom); only the Open Map button leaves for Google Maps. */}
         <div className="group relative mt-12 overflow-hidden rounded-2xl border border-ink/10">
           <iframe
-            src="https://maps.google.com/maps?q=House+357,+Road+5,+Baridhara+DOHS,+Dhaka+1206,+Bangladesh&ftid=0x3755c7bc1a191521:0xb6d963abf029eb7b&t=&z=16&ie=UTF8&iwloc=&output=embed"
+            src="https://maps.google.com/maps?q=Nova+SS+Trading,+House+357,+Road+5,+Baridhara+DOHS,+Dhaka,+Bangladesh&t=&z=16&ie=UTF8&iwloc=&output=embed"
             width="100%"
             height="380"
             style={{ border: 0 }}
