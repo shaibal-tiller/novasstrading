@@ -59,20 +59,23 @@ not a live mirror.
    existing nameservers with those two. (Propagates in minutes–hours.)
 
 ### 3b. DNS records
-Delete whatever Cloudflare imported for `@` and `www`, then add:
+Cloudflare imports the existing Exonhost zone (server IP `103.159.37.70`).
+Adjust it as follows:
 
-| Type | Name | Content | Proxy |
-|---|---|---|---|
-| A | `@` | `192.0.2.1` | 🟠 Proxied |
-| A | `www` | `192.0.2.1` | 🟠 Proxied |
-| A | `standby` | *Exonhost server IP* | ⚪ **DNS only** |
+| Record | Action | Proxy |
+|---|---|---|
+| A `@` → 103.159.37.70 | keep | 🟠 Proxied (Worker intercepts; IP doubles as emergency origin) |
+| CNAME `www` | keep | 🟠 Proxied |
+| A `standby` → 103.159.37.70 | **add** | ⚪ **DNS only** |
+| MX (copy exact value from Exonhost cPanel → Zone Editor) | **add** — the scan misses it; without it @novasstrading.com email breaks | DNS only |
+| CNAME `brevo1._domainkey`, `brevo2._domainkey` | keep | ⚪ **DNS only** (proxied DKIM fails) |
+| `mail`, `ftp`, `webmail`, `whm`, `webdisk`, `cpcalendars` | keep | ⚪ **DNS only** (not websites) |
+| SPF/TXT/SRV records | keep as imported | — |
 
 Notes:
-- `192.0.2.1` is a documentation-reserved dummy — the Worker intercepts
-  these hostnames before any origin is contacted, so the IP is never
-  used. It just needs a proxied record to exist.
 - `standby` **must stay grey-cloud (DNS only)**: the Worker fetches it as
   the fallback origin; proxying it would loop back into the Worker.
+- Add the MX **before** switching nameservers at the registrar.
 
 ### 3c. SSL + Exonhost certificate
 - Cloudflare → **SSL/TLS** → mode **Full (strict)**.
