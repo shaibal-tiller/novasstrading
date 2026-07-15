@@ -4,19 +4,22 @@ import { useState } from "react";
 import { contact, site } from "@/lib/content";
 import { clsx } from "@/lib/utils";
 
-type Status = "idle" | "submitting" | "success" | "error";
+type Status = "idle" | "submitting" | "success";
+type FormState = { status: Status; errorMsg?: string };
+
 
 export function Contact() {
-  const [status, setStatus] = useState<Status>("idle");
+  const [state, setState] = useState<FormState>({ status: "idle" });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setStatus("submitting");
+    setState({ status: "submitting" });
     const form = e.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
 
+    // Honeypot check (client-side fast-path)
     if (data.company_website) {
-      setStatus("success");
+      setState({ status: "success" });
       return;
     }
 
@@ -24,13 +27,24 @@ export function Contact() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          // Pass client-side metadata for enriched admin email
+          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "",
+          referrer:  typeof document  !== "undefined" ? document.referrer : "",
+        }),
       });
-      if (!res.ok) throw new Error("Request failed");
-      setStatus("success");
-      form.reset();
+
+      const json = (await res.json()) as { ok?: boolean; error?: string; message?: string };
+
+      if (res.ok && json.ok) {
+        setState({ status: "success" });
+        form.reset();
+      } else {
+        setState({ status: "idle", errorMsg: json.error ?? "Something went wrong. Please try again." });
+      }
     } catch {
-      setStatus("error");
+      setState({ status: "idle", errorMsg: "Network error. Please check your connection and try again." });
     }
   }
 
@@ -67,7 +81,7 @@ export function Contact() {
           </div>
 
           <div className="rounded-2xl border border-ink/10 bg-canvas p-6 sm:p-8">
-            {status === "success" ? (
+            {state.status === "success" ? (
               <div
                 role="status"
                 className="flex h-full min-h-[20rem] flex-col items-center justify-center text-center"
@@ -148,25 +162,24 @@ export function Contact() {
                   />
                 </div>
 
-                {status === "error" && (
-                  <p role="alert" className="text-sm text-brass-dark">
-                    Something went wrong. Please email{" "}
-                    <a href={`mailto:${site.email}`} className="underline">
+                {state.errorMsg && (
+                  <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+                    {state.errorMsg}{" "}
+                    <a href={`mailto:${site.email}`} className="underline font-semibold">
                       {site.email}
-                    </a>{" "}
-                    directly.
+                    </a>
                   </p>
                 )}
 
                 <button
                   type="submit"
-                  disabled={status === "submitting"}
+                  disabled={state.status === "submitting"}
                   className={clsx(
                     "btn btn-accent w-full sm:w-auto",
-                    status === "submitting" && "cursor-wait opacity-70",
+                    state.status === "submitting" && "cursor-wait opacity-70",
                   )}
                 >
-                  {status === "submitting" ? "Sending…" : "Submit inquiry"}
+                  {state.status === "submitting" ? "Sending…" : "Submit inquiry"}
                 </button>
               </form>
             )}
