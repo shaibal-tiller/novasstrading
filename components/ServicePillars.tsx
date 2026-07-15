@@ -56,24 +56,24 @@ function OrbitRing({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* Positions a pillar bubble on the orbit circle */
+/* Positions a pillar chip centred on the orbit's cardinal points. The chip
+   sizes to its own text, so the brass background always sits behind the
+   label — no white-on-white overflow, whatever the label length. */
 type Pos = "top" | "right" | "bottom" | "left";
 const positionMap: Record<Pos, string> = {
-  top:    "top-[-1.5rem] left-1/2 -translate-x-1/2",
-  right:  "right-[-1.5rem] top-1/2 -translate-y-1/2",
-  bottom: "bottom-[-1.5rem] left-1/2 -translate-x-1/2",
-  left:   "left-[-1.5rem] top-1/2 -translate-y-1/2",
+  top:    "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2",
+  right:  "right-0 top-1/2 translate-x-1/2 -translate-y-1/2",
+  bottom: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2",
+  left:   "left-0 top-1/2 -translate-x-1/2 -translate-y-1/2",
 };
 
 function OrbitBubble({ pos, label }: { pos: Pos; label: string }) {
   return (
     <div
-      className={`absolute ${positionMap[pos]} h-12 w-12 flex items-center justify-center rounded-full bg-brass-dark text-ivory shadow-lg ring-4 ring-brass/20`}
+      className={`absolute ${positionMap[pos]} flex max-w-[7rem] items-center justify-center rounded-full bg-brass-dark px-3.5 py-2 text-center shadow-lg ring-4 ring-brass/20`}
     >
-      <span className="font-display text-[0.55rem] font-bold uppercase tracking-wide text-center leading-tight px-1">
-        {label.split(" ").map((w, i) => (
-          <span key={i} className="block">{w}</span>
-        ))}
+      <span className="font-display text-[0.6rem] font-bold uppercase leading-tight tracking-wide text-ivory">
+        {label}
       </span>
     </div>
   );

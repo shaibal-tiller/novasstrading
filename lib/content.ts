@@ -372,7 +372,7 @@ export const sourcing = {
       body: "Rapid response times and fast turnaround at every stage of the sourcing process.",
     },
     {
-      title: "Best Quality",
+      title: "Strongest Quality",
       icon: "thumb",
       body: "Rigorous quality checks ensure every garment meets international retail standards.",
     },
