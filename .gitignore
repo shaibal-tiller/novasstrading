@@ -11,3 +11,7 @@ next-env.d.ts
 # local
 Products.zip
 .claude/settings.local.json
+
+# build artifacts
+/tsconfig.tsbuildinfo
+/NOVA_SS_TRADING_Website_Overview.pdf

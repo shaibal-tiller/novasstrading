@@ -44,7 +44,7 @@ export function Compliance() {
           <div>
             <Reveal>
               <ContentMedia
-                src="garment-quality-inspection"
+                src="garment-quality-inspection.jpg"
                 alt="QA officer inspecting garments / measuring fabric under inspection lights"
                 aspect="aspect-[4/3]"
               />

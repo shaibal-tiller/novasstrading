@@ -4,8 +4,8 @@ import { Reveal } from "./Reveal";
 import { LeadTimeTable } from "./LeadTimeTable";
 
 const placeholders = [
-  { src: "trims-accessories-flat-lay", alt: "Flat-lay of trims & accessories — buttons, zippers, woven labels, threads" },
-  { src: "premium-fabric-rolls-textures", alt: "Premium fabric rolls fanned to show knit, woven & denim textures" },
+  { src: "trims-accessories-flat-lay.jpg", alt: "Flat-lay of trims & accessories — buttons, zippers, woven labels, threads" },
+  { src: "premium-fabric-rolls-textures.jpg", alt: "Premium fabric rolls fanned to show knit, woven & denim textures" },
 ];
 
 export function Divisions() {

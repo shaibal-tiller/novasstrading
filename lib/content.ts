@@ -179,13 +179,13 @@ export const products = {
     {
       title: "Accessories",
       body: "Fashion accessories plus complete trims support — labels, tags, buttons, zippers and packaging.",
-      image: "trims-accessories-flat-lay.png",
+      image: "trims-accessories-flat-lay.jpg",
       alt: "Flat-lay of garment accessories and trims",
     },
     {
       title: "Home Textile",
       body: "Bedding, towels, kitchen linen and woven home-textile programs to buyer specification.",
-      image: "stacked-premium-fabric-rolls.png",
+      image: "stacked-premium-fabric-rolls.jpg",
       alt: "Stacked rolls of home-textile fabrics",
     },
   ],
