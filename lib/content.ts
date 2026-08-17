@@ -10,7 +10,7 @@ export const site = {
   tagline: "Garments Buying House — Bangladesh",
   url: "https://www.novasstrading.com",
   description:
-    "Nova SS Trading is a leading garments buying house in Bangladesh, sourcing high-quality knitwear, woven, sweaters, accessories & home textile from trusted manufacturers for retailers and wholesalers worldwide.",
+    "Nova SS Trading is a leading garments buying house in Bangladesh, sourcing high-quality knitwear, woven, sweaters, lingerie & accessories from trusted manufacturers for retailers and wholesalers worldwide.",
   email: "info@novasstrading.com",
   phone: "+880 1351-153898",
   phoneHref: "+8801351153898",
@@ -61,10 +61,10 @@ export const about = {
   title: "A trusted garments buying house in Bangladesh",
   body: [
     "Nova SS Trading is a leading garments buying house specialising in sourcing high-quality garments from manufacturers and delivering them to retailers and wholesalers. Our experienced team is dedicated to providing the best service to our clients — delivering superior-quality garments at competitive prices while maintaining the highest standards of professionalism and ethics.",
-    "We work with all kinds of garments and apparel across a product range of knitwear, woven, sweaters, accessories and home textile — always following the buyer's requirement. Acting as the bridge between international buyers and reliable local manufacturers, our team manages design, sampling, production monitoring and shipment support for a smooth, single-window experience.",
+    "We work with all kinds of garments and apparel across a product range of knitwear, woven, sweaters, lingerie and accessories — always following the buyer's requirement. Acting as the bridge between international buyers and reliable local manufacturers, our team manages design, sampling, production monitoring and shipment support for a smooth, single-window experience.",
   ],
   highlights: [
-    "Knitwear, woven, sweaters, accessories & home textile",
+    "Knitwear, woven, sweaters, lingerie & accessories",
     "Experienced merchandising, QA & production follow-up team",
     "Transparency, professionalism and on-time delivery",
   ],
@@ -156,7 +156,7 @@ export const products = {
   eyebrow: "Our Product Range",
   title: "Five core ranges, every buyer requirement",
   intro:
-    "We work with all kinds of garments and apparel — knitwear, woven, sweaters, accessories & home textile — always built to the buyer's requirement.",
+    "We work with all kinds of garments and apparel — knitwear, woven, sweaters, lingerie & accessories — always built to the buyer's requirement.",
   items: [
     {
       title: "Knitwear",
@@ -177,23 +177,23 @@ export const products = {
       alt: "Grey turtleneck sweater, front and back",
     },
     {
+      title: "Lingerie",
+      body: "Bras, bralettes and lace-trim intimates developed across a full range of colourways and constructions.",
+      image: "products/lingerie/lingerie-lace-balconette-bra-blush.png",
+      alt: "Lingerie — blush lace balconette bra",
+    },
+    {
       title: "Accessories",
       body: "Fashion accessories plus complete trims support — labels, tags, buttons, zippers and packaging.",
       image: "trims-accessories-flat-lay.jpg",
       alt: "Flat-lay of garment accessories and trims",
-    },
-    {
-      title: "Home Textile",
-      body: "Bedding, towels, kitchen linen and woven home-textile programs to buyer specification.",
-      image: "stacked-premium-fabric-rolls.jpg",
-      alt: "Stacked rolls of home-textile fabrics",
     },
   ],
 };
 
 export const portfolio = {
   eyebrow: "Sourcing Portfolio",
-  title: "Women, Men & Kids — every category covered",
+  title: "Women, Men, Kids & Lingerie — every category covered",
   intro:
     "Across our factory network we produce all major clothing categories to Western retail standards. A snapshot of recent developments and production follows.",
   tabs: [
@@ -220,6 +220,11 @@ export const portfolio = {
         { src: "products/categories/knitwear-1.jpg", alt: "Womenswear — red open-knit jumper" },
         { src: "products/categories/activewear-1.jpg", alt: "Womenswear — activewear leggings and top" },
         { src: "products/categories/sleepwear-2.jpg", alt: "Womenswear — printed pyjama set" },
+        { src: "products/women/women-striped-midi-dress.jpg", alt: "Womenswear — multicolour striped midi dress" },
+        { src: "products/women/women-crossover-waist-jeans-blue.jpg", alt: "Womenswear — crossover-waist wide-leg jeans" },
+        { src: "products/women/women-striped-batwing-top-navy.jpg", alt: "Womenswear — navy striped batwing top" },
+        { src: "products/women/women-skinny-jeans-black.jpg", alt: "Womenswear — black skinny jeans" },
+        { src: "products/women/women-bootcut-jeans-black.jpg", alt: "Womenswear — black high-waist bootcut jeans" },
       ],
     },
     {
@@ -260,6 +265,17 @@ export const portfolio = {
         { src: "products/men/men-half-zip-sweater-cream.jpg", alt: "Menswear — cream half-zip sweater" },
         { src: "products/men/men-henley-tshirt-brown.jpg", alt: "Menswear — brown henley t-shirt" },
         { src: "products/men/men-turtleneck-sweater-charcoal.jpg", alt: "Menswear — charcoal turtleneck sweater" },
+        { src: "products/men/men-slim-shirt-black.jpg", alt: "Menswear — black slim-fit shirt" },
+        { src: "products/men/men-camp-collar-shirt-ivory.jpg", alt: "Menswear — ivory jacquard camp-collar shirt" },
+        { src: "products/men/men-tshirt-graphic-blue.jpg", alt: "Menswear — blue graphic-print t-shirt" },
+        { src: "products/men/men-tshirt-graphic-ivory.jpg", alt: "Menswear — ivory embroidered t-shirt" },
+        { src: "products/men/men-tshirt-beige.jpg", alt: "Menswear — beige oversized t-shirt" },
+        { src: "products/men/men-chino-pants-beige.jpg", alt: "Menswear — beige chino trousers" },
+        { src: "products/men/men-cargo-pants-black.jpg", alt: "Menswear — black cargo trousers" },
+        { src: "products/men/men-jacquard-tshirt-ivory.jpg", alt: "Menswear — ivory jacquard t-shirt" },
+        { src: "products/men/men-flannel-overshirt-check.jpg", alt: "Menswear — check flannel overshirt" },
+        { src: "products/men/men-cargo-joggers-charcoal.jpg", alt: "Menswear — charcoal cargo joggers" },
+        { src: "products/men/men-ribbed-tank-grey.jpg", alt: "Menswear — grey ribbed tank top" },
       ],
     },
     {
@@ -298,10 +314,38 @@ export const portfolio = {
         { src: "products/kids/kids-yacht-club-tshirt-green.jpg", alt: "Kidswear — green yacht-club print t-shirt" },
       ],
     },
+    {
+      key: "lingerie",
+      label: "Lingerie",
+      categories: [
+        "Bras | Balconette",
+        "Bralettes",
+        "Push-Up",
+        "T-Shirt Bras",
+        "Lace & Crochet",
+        "Sheer Mesh",
+      ],
+      photos: [
+        { src: "products/lingerie/lingerie-lace-balconette-bra-blush.png", alt: "Lingerie — blush lace balconette bra" },
+        { src: "products/lingerie/lingerie-lace-bra-blush-satin.png", alt: "Lingerie — blush satin lace bra" },
+        { src: "products/lingerie/lingerie-lace-pushup-bra-nude.png", alt: "Lingerie — nude lace push-up bra" },
+        { src: "products/lingerie/lingerie-sheer-lace-bra-peach.png", alt: "Lingerie — peach sheer lace bra" },
+        { src: "products/lingerie/lingerie-tshirt-bra-slate-grey.png", alt: "Lingerie — slate grey t-shirt bra" },
+        { src: "products/lingerie/lingerie-tshirt-bra-sage-grey.png", alt: "Lingerie — sage grey t-shirt bra" },
+        { src: "products/lingerie/lingerie-lace-bra-plum.png", alt: "Lingerie — plum lace bra" },
+        { src: "products/lingerie/lingerie-tshirt-bra-mauve.png", alt: "Lingerie — mauve t-shirt bra" },
+        { src: "products/lingerie/lingerie-crochet-bralette-cream.png", alt: "Lingerie — cream crochet bralette" },
+        { src: "products/lingerie/lingerie-tshirt-bra-sage-green.png", alt: "Lingerie — sage green t-shirt bra" },
+        { src: "products/lingerie/lingerie-tshirt-bra-sage-green-racerback.png", alt: "Lingerie — sage green racerback t-shirt bra" },
+        { src: "products/lingerie/lingerie-lace-bralette-ivory.jpg", alt: "Lingerie — ivory lace triangle bralette" },
+        { src: "products/lingerie/lingerie-lace-bra-black-satin.png", alt: "Lingerie — black satin lace-trim bra" },
+        { src: "products/lingerie/lingerie-tshirt-bra-black.png", alt: "Lingerie — black t-shirt bra" },
+      ],
+    },
   ],
   extra: {
     label: "Also covering",
-    items: ["Activewear", "Sleepwear", "Denim", "Knitwear", "Lingerie", "Jackets & Outerwear"],
+    items: ["Activewear", "Sleepwear", "Denim", "Knitwear", "Jackets & Outerwear"],
   },
 };
 
@@ -569,11 +613,11 @@ export const contact = {
   ],
   subjects: [
     "Knitwear / Woven / Sweaters",
-    "Accessories & Home Textile",
+    "Lingerie & Accessories",
     "Trims & Fabrics Divisions",
     "Other Inquiry",
   ],
 };
 
 export const footerBlurb =
-  "A leading garments buying house in Bangladesh — sourcing high-quality knitwear, woven, sweaters, accessories & home textile for retailers and wholesalers worldwide.";
+  "A leading garments buying house in Bangladesh — sourcing high-quality knitwear, woven, sweaters, lingerie & accessories for retailers and wholesalers worldwide.";

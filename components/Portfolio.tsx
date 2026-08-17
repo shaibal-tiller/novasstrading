@@ -238,7 +238,7 @@ export function Portfolio() {
                       placeholder={blurData[p.src] ? "blur" : "empty"}
                       blurDataURL={blurData[p.src]}
                       sizes="(max-width: 768px) 50vw, 25vw"
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                      className="object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                     />
                   </div>
 

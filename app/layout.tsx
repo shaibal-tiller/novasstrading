@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     "Knitwear",
     "Woven",
     "Sweaters",
-    "Home Textile",
+    "Lingerie",
     "RMG Supply Chain",
     "Nova SS Trading",
     "Womenswear",

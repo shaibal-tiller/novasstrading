@@ -17,6 +17,8 @@ type ContentMediaProps = {
   aspect?: string;
   className?: string;
   tone?: "ivory" | "ink";
+  /** How the image fills its box — "cover" crops to fill, "contain" letterboxes to show the whole image uncropped. Defaults to "cover". */
+  fit?: "cover" | "contain";
   /** Whether to prioritize loading this media (disables lazy loading) */
   priority?: boolean;
   /** Responsive sizes hint — set to the rendered slot width for best srcset selection */
@@ -32,6 +34,7 @@ export function ContentMedia({
   aspect = "aspect-[4/3]",
   className,
   tone = "ivory",
+  fit = "cover",
   priority = false,
   sizes = "(max-width: 768px) 100vw, 50vw",
   poster,
@@ -68,7 +71,9 @@ export function ContentMedia({
           placeholder={blur ? "blur" : "empty"}
           blurDataURL={blur}
           className={clsx(
-            kind === "logo" ? "object-contain p-2" : "object-cover",
+            kind === "logo" || fit === "contain"
+              ? "object-contain p-2"
+              : "object-cover",
             // Blur placeholder already covers progressive display; only
             // fade in when there is no placeholder to show.
             !blur && "transition-opacity duration-700 ease-in-out",

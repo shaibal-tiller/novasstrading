@@ -35,6 +35,7 @@ export function ProductRange() {
                 src={p.image}
                 alt={p.alt}
                 aspect="aspect-[3/4]"
+                fit="contain"
                 sizes="(max-width: 1024px) 50vw, 18vw"
                 className="transition-transform duration-500 group-hover:scale-[1.02]"
               />
@@ -69,6 +70,7 @@ export function ProductRange() {
                   src={p.image}
                   alt={p.alt}
                   aspect="aspect-[3/4]"
+                  fit="contain"
                   sizes="30vw"
                 />
                 <div className="mt-2.5 flex items-baseline gap-2">
