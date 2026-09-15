@@ -24,7 +24,8 @@ export const site = {
     postalCode: "1206",
     country: "Bangladesh",
     full: "Baridhara DOHS, Road #5, House No #357, Dhaka, Bangladesh",
-    mapUrl: "https://maps.app.goo.gl/Gh1gSDdGhawUp8HN7",
+    mapUrl:
+      "https://www.google.com/maps/place/Nova+SS+Trading/@23.813307,90.4123394,1046m/data=!3m2!1e3!4b1!4m6!3m5!1s0x3755c7002406db8d:0xf760486cc5dad9c6!8m2!3d23.813307!4d90.4149143!16s%2Fg%2F11zh1_s5jg",
   },
   social: {
     linkedin: "https://www.linkedin.com/company/nova-ss-trading/",
