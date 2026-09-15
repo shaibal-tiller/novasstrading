@@ -11,39 +11,40 @@ type Slot = {
   aspect: string;
 };
 
-// Scattered, overlapping collage — each slot slowly crossfades
-// through its own set of real product photos.
+// Scattered, overlapping collage — each slot slowly crossfades through its
+// own pair of cutout product photos, shown as floating cards (not full-bleed
+// crops) since the source photos are transparent-background cutouts.
 const slots: Slot[] = [
   {
     wrapClass: "absolute right-0 top-0 w-[58%]",
     aspect: "aspect-[4/5]",
     images: [
-      { src: "/assets/products/men/men-hooded-puffer-olive-mannequin.jpg", alt: "Olive & black hooded puffer jacket on mannequin" },
-      { src: "/assets/products/men/men-quilted-puffer-jacket-black.jpg", alt: "Black quilted puffer jacket" },
+      { src: "/assets/products/men/men-brushed-plaid-overshirt.png", alt: "Brushed plaid overshirt" },
+      { src: "/assets/products/men/men-contrast-raglan-top.png", alt: "Contrast raglan top" },
     ],
   },
   {
     wrapClass: "absolute left-0 top-[14%] w-[42%]",
     aspect: "aspect-[3/4]",
     images: [
-      { src: "/assets/products/categories/womenswear-2.jpg", alt: "Womenswear — navy blazer over white blouse" },
-      { src: "/assets/products/categories/denim-1.jpg", alt: "Womenswear — washed denim romper" },
+      { src: "/assets/products/men/men-quarter-zip-knit-sweater.png", alt: "Quarter-zip knit sweater" },
+      { src: "/assets/products/men/men-textured-crew-neck-sweater-mustard.png", alt: "Mustard textured crew-neck sweater" },
     ],
   },
   {
     wrapClass: "absolute bottom-[6%] left-[8%] w-[46%]",
     aspect: "aspect-square",
     images: [
-      { src: "/assets/products/kids/kids-striped-dungaree-yellow.jpg", alt: "Kids yellow striped jersey dungaree" },
-      { src: "/assets/products/kids/kids-car-print-tshirt-green.jpg", alt: "Kids green adventure-car print t-shirt" },
+      { src: "/assets/products/kids/kids-astronaut-graphic-top.png", alt: "Kids astronaut graphic top" },
+      { src: "/assets/products/kids/kids-monster-print-top.png", alt: "Kids monster print top" },
     ],
   },
   {
     wrapClass: "absolute bottom-0 right-[4%] w-[44%]",
     aspect: "aspect-[5/4]",
     images: [
-      { src: "/assets/products/men/men-half-zip-sweater-cream.jpg", alt: "Cream half-zip sweater" },
-      { src: "/assets/products/categories/knitwear-1.jpg", alt: "Red open-knit jumper" },
+      { src: "/assets/products/lingerie/lingerie-sage-smooth-molded-bra.png", alt: "Sage smooth molded bra" },
+      { src: "/assets/products/lingerie/lingerie-wine-lace-panel-bra.png", alt: "Wine lace panel bra" },
     ],
   },
 ];
@@ -65,9 +66,12 @@ export function HeroCollage() {
         const active = Math.floor((tick + s) / slots.length) % slot.images.length;
         return (
           <div key={s} className={slot.wrapClass}>
+            {/* Styled card — the source photos are transparent cutouts, so
+                they're framed on a soft tinted ground with room to breathe,
+                rather than cropped edge-to-edge like full-bleed photography. */}
             <div
               className={clsx(
-                "relative w-full overflow-hidden rounded-sm bg-stone/40",
+                "relative w-full overflow-hidden rounded-md border border-ink/8 bg-gradient-to-br from-ivory-light to-stone/50 shadow-[0_24px_48px_-28px_rgba(22,25,31,0.35)]",
                 slot.aspect,
               )}
             >
@@ -87,7 +91,7 @@ export function HeroCollage() {
                   blurDataURL={blurData[img.src.replace("/assets/", "")]}
                   sizes="(max-width: 768px) 60vw, 30vw"
                   className={clsx(
-                    "object-cover transition-opacity duration-[1400ms] ease-in-out",
+                    "object-contain p-5 drop-shadow-[0_18px_22px_rgba(22,25,31,0.16)] transition-opacity duration-[1400ms] ease-in-out sm:p-7",
                     i === active ? "opacity-100" : "opacity-0",
                   )}
                 />

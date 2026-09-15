@@ -173,14 +173,14 @@ export const products = {
     {
       title: "Sweaters",
       body: "Pullovers, cardigans, turtlenecks and heavy-gauge winter knits across all yarn counts.",
-      image: "products/men/men-turtleneck-sweater-grey.jpg",
-      alt: "Grey turtleneck sweater, front and back",
+      image: "products/men/men-charcoal-crew-neck-sweater.png",
+      alt: "Charcoal crew-neck sweater",
     },
     {
       title: "Lingerie",
       body: "Bras, bralettes and lace-trim intimates developed across a full range of colourways and constructions.",
-      image: "products/lingerie/lingerie-lace-balconette-bra-blush.png",
-      alt: "Lingerie — blush lace balconette bra",
+      image: "products/lingerie/lingerie-black-smooth-bra.png",
+      alt: "Lingerie — black smooth bra",
     },
     {
       title: "Accessories",
@@ -189,6 +189,14 @@ export const products = {
       alt: "Flat-lay of garment accessories and trims",
     },
   ],
+};
+
+type PortfolioPhoto = { src: string; alt: string; detail?: string[] };
+type PortfolioTab = {
+  key: string;
+  label: string;
+  categories: string[];
+  photos: PortfolioPhoto[];
 };
 
 export const portfolio = {
@@ -251,6 +259,141 @@ export const portfolio = {
         "Wintery Garments",
       ],
       photos: [
+        {
+          src: "products/men/men-graphic-cotton-blend-tshirt-ivory.png",
+          alt: "Menswear — ivory graphic cotton-blend t-shirt",
+          detail: ["Composition: 54% BCI cotton, 46% Eco Coolmax", "GSM: 260", "Crew neckline · Short sleeves · Chest and back graphics"],
+        },
+        {
+          src: "products/men/men-tonal-jacquard-tshirt-ivory.png",
+          alt: "Menswear — ivory tonal jacquard t-shirt",
+          detail: ["Composition: 85% polyester, 15% expanded jacquard cotton", "GSM: 160", "Tonal jacquard pattern · Crew neckline · Short sleeves"],
+        },
+        {
+          src: "products/men/men-contrast-raglan-top.png",
+          alt: "Menswear — contrast raglan top",
+          detail: ["Composition: 100% cotton", "GSM: 190", "Contrast raglan sleeves · Contrast crew-neck trim · Woven label at hem"],
+        },
+        {
+          src: "products/men/men-striped-long-sleeve-top.png",
+          alt: "Menswear — striped long-sleeve top",
+          detail: ["Composition: 100% cotton", "GSM: 200", "Horizontal stripe pattern · Crew neckline · Ribbed cuffs"],
+        },
+        {
+          src: "products/men/men-abstract-print-long-sleeve-top.png",
+          alt: "Menswear — abstract print long-sleeve top",
+          detail: ["Composition: 100% cotton", "GSM: 165", "All-over print · Crew neckline · Long sleeves"],
+        },
+        {
+          src: "products/men/men-regular-fit-check-shirt.png",
+          alt: "Menswear — regular fit check shirt",
+          detail: ["Composition: 100% cotton", "Regular fit · Width 56 in · Shrinkage 3–5% · GSM 135", "Point collar · Short sleeves · Button-front closure"],
+        },
+        {
+          src: "products/men/men-slim-fit-stripe-shirt-blue.png",
+          alt: "Menswear — slim fit blue stripe shirt",
+          detail: ["Composition: 100% cotton", "Slim fit · Width 56 in · Shrinkage 2–3% · GSM 162", "Mandarin collar · Chest patch pocket · Curved hem"],
+        },
+        {
+          src: "products/men/men-camp-collar-casual-shirt.png",
+          alt: "Menswear — camp collar casual shirt",
+          detail: ["Composition: 100% polyester", "Regular fit · Width 56 in · Shrinkage 3–4% · GSM 125", "Revere collar · Full button-front closure · Short sleeves"],
+        },
+        {
+          src: "products/men/men-olive-casual-shirt.png",
+          alt: "Menswear — olive casual shirt",
+          detail: ["Composition: 68% polyester, 20% cotton, 12% viscose", "Regular fit · Width 56 in · Shrinkage 2–3% · GSM 125", "Point collar · Chest patch pocket · Long sleeves with button cuffs"],
+        },
+        {
+          src: "products/men/men-stretch-tailored-formal-shirt.png",
+          alt: "Menswear — stretch tailored formal shirt",
+          detail: ["Composition: 97% cotton, 3% elastane", "Tailored fit · Width 56 in · Shrinkage 2–4% · GSM 180", "Classic point collar · Pocket-free front · Centre box pleat at back"],
+        },
+        {
+          src: "products/men/men-yarn-dyed-stripe-shirt.png",
+          alt: "Menswear — yarn-dyed stripe shirt",
+          detail: ["Composition: 100% cotton", "Regular fit · Width 55 in · Shrinkage 3–4% · GSM 120", "Classic point collar · Pocket-free front · Long sleeves with button cuffs"],
+        },
+        {
+          src: "products/men/men-brushed-plaid-overshirt.png",
+          alt: "Menswear — brushed plaid overshirt",
+          detail: ["Composition: 65% polyester, 35% cotton", "Brushed plaid fabric · Regular fit · Width 56 in · Shrinkage 4–5% · GSM 400", "Soft brushed hand feel · Full button-front closure · Chest flap pockets"],
+        },
+        {
+          src: "products/men/men-yale-collegiate-sweat-set-top.png",
+          alt: "Menswear — Yale collegiate sweatshirt",
+          detail: ["Fabrication: 60/40 CVC loop-back terry, 300 gsm", "Raglan sweatshirt sleeves · Ribbed neckline and trims · Drawstring waistband", "Two-piece set"],
+        },
+        {
+          src: "products/men/men-yale-collegiate-sweat-set-trousers.png",
+          alt: "Menswear — Yale collegiate sweat trousers",
+          detail: ["Fabrication: 60/40 CVC loop-back terry, 300 gsm", "Matching trousers from the two-piece set"],
+        },
+        {
+          src: "products/men/men-harvard-heritage-set-top.png",
+          alt: "Menswear — Harvard heritage sweatshirt",
+          detail: ["Fabrication: 60/40 CVC loop-back terry, 300 gsm", "Oversized sweatshirt · Coordinated front and leg prints · Elasticated drawstring waist", "Two-piece set"],
+        },
+        {
+          src: "products/men/men-harvard-heritage-set-trousers.png",
+          alt: "Menswear — Harvard heritage sweat trousers",
+          detail: ["Fabrication: 60/40 CVC loop-back terry, 300 gsm", "Matching trousers from the two-piece set"],
+        },
+        {
+          src: "products/men/men-essential-striped-lounge-set.png",
+          alt: "Menswear — essential striped lounge set",
+          detail: ["Fabrication: 60% cotton, 40% polyester French terry — top 260 gsm, shorts 200 gsm", "Drop-shoulder T-shirt · Curved-hem shorts · Drawstring waistband", "Two-piece set"],
+        },
+        {
+          src: "products/men/men-abstract-print-lounge-set.png",
+          alt: "Menswear — abstract print lounge set",
+          detail: ["Fabrication: top 80% PSCP cotton / 20% recycled cotton, shorts 95% cotton / 5% elastane — 160 gsm", "All-over abstract print · Elasticated waistband · Fitted cycling shorts", "Two-piece set"],
+        },
+        {
+          src: "products/men/men-v-neck-knit-vest-blue.png",
+          alt: "Menswear — pale blue V-neck knit vest",
+          detail: ["Composition: 68% cotton, 32% nylon", "Knitted, ribbed edges · 200g weight, 12GG gauge", "Sleeveless construction · Ribbed neckline and armholes · Ribbed hem"],
+        },
+        {
+          src: "products/men/men-textured-crew-neck-sweater-mustard.png",
+          alt: "Menswear — mustard textured crew-neck sweater",
+          detail: ["Composition: 70% viscose, 30% nylon", "Basket-weave knit · 352g weight, 12GG gauge"],
+        },
+        {
+          src: "products/men/men-quarter-zip-knit-sweater.png",
+          alt: "Menswear — quarter-zip knit sweater",
+          detail: ["Composition: 100% cotton", "Knitted · 396g weight, 12GG gauge"],
+        },
+        {
+          src: "products/men/men-blue-textured-crew-neck-sweater.png",
+          alt: "Menswear — blue textured crew-neck sweater",
+          detail: ["Composition: 100% cotton", "Vertical patterned knit · 366g weight, 12GG gauge"],
+        },
+        {
+          src: "products/men/men-charcoal-crew-neck-sweater.png",
+          alt: "Menswear — charcoal crew-neck sweater",
+          detail: ["Composition: 100% cotton", "Knitted · 288g weight, 12GG gauge"],
+        },
+        {
+          src: "products/men/men-black-textured-crew-neck-sweater.png",
+          alt: "Menswear — black textured crew-neck sweater",
+          detail: ["Composition: 100% cotton", "Textured front, plain-knit back · 366g weight, 12GG gauge"],
+        },
+        {
+          src: "products/men/men-olive-open-neck-knit-sweater.png",
+          alt: "Menswear — olive open-neck knit sweater",
+          detail: ["Composition: 100% cotton", "Textured front, plain-knit sleeves · 366g weight, 12GG gauge"],
+        },
+        {
+          src: "products/men/men-button-neck-knit-sweater.png",
+          alt: "Menswear — button-neck knit sweater",
+          detail: ["Composition: 100% cotton", "Horizontal textured knit · 408g weight, 12GG gauge"],
+        },
+        {
+          src: "products/men/men-contrast-trim-knit-shirt.png",
+          alt: "Menswear — brown contrast-trim knit shirt",
+          detail: ["Composition: 100% cotton", "Textured knit · 366g weight, 12GG gauge", "Full button-front opening · Contrast collar and placket · Short sleeves"],
+        },
         { src: "products/men/men-hooded-puffer-olive-black.jpg", alt: "Menswear — olive & black hooded puffer jacket" },
         { src: "products/men/men-quilted-puffer-jacket-black.jpg", alt: "Menswear — black quilted puffer jacket" },
         { src: "products/men/men-hybrid-softshell-jacket-black.jpg", alt: "Menswear — black hybrid softshell jacket" },
@@ -296,6 +439,41 @@ export const portfolio = {
         "Accessories",
       ],
       photos: [
+        {
+          src: "products/kids/kids-paris-bow-graphic-top.png",
+          alt: "Kidswear — Paris bow graphic top",
+          detail: ["Composition: 95% cotton, 5% elastane", "Single jersey · GSM 160–180", "3D fabric bow · Soft mesh print detail · Gold glitter stars"],
+        },
+        {
+          src: "products/kids/kids-cupcake-graphic-top.png",
+          alt: "Kidswear — cupcake graphic top",
+          detail: ["Composition: to be confirmed", "Single jersey · GSM 180–200", "Sequin cupcake appliqué · Raised silicone dots · Chenille letter patch"],
+        },
+        {
+          src: "products/kids/kids-astronaut-graphic-top.png",
+          alt: "Kidswear — astronaut graphic top",
+          detail: ["Composition: 100% cotton", "Single jersey · GSM 220–240", "Pigment screen print · Chest placement artwork · Crew neckline"],
+        },
+        {
+          src: "products/kids/kids-monster-print-top.png",
+          alt: "Kidswear — monster print top",
+          detail: ["Composition: 100% cotton", "Single jersey · GSM 160–180", "Multicolour pigment print · All-over monster motifs · Crew neckline"],
+        },
+        {
+          src: "products/kids/kids-metallic-flower-sweatshirt.png",
+          alt: "Kidswear — metallic flower sweatshirt",
+          detail: ["Composition: 95% cotton, 5% elastane", "Brushed fleece · GSM 280–300", "3D silver flower appliqué · Multicolour fabric piping · Stepped rib hem"],
+        },
+        {
+          src: "products/kids/kids-ruffle-star-sweatshirt.png",
+          alt: "Kidswear — ruffle star sweatshirt",
+          detail: ["Composition: 94% cotton, 6% elastane", "French terry · GSM 240–260", "3D star appliqué · Sequin embellishment · Side vents at rib hem"],
+        },
+        {
+          src: "products/kids/kids-monster-pocket-sweatshirt.png",
+          alt: "Kidswear — monster pocket sweatshirt",
+          detail: ["Composition: 100% cotton", "Brushed single jersey fleece · GSM 280", "Kangaroo pocket · Fabric appliqué · 3D faux fur ears"],
+        },
         { src: "products/kids/kids-striped-dungaree-yellow.jpg", alt: "Kidswear — yellow striped jersey dungaree" },
         { src: "products/kids/kids-strawberry-frill-romper.jpg", alt: "Kidswear — strawberry-print frill romper" },
         { src: "products/kids/kids-car-print-tshirt-green.jpg", alt: "Kidswear — green adventure-car print t-shirt" },
@@ -326,6 +504,31 @@ export const portfolio = {
         "Sheer Mesh",
       ],
       photos: [
+        {
+          src: "products/lingerie/lingerie-cream-lace-bra.png",
+          alt: "Lingerie — cream scalloped lace bra",
+          detail: ["Composition: 62% polyamide, 18% elastane", "Lace underband", "Non-wired cups · Adjustable straps · Pull-on lace back"],
+        },
+        {
+          src: "products/lingerie/lingerie-ivory-sheer-lace-bra.png",
+          alt: "Lingerie — ivory sheer floral lace bra",
+          detail: ["Composition: 80% polyamide, 20% elastane", "Sheer floral lace", "Non-padded, underwired cups · Adjustable straps · Hook-and-eye fastening"],
+        },
+        {
+          src: "products/lingerie/lingerie-sage-smooth-molded-bra.png",
+          alt: "Lingerie — sage smooth molded bra",
+          detail: ["Composition: 97% nylon, 3% polyurethane", "Smooth molded cups, polyester lining", "Lined, padded cups · Underwired support · Adjustable straps"],
+        },
+        {
+          src: "products/lingerie/lingerie-wine-lace-panel-bra.png",
+          alt: "Lingerie — wine lace panel bra",
+          detail: ["Composition: 82% polyamide, 18% elastane", "Molded cups, lace panels", "Lined, padded cups · Adjustable textured straps · Hook-and-eye fastening"],
+        },
+        {
+          src: "products/lingerie/lingerie-black-smooth-bra.png",
+          alt: "Lingerie — black smooth bra",
+          detail: ["Composition: 95% polyester, 5% polyamide", "Smooth cups, satin-look wings", "Lined, padded cups · Underwired support · Adjustable straps"],
+        },
         { src: "products/lingerie/lingerie-lace-balconette-bra-blush.png", alt: "Lingerie — blush lace balconette bra" },
         { src: "products/lingerie/lingerie-lace-bra-blush-satin.png", alt: "Lingerie — blush satin lace bra" },
         { src: "products/lingerie/lingerie-lace-pushup-bra-nude.png", alt: "Lingerie — nude lace push-up bra" },
@@ -342,7 +545,7 @@ export const portfolio = {
         { src: "products/lingerie/lingerie-tshirt-bra-black.png", alt: "Lingerie — black t-shirt bra" },
       ],
     },
-  ],
+  ] as PortfolioTab[],
   extra: {
     label: "Also covering",
     items: ["Activewear", "Sleepwear", "Denim", "Knitwear", "Jackets & Outerwear"],

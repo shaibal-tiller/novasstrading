@@ -4,6 +4,7 @@ import { clsx } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
 import { blurData } from "@/lib/blurData";
+import { transparentImages } from "@/lib/transparentImages";
 import { LazyVideo } from "./LazyVideo";
 
 type ContentMediaProps = {
@@ -45,12 +46,23 @@ export function ContentMedia({
   const blur = blurData[fileName];
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // "contain" only actually letterboxes for confirmed-transparent cutouts —
+  // an opaque photo (its own baked-in background, lifestyle or otherwise)
+  // would show as a mismatched box inside this card, so it renders as
+  // "cover" instead regardless of the fit prop. Logos always contain: a
+  // logo has no crop-safe area, transparent or not.
+  const isCutout = transparentImages.has(fileName);
+  const useContain = kind === "logo" || (fit === "contain" && isCutout);
+
   return (
     <div
       role="img"
       aria-label={alt}
       className={clsx(
-        "relative w-full overflow-hidden rounded-sm bg-stone/40",
+        "relative w-full overflow-hidden rounded-sm",
+        useContain && kind !== "logo"
+          ? "border border-ink/8 bg-gradient-to-br from-ivory-light to-stone/50"
+          : "bg-stone/40",
         aspect,
         className,
       )}
@@ -71,9 +83,7 @@ export function ContentMedia({
           placeholder={blur ? "blur" : "empty"}
           blurDataURL={blur}
           className={clsx(
-            kind === "logo" || fit === "contain"
-              ? "object-contain p-2"
-              : "object-cover",
+            useContain ? "object-contain p-2" : "object-cover",
             // Blur placeholder already covers progressive display; only
             // fade in when there is no placeholder to show.
             !blur && "transition-opacity duration-700 ease-in-out",

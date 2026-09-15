@@ -10,6 +10,7 @@ import {
 } from "react";
 import { blurData } from "@/lib/blurData";
 import { portfolio } from "@/lib/content";
+import { transparentImages } from "@/lib/transparentImages";
 import { clsx } from "@/lib/utils";
 import { Reveal } from "./Reveal";
 
@@ -19,16 +20,11 @@ const COLLAPSED_ROWS = 2;
 export function Portfolio() {
   const [active, setActive] = useState(portfolio.tabs[0].key);
   const [lightbox, setLightbox] = useState<number | null>(null);
-  const [expanded, setExpanded] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
   // Measured from the live grid so "two rows" holds at every breakpoint,
   // where the column count differs (2 / 3 / 4).
-  const [metrics, setMetrics] = useState({
-    perRow: 0,
-    collapsedHeight: 0,
-    fullHeight: 0,
-  });
+  const [metrics, setMetrics] = useState({ perRow: 0, collapsedHeight: 0 });
   const gridRef = useRef<HTMLDivElement>(null);
-  const gridTopRef = useRef<HTMLDivElement>(null);
 
   const tab = portfolio.tabs.find((t) => t.key === active) ?? portfolio.tabs[0];
   const photos = tab.photos;
@@ -37,7 +33,6 @@ export function Portfolio() {
     metrics.perRow > 0 ? metrics.perRow * COLLAPSED_ROWS : photos.length;
   const isOverflowing = metrics.perRow > 0 && photos.length > visibleCount;
   const hiddenCount = Math.max(0, photos.length - visibleCount);
-  const isCollapsed = isOverflowing && !expanded;
 
   // Measure how many cards fit per row and where row two ends. Re-runs on tab
   // switch (photo counts differ) and on resize (column count changes).
@@ -59,7 +54,7 @@ export function Portfolio() {
       const last = cards[lastIdx];
       const collapsedHeight = last.offsetTop + last.offsetHeight;
 
-      setMetrics({ perRow, collapsedHeight, fullHeight: grid.scrollHeight });
+      setMetrics({ perRow, collapsedHeight });
     };
 
     measure();
@@ -89,32 +84,18 @@ export function Portfolio() {
     });
   }, [lightbox, photos]);
 
-  // Collapsing from deep in an expanded grid would leave the viewport stranded
-  // below the section, so pull the user back to the top of the photos.
-  const handleToggle = useCallback(() => {
-    setExpanded((wasExpanded) => {
-      if (wasExpanded) {
-        requestAnimationFrame(() =>
-          gridTopRef.current?.scrollIntoView({
-            behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
-              .matches
-              ? "auto"
-              : "smooth",
-            block: "start",
-          }),
-        );
-      }
-      return !wasExpanded;
-    });
-  }, []);
-
-  // Keyboard controls + scroll lock while the lightbox is open
+  // Keyboard controls + scroll lock while the lightbox or gallery modal is open.
+  // Escape closes whichever is on top: the single-image lightbox first, then
+  // (on a second press) the gallery modal beneath it.
   useEffect(() => {
-    if (lightbox === null) return;
+    if (lightbox === null && !galleryOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowRight") step(1);
-      if (e.key === "ArrowLeft") step(-1);
+      if (e.key === "Escape") {
+        if (lightbox !== null) close();
+        else setGalleryOpen(false);
+      }
+      if (lightbox !== null && e.key === "ArrowRight") step(1);
+      if (lightbox !== null && e.key === "ArrowLeft") step(-1);
     };
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
@@ -123,7 +104,7 @@ export function Portfolio() {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [lightbox, close, step]);
+  }, [lightbox, galleryOpen, close, step]);
 
   return (
     <section id="portfolio" className="section-wrap">
@@ -148,7 +129,7 @@ export function Portfolio() {
               onClick={() => {
                 setActive(t.key);
                 setLightbox(null);
-                setExpanded(false);
+                setGalleryOpen(false);
               }}
               className={clsx(
                 "rounded-full border px-6 py-2.5 font-sans text-sm font-semibold uppercase tracking-[0.08em] transition-all duration-300",
@@ -198,16 +179,11 @@ export function Portfolio() {
           </ul>
         </div>
 
-        {/* Photo grid — clamped to two rows until expanded */}
-        <div ref={gridTopRef} className="scroll-mt-28" />
+        {/* Photo grid — always clamped to two rows; "Show all" opens the full gallery in a modal */}
         <div
-          className="relative mt-10 overflow-hidden transition-[max-height] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          className="relative mt-10 overflow-hidden"
           style={{
-            maxHeight: !isOverflowing
-              ? undefined
-              : expanded
-                ? metrics.fullHeight
-                : metrics.collapsedHeight,
+            maxHeight: isOverflowing ? metrics.collapsedHeight : undefined,
           }}
         >
           <div
@@ -217,48 +193,15 @@ export function Portfolio() {
           >
             {photos.map((p, i) => {
               // Cards below the fold are hidden from keyboard & AT while folded.
-              const isHidden = isCollapsed && i >= visibleCount;
+              const isHidden = isOverflowing && i >= visibleCount;
               return (
-                <button
+                <PhotoCard
                   key={p.src}
-                  type="button"
-                  onClick={() => setLightbox(i)}
-                  aria-label={`View ${p.alt} full screen`}
-                  tabIndex={isHidden ? -1 : undefined}
-                  aria-hidden={isHidden || undefined}
-                  className="group animate-fade-up relative overflow-hidden rounded-sm border border-ink/5 bg-ivory text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
-                  style={{ animationDelay: `${(i % 8) * 45}ms` }}
-                >
-                  <div className="relative aspect-[3/4] w-full">
-                    <Image
-                      src={`/assets/${p.src}`}
-                      alt={p.alt}
-                      fill
-                      loading="lazy"
-                      placeholder={blurData[p.src] ? "blur" : "empty"}
-                      blurDataURL={blurData[p.src]}
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                      className="object-contain p-2 transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-                    />
-                  </div>
-
-                  {/* Hover veil with centred + */}
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 grid place-items-center bg-ink/0 transition-colors duration-300 group-hover:bg-ink/35 group-focus-visible:bg-ink/35"
-                  >
-                    <span className="grid h-14 w-14 scale-75 place-items-center rounded-full border border-ivory/60 bg-ivory/15 text-ivory opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100">
-                      <PlusIcon />
-                    </span>
-                  </span>
-
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-ink/70 to-transparent p-3 pt-8 text-xs font-medium text-ivory opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
-                  >
-                    {p.alt.split("— ")[1] ?? p.alt}
-                  </span>
-                </button>
+                  photo={p}
+                  index={i}
+                  onOpen={() => setLightbox(i)}
+                  hidden={isHidden}
+                />
               );
             })}
           </div>
@@ -268,35 +211,24 @@ export function Portfolio() {
             aria-hidden
             className={clsx(
               "pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#f8f5ef] via-[#f8f5ef]/80 to-transparent transition-opacity duration-500",
-              isCollapsed ? "opacity-100" : "opacity-0",
+              isOverflowing ? "opacity-100" : "opacity-0",
             )}
           />
         </div>
 
-        {/* Expand / collapse control */}
+        {/* Open the full gallery in a modal */}
         {isOverflowing && (
           <div className="mt-8 flex flex-col items-center gap-3">
             <button
               type="button"
-              onClick={handleToggle}
-              aria-expanded={expanded}
+              onClick={() => setGalleryOpen(true)}
               className="group inline-flex items-center gap-2.5 rounded-full border border-ink/15 bg-canvas px-7 py-3 font-sans text-sm font-semibold uppercase tracking-[0.08em] text-ink transition-all duration-300 hover:border-brass hover:text-brass-dark hover:shadow-[0_12px_28px_-16px_rgba(176,138,79,0.8)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
             >
-              {expanded ? "Show fewer" : `Show all ${photos.length} styles`}
-              <ChevronIcon
-                className={clsx(
-                  "transition-transform duration-500 ease-out",
-                  expanded ? "rotate-180" : "translate-y-px group-hover:translate-y-1",
-                )}
-              />
+              {`Show all ${photos.length} styles`}
+              <ChevronIcon className="translate-y-px group-hover:translate-y-1" />
             </button>
-            <p
-              aria-live="polite"
-              className="font-mono text-[0.68rem] uppercase tracking-[0.15em] text-ink-muted"
-            >
-              {expanded
-                ? `Showing all ${photos.length}`
-                : `+${hiddenCount} more`}
+            <p className="font-mono text-[0.68rem] uppercase tracking-[0.15em] text-ink-muted">
+              {`+${hiddenCount} more`}
             </p>
           </div>
         )}
@@ -377,17 +309,169 @@ export function Portfolio() {
                 priority
               />
             </div>
-            <figcaption className="flex items-center gap-4 text-ivory/85">
-              <span className="font-mono text-xs tracking-[0.15em] text-brass">
-                {String(lightbox + 1).padStart(2, "0")} /{" "}
-                {String(photos.length).padStart(2, "0")}
-              </span>
-              <span className="text-sm">{photos[lightbox].alt}</span>
+            <figcaption className="w-full max-w-md text-center text-ivory/85">
+              <div className="flex items-center justify-center gap-4">
+                <span className="font-mono text-xs tracking-[0.15em] text-brass">
+                  {String(lightbox + 1).padStart(2, "0")} /{" "}
+                  {String(photos.length).padStart(2, "0")}
+                </span>
+                <span className="text-sm">
+                  {photos[lightbox].alt.split("— ")[1] ?? photos[lightbox].alt}
+                </span>
+              </div>
+              {photos[lightbox].detail && (
+                <ul className="mt-3 space-y-1 border-t border-ivory/15 pt-3">
+                  {photos[lightbox].detail!.map((line) => (
+                    <li
+                      key={line}
+                      className="font-mono text-[0.7rem] leading-relaxed tracking-[0.02em] text-ivory/60"
+                    >
+                      {line}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </figcaption>
           </figure>
         </div>
       )}
+
+      {/* Full gallery modal — opened from "Show all". Sits beneath the single-image lightbox. */}
+      {galleryOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${tab.label} — full gallery, ${photos.length} styles`}
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-ink/90 p-4 backdrop-blur-sm sm:p-8"
+          onClick={() => setGalleryOpen(false)}
+        >
+          <div
+            className="flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-md bg-canvas shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-4 border-b border-ink/10 px-6 py-4 sm:px-8">
+              <div>
+                <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-loom">
+                  {tab.label} — full range
+                </p>
+                <h3 className="font-display text-lg font-medium text-ink">
+                  {photos.length} styles
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setGalleryOpen(false)}
+                aria-label="Close gallery"
+                className="grid h-10 w-10 flex-none place-items-center rounded-full border border-ink/15 text-ink transition-colors hover:border-brass hover:text-brass-dark"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-6 py-6 sm:px-8">
+              <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+                {photos.map((p, i) => (
+                  <PhotoCard
+                    key={p.src}
+                    photo={p}
+                    index={i}
+                    onOpen={() => setLightbox(i)}
+                    showCaption
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
+  );
+}
+
+function PhotoCard({
+  photo,
+  index,
+  onOpen,
+  hidden,
+  showCaption,
+}: {
+  photo: { src: string; alt: string; detail?: string[] };
+  index: number;
+  onOpen: () => void;
+  hidden?: boolean;
+  showCaption?: boolean;
+}) {
+  const caption = photo.alt.split("— ")[1] ?? photo.alt;
+  // A confirmed-transparent cutout is safe to letterbox (contain) on a tinted
+  // card. An opaque photo — lifestyle or otherwise — carries its own baked-in
+  // background, so contain would show that as a mismatched box; cover fills
+  // the card completely instead, same as any normal gallery thumbnail.
+  const isCutout = transparentImages.has(photo.src);
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-label={`View ${photo.alt} full screen`}
+      tabIndex={hidden ? -1 : undefined}
+      aria-hidden={hidden || undefined}
+      className="group animate-fade-up relative text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+      style={{ animationDelay: `${(index % 8) * 45}ms` }}
+    >
+      <div
+        className={clsx(
+          "relative aspect-[3/4] w-full overflow-hidden rounded-sm border border-ink/5",
+          isCutout
+            ? "bg-gradient-to-br from-ivory-light to-stone/50"
+            : "bg-ivory",
+        )}
+      >
+        <Image
+          src={`/assets/${photo.src}`}
+          alt={photo.alt}
+          fill
+          loading="lazy"
+          placeholder={blurData[photo.src] ? "blur" : "empty"}
+          blurDataURL={blurData[photo.src]}
+          sizes="(max-width: 768px) 50vw, 25vw"
+          className={clsx(
+            isCutout ? "object-contain p-2" : "object-cover",
+            "transition-transform duration-700 ease-out group-hover:scale-[1.04]",
+          )}
+        />
+
+        {/* Hover veil with centred + */}
+        <span
+          aria-hidden
+          className="absolute inset-0 grid place-items-center bg-ink/0 transition-colors duration-300 group-hover:bg-ink/35 group-focus-visible:bg-ink/35"
+        >
+          <span className="grid h-14 w-14 scale-75 place-items-center rounded-full border border-ivory/60 bg-ivory/15 text-ivory opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100">
+            <PlusIcon />
+          </span>
+        </span>
+
+        {!showCaption && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-2 bg-gradient-to-t from-ink/70 to-transparent p-3 pt-8 text-xs font-medium text-ivory opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
+          >
+            {caption}
+          </span>
+        )}
+      </div>
+
+      {/* Modal grid: caption stays visible under the thumbnail instead of on hover only */}
+      {showCaption && (
+        <div className="mt-2.5">
+          <p className="font-display text-sm font-medium leading-snug text-ink">
+            {caption}
+          </p>
+          {photo.detail?.[0] && (
+            <p className="mt-0.5 font-mono text-[0.65rem] leading-snug text-ink-muted">
+              {photo.detail[0]}
+            </p>
+          )}
+        </div>
+      )}
+    </button>
   );
 }
 
