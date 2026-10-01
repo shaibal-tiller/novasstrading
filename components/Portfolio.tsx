@@ -9,16 +9,25 @@ import {
   useState,
 } from "react";
 import { blurData } from "@/lib/blurData";
-import { portfolio } from "@/lib/content";
+import type { portfolio as PortfolioContent } from "@/lib/content";
 import { transparentImages } from "@/lib/transparentImages";
 import { clsx } from "@/lib/utils";
+import { Editable } from "./admin/Editable";
 import { Reveal } from "./Reveal";
 
 /** Rows of photos shown before the grid asks to be expanded. */
 const COLLAPSED_ROWS = 2;
 
-export function Portfolio() {
-  const [active, setActive] = useState(portfolio.tabs[0].key);
+export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent }) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  // `tabs[].photos` is deliberately NOT wrapped in Editable — see
+  // lib/admin/section-registry.tsx's `portfolio` entry KNOWN GAP note.
+  type TabWithId = (typeof portfolio.tabs)[number] & { id: number };
+  const tabs = portfolio.tabs as TabWithId[];
+
+  const [active, setActive] = useState(tabs[0].key);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
   // Measured from the live grid so "two rows" holds at every breakpoint,
@@ -26,7 +35,7 @@ export function Portfolio() {
   const [metrics, setMetrics] = useState({ perRow: 0, collapsedHeight: 0 });
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const tab = portfolio.tabs.find((t) => t.key === active) ?? portfolio.tabs[0];
+  const tab = tabs.find((t) => t.key === active) ?? tabs[0];
   const photos = tab.photos;
 
   const visibleCount =
@@ -110,9 +119,15 @@ export function Portfolio() {
     <section id="portfolio" className="section-wrap">
       <div className="section-card section-card--light">
         <div className="max-w-2xl">
-          <p className="eyebrow">{portfolio.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{portfolio.title}</h2>
-          <p className="lede mt-5">{portfolio.intro}</p>
+          <p className="eyebrow">
+            <Editable id="portfolio.eyebrow" kind="text">{portfolio.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="portfolio.title" kind="text">{portfolio.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="portfolio.intro" kind="text">{portfolio.intro}</Editable>
+          </p>
         </div>
 
         {/* Tabs */}
@@ -121,7 +136,7 @@ export function Portfolio() {
           aria-label="Sourcing portfolio categories"
           className="mt-10 flex flex-wrap gap-2"
         >
-          {portfolio.tabs.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.key}
               role="tab"
@@ -138,7 +153,7 @@ export function Portfolio() {
                   : "border-ink/15 bg-transparent text-ink hover:border-brass hover:text-brass-dark",
               )}
             >
-              {t.label}
+              <Editable id={`portfolio.tabs.${t.id}`} kind="item" as="span">{t.label}</Editable>
             </button>
           ))}
         </div>
@@ -235,19 +250,21 @@ export function Portfolio() {
 
         <Reveal className="mt-12 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-ink/10 pt-6">
           <span className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-loom">
-            {portfolio.extra.label}:
+            <Editable id="portfolio.extra.label" kind="text">{portfolio.extra.label}</Editable>:
           </span>
-          {portfolio.extra.items.map((x) => (
-            <span
-              key={x}
-              className="font-display text-base font-medium text-ink-muted"
-            >
-              {x}
-              <span aria-hidden className="ml-3 text-brass">
-                ·
+          <Editable id="portfolio.extra.items" kind="text" as="span" className="contents">
+            {portfolio.extra.items.map((x) => (
+              <span
+                key={x}
+                className="font-display text-base font-medium text-ink-muted"
+              >
+                {x}
+                <span aria-hidden className="ml-3 text-brass">
+                  ·
+                </span>
               </span>
-            </span>
-          ))}
+            ))}
+          </Editable>
         </Reveal>
       </div>
 
@@ -540,3 +557,4 @@ function ArrowIcon({ flip = false }: { flip?: boolean }) {
     </svg>
   );
 }
+

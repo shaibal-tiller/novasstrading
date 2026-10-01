@@ -1,12 +1,33 @@
-import { leadTime } from "@/lib/content";
+import { Editable } from "./admin/Editable";
 
-export function LeadTimeTable() {
+const COLUMNS = ["Products / Accessories", "Sample Lead-Time", "Production Lead-Time"];
+
+type LeadTime = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  rows: string[][];
+};
+
+export function LeadTimeTable({ leadTime }: { leadTime: LeadTime }) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type RowWithId = (typeof leadTime.rows)[number] & { id: number };
+  const rows = leadTime.rows as unknown as RowWithId[];
+
   return (
     <div>
       <div className="max-w-2xl">
-        <p className="eyebrow">{leadTime.eyebrow}</p>
-        <h3 className="display-md mt-4 text-ink">{leadTime.title}</h3>
-        <p className="mt-4 text-ink-muted">{leadTime.intro}</p>
+        <p className="eyebrow">
+          <Editable id="leadTime.eyebrow" kind="text">{leadTime.eyebrow}</Editable>
+        </p>
+        <h3 className="display-md mt-4 text-ink">
+          <Editable id="leadTime.title" kind="text">{leadTime.title}</Editable>
+        </h3>
+        <p className="mt-4 text-ink-muted">
+          <Editable id="leadTime.intro" kind="text">{leadTime.intro}</Editable>
+        </p>
       </div>
 
       <div className="mt-8 overflow-hidden rounded-sm border border-ink/10 bg-canvas">
@@ -16,7 +37,7 @@ export function LeadTimeTable() {
           </caption>
           <thead>
             <tr className="bg-ink text-ivory">
-              {leadTime.columns.map((c, i) => (
+              {COLUMNS.map((c, i) => (
                 <th
                   key={c}
                   scope="col"
@@ -30,7 +51,7 @@ export function LeadTimeTable() {
             </tr>
           </thead>
           <tbody>
-            {leadTime.rows.map((row, r) => (
+            {rows.map((row, r) => (
               <tr
                 key={row[0]}
                 className={r % 2 ? "bg-ivory/50" : "bg-canvas"}
@@ -39,13 +60,13 @@ export function LeadTimeTable() {
                   scope="row"
                   className="px-4 py-3 text-sm font-medium text-ink"
                 >
-                  {row[0]}
+                  <Editable id={`leadTime.rows.${row.id}`} kind="item" className="block h-full w-full">{row[0]}</Editable>
                 </th>
                 <td className="px-4 py-3 text-center font-mono text-xs text-loom">
-                  {row[1]}
+                  <Editable id={`leadTime.rows.${row.id}`} kind="item" className="block h-full w-full">{row[1]}</Editable>
                 </td>
                 <td className="px-4 py-3 text-center font-mono text-xs text-brass-dark">
-                  {row[2]}
+                  <Editable id={`leadTime.rows.${row.id}`} kind="item" className="block h-full w-full">{row[2]}</Editable>
                 </td>
               </tr>
             ))}
@@ -55,3 +76,4 @@ export function LeadTimeTable() {
     </div>
   );
 }
+

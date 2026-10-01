@@ -1,4 +1,5 @@
-import { divisions } from "@/lib/content";
+import type { divisions as DivisionsContent, leadTime as LeadTimeContent } from "@/lib/content";
+import { Editable } from "./admin/Editable";
 import { ContentMedia } from "./ContentMedia";
 import { Reveal } from "./Reveal";
 import { LeadTimeTable } from "./LeadTimeTable";
@@ -8,18 +9,36 @@ const placeholders = [
   { src: "premium-fabric-rolls-textures.jpg", alt: "Premium fabric rolls fanned to show knit, woven & denim textures" },
 ];
 
-export function Divisions() {
+export function Divisions({
+  divisions,
+  leadTime,
+}: {
+  divisions: typeof DivisionsContent;
+  leadTime: typeof LeadTimeContent;
+}) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type DivisionItemWithId = (typeof divisions.items)[number] & { id: number };
+  const items = divisions.items as DivisionItemWithId[];
+
   return (
     <section id="divisions" className="section-wrap">
       <div className="section-card section-card--cream">
         <div className="max-w-2xl">
-          <p className="eyebrow">{divisions.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{divisions.title}</h2>
-          <p className="lede mt-5">{divisions.intro}</p>
+          <p className="eyebrow">
+            <Editable id="divisions.eyebrow" kind="text">{divisions.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="divisions.title" kind="text">{divisions.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="divisions.intro" kind="text">{divisions.intro}</Editable>
+          </p>
         </div>
 
         <div className="mt-16 space-y-16">
-          {divisions.items.map((d, i) => {
+          {items.map((d, i) => {
             const media = placeholders[i];
             const flip = i % 2 === 1;
             return (
@@ -36,33 +55,35 @@ export function Divisions() {
                   />
                 </div>
                 <div className={flip ? "lg:order-1" : ""}>
-                  <span className="font-mono text-xs uppercase tracking-[0.25em] text-brass-dark">
-                    {d.index}
-                  </span>
-                  <h3 className="display-md mt-3 text-ink">{d.title}</h3>
-                  <p className="mt-4 leading-relaxed text-ink-muted">{d.body}</p>
-
-                  <p className="mt-5 text-sm leading-relaxed text-ink">
-                    <span className="font-mono text-[0.7rem] uppercase tracking-[0.15em] text-loom">
-                      {d.productsLabel}:{" "}
+                  <Editable id={`divisions.items.${d.id}`} kind="item" as="div" className="contents">
+                    <span className="font-mono text-xs uppercase tracking-[0.25em] text-brass-dark">
+                      {d.index}
                     </span>
-                    {d.products}
-                  </p>
+                    <h3 className="display-md mt-3 text-ink">{d.title}</h3>
+                    <p className="mt-4 leading-relaxed text-ink-muted">{d.body}</p>
 
-                  <ul className="mt-6 space-y-2.5">
-                    {d.bullets.map((b) => (
-                      <li
-                        key={b}
-                        className="flex items-start gap-3 text-sm text-ink"
-                      >
-                        <span
-                          aria-hidden
-                          className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brass"
-                        />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
+                    <p className="mt-5 text-sm leading-relaxed text-ink">
+                      <span className="font-mono text-[0.7rem] uppercase tracking-[0.15em] text-loom">
+                        {d.productsLabel}:{" "}
+                      </span>
+                      {d.products}
+                    </p>
+
+                    <ul className="mt-6 space-y-2.5">
+                      {d.bullets.map((b) => (
+                        <li
+                          key={b}
+                          className="flex items-start gap-3 text-sm text-ink"
+                        >
+                          <span
+                            aria-hidden
+                            className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brass"
+                          />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  </Editable>
                 </div>
               </Reveal>
             );
@@ -70,8 +91,9 @@ export function Divisions() {
         </div>
 
         <hr className="stitch my-16" />
-        <LeadTimeTable />
+        <LeadTimeTable leadTime={leadTime} />
       </div>
     </section>
   );
 }
+

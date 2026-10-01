@@ -1,4 +1,5 @@
-import { process } from "@/lib/content";
+import type { process as ProcessContent } from "@/lib/content";
+import { Editable } from "./admin/Editable";
 import { Reveal } from "./Reveal";
 
 /* SVG icons matching each of the 6 client process steps */
@@ -57,49 +58,63 @@ function StepArrow() {
   );
 }
 
-export function Process() {
+export function Process({ process }: { process: typeof ProcessContent }) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type StepWithId = (typeof process.steps)[number] & { id: number };
+  const steps = process.steps as StepWithId[];
+
   return (
     <section id="process" className="section-wrap">
       <div className="section-card section-card--cream">
         {/* Header */}
         <div className="max-w-2xl">
-          <p className="eyebrow">{process.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{process.title}</h2>
-          <p className="lede mt-5">{process.intro}</p>
+          <p className="eyebrow">
+            <Editable id="process.eyebrow" kind="text">{process.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="process.title" kind="text">{process.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="process.intro" kind="text">{process.intro}</Editable>
+          </p>
         </div>
 
         {/* 3 × 2 icon-card grid — matches client's process_flow layout.
             Mobile: 2 columns, compact cards. */}
         <div className="mt-14 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
-          {process.steps.map((step, i) => (
+          {steps.map((step, i) => (
             <Reveal
               key={step.n}
               as="article"
               delay={i * 70}
               className="group relative overflow-hidden rounded-2xl border border-ink/10 bg-white p-4 shadow-sm transition-shadow duration-300 hover:shadow-md sm:p-7"
             >
-              {/* Step number watermark */}
-              <span
-                className="absolute right-3 top-2 font-display text-4xl font-bold leading-none text-ink/5 select-none sm:right-4 sm:top-4 sm:text-6xl"
-                aria-hidden
-              >
-                {step.n}
-              </span>
+              <Editable id={`process.steps.${step.id}`} kind="item" as="div" className="contents">
+                {/* Step number watermark */}
+                <span
+                  className="absolute right-3 top-2 font-display text-4xl font-bold leading-none text-ink/5 select-none sm:right-4 sm:top-4 sm:text-6xl"
+                  aria-hidden
+                >
+                  {step.n}
+                </span>
 
-              {/* Icon */}
-              <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brass/15 text-brass-dark transition-colors duration-300 group-hover:bg-brass-dark group-hover:text-ivory sm:mb-5 sm:h-14 sm:w-14">
-                {icons[step.icon]}
-              </div>
+                {/* Icon */}
+                <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-brass/15 text-brass-dark transition-colors duration-300 group-hover:bg-brass-dark group-hover:text-ivory sm:mb-5 sm:h-14 sm:w-14">
+                  {icons[step.icon]}
+                </div>
 
-              {/* Title */}
-              <h3 className="font-display text-base font-semibold text-ink sm:text-lg">
-                {step.title}
-              </h3>
+                {/* Title */}
+                <h3 className="font-display text-base font-semibold text-ink sm:text-lg">
+                  {step.title}
+                </h3>
 
-              {/* Description */}
-              <p className="mt-2 line-clamp-3 text-[0.82rem] leading-relaxed text-ink-muted sm:mt-2.5 sm:line-clamp-none sm:text-sm">
-                {step.body}
-              </p>
+                {/* Description */}
+                <p className="mt-2 line-clamp-3 text-[0.82rem] leading-relaxed text-ink-muted sm:mt-2.5 sm:line-clamp-none sm:text-sm">
+                  {step.body}
+                </p>
+              </Editable>
 
               {/* Bottom accent line on hover */}
               <span className="absolute bottom-0 left-0 h-[3px] w-0 rounded-b-2xl bg-brass-dark transition-all duration-500 group-hover:w-full" />
@@ -125,3 +140,4 @@ export function Process() {
     </section>
   );
 }
+

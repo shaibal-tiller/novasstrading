@@ -1,3 +1,4 @@
+import { getContent } from "@/lib/content-data";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { About } from "@/components/About";
@@ -15,30 +16,33 @@ import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { ScrollTop } from "@/components/ScrollTop";
 
-export default function Home() {
+export default async function Home() {
+  const content = await getContent();
+
   return (
     <>
-      <Header />
+      <Header nav={content.nav} site={content.site} />
       <main
         id="main"
         className="flex flex-col gap-[clamp(0.75rem,2vw,1.5rem)] pb-[clamp(0.75rem,2vw,1.5rem)]"
       >
-        <Hero />
-        <About />
-        <CoreValues />
-        <WhyUs />
-        <ProductRange />
-        <Portfolio />
-        <Sourcing />
-        <Process />
-        <Divisions />
-        <Compliance />
-        <Partners />
-        <Profiles />
-        <Contact />
+        <Hero hero={content.hero} />
+        <About about={content.about} />
+        <CoreValues coreValues={content.coreValues} />
+        <WhyUs whyUs={content.whyUs} />
+        <ProductRange products={content.products} />
+        <Portfolio portfolio={content.portfolio} />
+        <Sourcing sourcing={content.sourcing} />
+        <Process process={content.process} />
+        <Divisions divisions={content.divisions} leadTime={content.leadTime} />
+        <Compliance compliance={content.compliance} />
+        <Partners partners={content.partners} />
+        <Profiles profiles={content.profiles} />
+        <Contact contact={content.contact} site={content.site} />
       </main>
-      <Footer />
+      <Footer footerBlurb={content.footerBlurb} nav={content.nav} site={content.site} />
       <ScrollTop />
     </>
   );
 }
+

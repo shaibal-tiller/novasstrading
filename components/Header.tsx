@@ -2,10 +2,24 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { nav, site } from "@/lib/content";
+import type { nav as NavContent, site as SiteContent } from "@/lib/content";
 import { clsx } from "@/lib/utils";
+import { Editable } from "./admin/Editable";
 
-export function Header() {
+export function Header({
+  nav,
+  site,
+}: {
+  nav: typeof NavContent;
+  site: typeof SiteContent;
+}) {
+  // Local item-id widening: the DB-backed nav rows carry a numeric `id`, but
+  // lib/content.ts's static shape (and thus this prop's type) has none. See
+  // Task 8 brief — real DB ids arrive via Task 13; here `id` is `undefined`
+  // at runtime, which is fine since Editable never reads it outside edit mode.
+  type NavItemWithId = (typeof nav)[number] & { id: number };
+  const navItems = nav as unknown as NavItemWithId[];
+
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
@@ -48,7 +62,7 @@ export function Header() {
     handleScroll(); // initialize
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [nav]);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -125,7 +139,7 @@ export function Header() {
             aria-label="Primary"
             className="hidden items-center gap-8 lg:flex"
           >
-            {nav.map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
@@ -134,7 +148,9 @@ export function Header() {
                   activeSection === item.href && "nav-link-active",
                 )}
               >
-                {item.label}
+                <Editable id={`nav.${item.id}`} kind="item" as="span">
+                  {item.label}
+                </Editable>
               </a>
             ))}
             <a href="#contact" className="btn btn-primary !py-2.5 !px-5 text-xs">
@@ -187,7 +203,7 @@ export function Header() {
             aria-label="Mobile"
             className="shell flex flex-col gap-1 border-t border-ink/10 bg-ivory pb-8 pt-4"
           >
-            {nav.map((item) => (
+            {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
@@ -199,7 +215,9 @@ export function Header() {
                     : "text-ink",
                 )}
               >
-                {item.label}
+                <Editable id={`nav.${item.id}`} kind="item" as="span">
+                  {item.label}
+                </Editable>
               </a>
             ))}
             <a
@@ -215,3 +233,4 @@ export function Header() {
     </>
   );
 }
+

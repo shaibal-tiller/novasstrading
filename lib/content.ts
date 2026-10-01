@@ -4,6 +4,13 @@
 // Source documents: template.pdf (company profile) + Products.zip content.
 // ---------------------------------------------------------------------------
 
+// NOTE: as of the admin content portal (docs/superpowers/specs/2026-08-18-...),
+// this file is no longer read at runtime — app/page.tsx fetches content from
+// the cPanel-backed API via lib/content-data.ts instead. Kept for its exported
+// TypeScript types (`typeof hero`, etc.), which every content-portal component
+// still imports for prop typing, and as the source `scripts/migrate-content.ts`
+// seeded the database from.
+
 export const site = {
   name: "Nova SS Trading",
   legalName: "Nova SS Trading",
@@ -825,3 +832,4 @@ export const contact = {
 
 export const footerBlurb =
   "A leading garments buying house in Bangladesh — sourcing high-quality knitwear, woven, sweaters, lingerie & accessories for retailers and wholesalers worldwide.";
+

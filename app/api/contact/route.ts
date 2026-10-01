@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { sendBrevoEmail } from "@/lib/mail";
 
 export const runtime = "nodejs";
 
@@ -95,20 +96,6 @@ async function geoLookup(ip: string): Promise<Record<string, string>> {
     if (json.status === "success") return json;
   } catch { /* geo lookup is best-effort */ }
   return {};
-}
-
-async function sendBrevoEmail(payload: object): Promise<boolean> {
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "accept":        "application/json",
-      "api-key":       BREVO_API_KEY,
-      "content-type":  "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const json = (await res.json()) as Record<string, unknown>;
-  return Boolean(json.messageId);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -455,3 +442,4 @@ export async function POST(request: Request) {
     { status: 200 },
   );
 }
+
