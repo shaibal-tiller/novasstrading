@@ -51,7 +51,9 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const original = Buffer.from(await file.arrayBuffer());
-  const resized = sharp(original).resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: "inside", withoutEnlargement: true });
+  // .rotate() with no args bakes in the EXIF orientation: sharp drops the EXIF
+  // tag when re-encoding, so phone photos would otherwise end up sideways.
+  const resized = sharp(original).rotate().resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: "inside", withoutEnlargement: true });
   const webp = await resized.webp({ quality: 80 }).toBuffer();
   const meta = await sharp(webp).metadata();
 

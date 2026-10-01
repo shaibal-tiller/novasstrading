@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePublicContent } from "@/lib/revalidate-content";
 import { createItem, deleteItem, reorderItems, updateItem, updateSection } from "@/lib/cpanel-api";
 import { verifySessionCookie } from "@/lib/session";
 import type { ApplyChangesetResult, Changeset } from "@/components/admin/SectionEditor";
@@ -129,7 +129,7 @@ export async function applyChangesetAction(changeset: Changeset): Promise<ApplyC
     result.deletedIds.length +
     result.reorderedSections.length;
   if (successCount > 0) {
-    revalidatePath("/");
+    revalidatePublicContent();
   }
 
   return result;

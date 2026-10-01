@@ -1,39 +1,34 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/cpanel-api", () => ({
-  getSections: vi.fn().mockResolvedValue({
+const bundle = {
+  sections: {
     hero: { eyebrow: "Premier" },
     coreValues: { eyebrow: "Compass", title: "Values" },
     about: { title: "About us" },
     footerBlurb: { text: "A leading garments buying house." },
     leadTime: { eyebrow: "Lead-Time" },
-  }),
-  listItems: vi.fn().mockImplementation(async (section: string) => {
-    if (section === "coreValues.values") {
-      return [{ id: 1, fields: { title: "Integrity" } }, { id: 2, fields: { title: "Quality" } }];
-    }
-    if (section === "nav") {
-      return [{ id: 1, fields: { label: "About", href: "#about" } }];
-    }
-    if (section === "hero.stats") {
-      return [{ id: 1, fields: { v: "5", l: "Core product ranges" } }];
-    }
-    if (section === "about.body") {
-      return [{ id: 1, fields: { text: "We work with all kinds of garments." } }];
-    }
-    if (section === "about.highlights") {
-      return [{ id: 1, fields: { text: "Ethical sourcing" } }, { id: 2, fields: { text: "On-time delivery" } }];
-    }
-    if (section === "leadTime.rows") {
-      return [{ id: 1, fields: { product: "Buttons", sampleLeadTime: "2-4 Days", productionLeadTime: "3-7 Days" } }];
-    }
-    return [];
-  }),
-}));
+  },
+  items: {
+    "coreValues.values": [{ id: 1, fields: { title: "Integrity" } }, { id: 2, fields: { title: "Quality" } }],
+    nav: [{ id: 1, fields: { label: "About", href: "#about" } }],
+    "hero.stats": [{ id: 1, fields: { v: "5", l: "Core product ranges" } }],
+    "about.body": [{ id: 1, fields: { text: "We work with all kinds of garments." } }],
+    "about.highlights": [{ id: 1, fields: { text: "Ethical sourcing" } }, { id: 2, fields: { text: "On-time delivery" } }],
+    "leadTime.rows": [{ id: 1, fields: { product: "Buttons", sampleLeadTime: "2-4 Days", productionLeadTime: "3-7 Days" } }],
+  },
+};
+
+const getContentBundle = vi.fn();
+vi.mock("@/lib/cpanel-api", () => ({ getContentBundle: () => getContentBundle() }));
 
 import { getContent } from "@/lib/content-data";
 
 describe("getContent", () => {
+  beforeEach(() => {
+    getContentBundle.mockReset();
+    getContentBundle.mockResolvedValue(bundle);
+  });
+
   it("merges section scalars with their object-item list fields into the original lib/content.ts shape", async () => {
     const content = await getContent();
     expect(content.hero).toEqual({ eyebrow: "Premier", stats: [{ v: "5", l: "Core product ranges" }] });
@@ -70,5 +65,30 @@ describe("getContent", () => {
       rows: [["Buttons", "2-4 Days", "3-7 Days"]],
     });
   });
-});
 
+  it("serves the bundled content when the content API is unreachable", async () => {
+    getContentBundle.mockImplementation(async () => {
+      throw new Error("boom");
+    });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const content = await getContent();
+    expect(content.hero.eyebrow).not.toBe("Premier");
+    expect(content.nav.length).toBeGreaterThan(1);
+    spy.mockRestore();
+  });
+
+  it("serves the bundled content when the database is empty", async () => {
+    getContentBundle.mockResolvedValue({ sections: {}, items: {} });
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const content = await getContent();
+    expect(content.about.title).not.toBe("About us");
+    spy.mockRestore();
+  });
+
+  it("keeps the bundled value for a section the database has no rows for", async () => {
+    const content = await getContent();
+    expect(content.hero.eyebrow).toBe("Premier");
+    expect(content.partners).toBeDefined();
+    expect(content.partners).not.toEqual({});
+  });
+});

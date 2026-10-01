@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePublicContent } from "@/lib/revalidate-content";
 import { createItem } from "@/lib/cpanel-api";
 import { verifySessionCookie } from "@/lib/session";
 
@@ -12,7 +12,7 @@ export async function createItemAction(section: string, fields: Record<string, u
   if (!token) throw new Error("Not authenticated");
 
   await createItem(section, fields, token);
-  revalidatePath("/");
+  revalidatePublicContent();
   redirect(`/admin/content/items/${section}`);
 }
 

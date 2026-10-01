@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePublicContent } from "@/lib/revalidate-content";
 import { updateSection } from "@/lib/cpanel-api";
 import { verifySessionCookie } from "@/lib/session";
 
@@ -11,6 +11,6 @@ export async function saveSectionAction(sectionKey: string, fields: Record<strin
   if (!token) throw new Error("Not authenticated");
 
   await updateSection(sectionKey, fields, token);
-  revalidatePath("/"); // public homepage re-reads this section on next request
+  revalidatePublicContent(); // public homepage re-reads this section on next request
 }
 

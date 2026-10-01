@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePublicContent } from "@/lib/revalidate-content";
 import { restoreItem } from "@/lib/cpanel-api";
 import { verifySessionCookie } from "@/lib/session";
 
@@ -10,6 +10,6 @@ export async function restoreItemAction(id: number): Promise<void> {
   const token = cookie ? verifySessionCookie(cookie) : null;
   if (!token) throw new Error("Not authenticated");
   await restoreItem(id, token);
-  revalidatePath("/");
+  revalidatePublicContent();
 }
 

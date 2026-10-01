@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePublicContent } from "@/lib/revalidate-content";
 import { deleteItem, reorderItems } from "@/lib/cpanel-api";
 import { verifySessionCookie } from "@/lib/session";
 
@@ -14,11 +14,11 @@ function requireToken(): string {
 
 export async function deleteItemAction(id: number): Promise<void> {
   await deleteItem(id, requireToken());
-  revalidatePath("/");
+  revalidatePublicContent();
 }
 
 export async function reorderItemsAction(section: string, ids: number[]): Promise<void> {
   await reorderItems(section, ids, requireToken());
-  revalidatePath("/");
+  revalidatePublicContent();
 }
 

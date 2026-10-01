@@ -1,4 +1,5 @@
 import "server-only";
+import { CONTENT_REVALIDATE_SECONDS, CONTENT_TAG } from "@/lib/content-tag";
 
 type Fields = Record<string, unknown>;
 export type MediaRow = {
@@ -37,7 +38,28 @@ async function call(
   if (init.sessionToken) {
     headers.Authorization = `Bearer ${init.sessionToken}`;
   }
-  return fetch(`${baseUrl()}${path}`, { ...init, headers });
+  // Admin screens and writes must always see live data, so nothing is cached
+  // unless the caller opts in with `next` (see getContentBundle). Next 14
+  // otherwise caches GET fetches by default.
+  return fetch(`${baseUrl()}${path}`, { cache: "no-store", ...init, headers });
+}
+
+/**
+ * The whole public site's content in ONE round trip (cPanel GET /content),
+ * held in Next's data cache under CONTENT_TAG. Admin writes call
+ * revalidatePublicContent() to drop it; the timed revalidate is a safety net.
+ * Throws on any failure so getContent() can fall back to the bundled content.
+ */
+export async function getContentBundle(): Promise<{
+  sections: Record<string, Fields>;
+  items: Record<string, { id: number; fields: Fields }[]>;
+}> {
+  const res = await call("/content", {
+    cache: undefined,
+    next: { tags: [CONTENT_TAG], revalidate: CONTENT_REVALIDATE_SECONDS },
+  });
+  if (!res.ok) throw new Error(`Content API responded ${res.status}`);
+  return res.json();
 }
 
 export async function login(email: string, password: string): Promise<string> {

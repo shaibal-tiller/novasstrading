@@ -17,3 +17,7 @@ Products.zip
 /NOVA_SS_TRADING_Website_Overview.pdf
 
 /.wrangler/
+
+# cPanel API: uploaded media lives on the server, not in git (keep the folder rules)
+cpanel-api/public/media/*
+!cpanel-api/public/media/.htaccess

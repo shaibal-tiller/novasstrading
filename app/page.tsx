@@ -16,6 +16,10 @@ import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { ScrollTop } from "@/components/ScrollTop";
 
+// Static page, rebuilt on demand when an admin saves (revalidatePublicContent)
+// and at most hourly otherwise. Must match CONTENT_REVALIDATE_SECONDS.
+export const revalidate = 3600;
+
 export default async function Home() {
   const content = await getContent();
 

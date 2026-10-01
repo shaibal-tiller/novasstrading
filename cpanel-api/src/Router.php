@@ -2,6 +2,7 @@
 namespace App;
 
 use App\Controllers\AuthController;
+use App\Controllers\ContentController;
 use App\Controllers\ItemsController;
 use App\Controllers\MediaController;
 use App\Controllers\SectionsController;
@@ -27,6 +28,10 @@ final class Router
         }
         if ($method === 'POST' && $path === '/auth/otp/verify') {
             return (new AuthController())->verifyOtp($req);
+        }
+
+        if ($method === 'GET' && $path === '/content') {
+            return (new ContentController())->index($req);
         }
 
         if ($method === 'GET' && $path === '/sections') {
