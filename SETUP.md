@@ -144,3 +144,4 @@ Vercel → **Deployments** → pick a previous successful deploy →
 | Vercel | Hobby | $0 |
 | Exonhost | existing (DNS + email) | already paid |
 | Brevo | free tier (300 emails/day) | $0 |
+

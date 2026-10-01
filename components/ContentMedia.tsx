@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { blurData } from "@/lib/blurData";
 import { LazyVideo } from "./LazyVideo";
+import { resolveMediaUrl } from "@/lib/media-url";
 
 type ContentMediaProps = {
   /** Filename in /public/assets — bare names default to .png */
@@ -40,9 +41,13 @@ export function ContentMedia({
   poster,
 }: ContentMediaProps) {
   const isVideo = kind === "video" || src.toLowerCase().startsWith("vid-");
+  // Check if this is uploaded media (from cPanel host). resolveMediaUrl warns
+  // on our behalf when NEXT_PUBLIC_MEDIA_BASE_URL is unset for a media/-prefixed src.
+  const isUploadedMedia = src.startsWith("media/");
   // Bare names default to .png; paths with an extension are used as-is.
   const fileName = src.includes(".") ? src : `${src}.png`;
-  const blur = blurData[fileName];
+  // Uploaded media has no precomputed blur entry; only look up blur for local assets
+  const blur = isUploadedMedia ? undefined : blurData[fileName];
   const [isLoaded, setIsLoaded] = useState(false);
 
   return (
@@ -64,7 +69,7 @@ export function ContentMedia({
         />
       ) : (
         <Image
-          src={`/assets/${fileName}`}
+          src={isUploadedMedia ? resolveMediaUrl(src) : `/assets/${fileName}`}
           alt={alt}
           fill
           priority={priority}
@@ -86,3 +91,4 @@ export function ContentMedia({
     </div>
   );
 }
+

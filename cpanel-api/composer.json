@@ -1,0 +1,17 @@
+{
+  "name": "novasstrading/cpanel-api",
+  "description": "Content API deployed to Exonhost cPanel. No runtime dependencies — plain PHP only. Composer is used for autoloading and dev/test tooling only.",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0"
+  },
+  "autoload": {
+    "psr-4": { "App\\": "src/" }
+  },
+  "autoload-dev": {
+    "psr-4": { "Tests\\": "tests/" }
+  }
+}
+

@@ -1,42 +1,60 @@
 "use client";
 
 import { useState } from "react";
-import { coreValues } from "@/lib/content";
+import type { coreValues as CoreValuesContent } from "@/lib/content";
 import { clsx } from "@/lib/utils";
+import { Editable } from "./admin/Editable";
 import { Reveal } from "./Reveal";
 
-const STEP = 360 / coreValues.values.length; // one bearing per value
-
-export function CoreValues() {
+export function CoreValues({
+  coreValues,
+}: {
+  coreValues: typeof CoreValuesContent;
+}) {
+  const STEP = 360 / coreValues.values.length; // one bearing per value
   // null = needle at rest (north); a number = the value being pointed at.
   const [active, setActive] = useState<number | null>(null);
   const current = active === null ? null : coreValues.values[active];
+
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type ValueWithId = (typeof coreValues.values)[number] & { id: number };
+  const values = coreValues.values as ValueWithId[];
 
   return (
     <section id="values" className="section-wrap">
       <div className="section-card section-card--cream">
         <div className="max-w-2xl">
-          <p className="eyebrow">{coreValues.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{coreValues.title}</h2>
-          <p className="lede mt-5">{coreValues.intro}</p>
+          <p className="eyebrow">
+            <Editable id="coreValues.eyebrow" kind="text">{coreValues.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="coreValues.title" kind="text">{coreValues.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="coreValues.intro" kind="text">{coreValues.intro}</Editable>
+          </p>
         </div>
 
         {/* Mobile: 2 × 4 compact grid (compass is hover-only, so omitted here) */}
         <div className="mt-10 grid grid-cols-2 gap-3 sm:hidden">
-          {coreValues.values.map((v, i) => (
+          {values.map((v, i) => (
             <div
               key={v.title}
               className="rounded-xl border border-ink/10 bg-ivory/60 p-4"
             >
-              <span className="font-mono text-[0.7rem] text-brass-dark">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h3 className="mt-1 font-display text-sm font-semibold leading-snug text-ink">
-                {v.title}
-              </h3>
-              <p className="mt-1.5 text-[0.75rem] leading-snug text-ink-muted">
-                {v.body}
-              </p>
+              <Editable id={`coreValues.values.${v.id}`} kind="item" as="div">
+                <span className="font-mono text-[0.7rem] text-brass-dark">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="mt-1 font-display text-sm font-semibold leading-snug text-ink">
+                  {v.title}
+                </h3>
+                <p className="mt-1.5 text-[0.75rem] leading-snug text-ink-muted">
+                  {v.body}
+                </p>
+              </Editable>
             </div>
           ))}
         </div>
@@ -44,7 +62,12 @@ export function CoreValues() {
         <div className="mt-14 hidden gap-12 sm:grid lg:grid-cols-[auto_1fr] lg:gap-16">
           {/* ── The compass: needle swings to the value under the cursor ── */}
           <Reveal className="lg:sticky lg:top-28 lg:self-start">
-            <Compass active={active} label={current?.title ?? null} />
+            <Compass
+              active={active}
+              label={current?.title ?? null}
+              values={values}
+              step={STEP}
+            />
           </Reveal>
 
           {/* ── The values, as editorial rows on stitched hairlines ── */}
@@ -53,7 +76,7 @@ export function CoreValues() {
               className="border-t border-dashed border-brass/50"
               onMouseLeave={() => setActive(null)}
             >
-              {coreValues.values.map((v, i) => {
+              {values.map((v, i) => {
                 const isActive = active === i;
                 return (
                   <li
@@ -77,41 +100,43 @@ export function CoreValues() {
                     />
 
                     <div className="flex items-baseline gap-4 sm:gap-6">
-                      <span
-                        className={clsx(
-                          "font-mono text-[0.7rem] tabular-nums transition-colors duration-300",
-                          isActive ? "text-brass-dark" : "text-ink-muted/70",
-                        )}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-
-                      <div className="min-w-0 flex-1">
-                        <h3
+                      <Editable id={`coreValues.values.${v.id}`} kind="item" as="div" className="contents">
+                        <span
                           className={clsx(
-                            "font-display text-lg font-medium transition-colors duration-300 sm:text-xl",
-                            isActive ? "text-brass-dark" : "text-ink",
+                            "font-mono text-[0.7rem] tabular-nums transition-colors duration-300",
+                            isActive ? "text-brass-dark" : "text-ink-muted/70",
                           )}
                         >
-                          {v.title}
-                        </h3>
-                        <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
-                          {v.body}
-                        </p>
-                      </div>
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
 
-                      {/* the value's monogram, echoing the compass face */}
-                      <span
-                        aria-hidden
-                        className={clsx(
-                          "hidden font-display text-3xl font-semibold transition-all duration-500 sm:block",
-                          isActive
-                            ? "text-brass opacity-100"
-                            : "text-ink/15 opacity-70 group-hover:text-ink/25",
-                        )}
-                      >
-                        {v.title.charAt(0)}
-                      </span>
+                        <div className="min-w-0 flex-1">
+                          <h3
+                            className={clsx(
+                              "font-display text-lg font-medium transition-colors duration-300 sm:text-xl",
+                              isActive ? "text-brass-dark" : "text-ink",
+                            )}
+                          >
+                            {v.title}
+                          </h3>
+                          <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
+                            {v.body}
+                          </p>
+                        </div>
+
+                        {/* the value's monogram, echoing the compass face */}
+                        <span
+                          aria-hidden
+                          className={clsx(
+                            "hidden font-display text-3xl font-semibold transition-all duration-500 sm:block",
+                            isActive
+                              ? "text-brass opacity-100"
+                              : "text-ink/15 opacity-70 group-hover:text-ink/25",
+                          )}
+                        >
+                          {v.title.charAt(0)}
+                        </span>
+                      </Editable>
                     </div>
                   </li>
                 );
@@ -127,11 +152,15 @@ export function CoreValues() {
 function Compass({
   active,
   label,
+  values,
+  step,
 }: {
   active: number | null;
   label: string | null;
+  values: typeof CoreValuesContent.values;
+  step: number;
 }) {
-  const bearing = active === null ? 0 : active * STEP;
+  const bearing = active === null ? 0 : active * step;
 
   return (
     <div className="mx-auto w-[16rem] sm:w-[19rem]">
@@ -157,8 +186,8 @@ function Compass({
           />
 
           {/* one tick + node per value, set on its own bearing */}
-          {coreValues.values.map((v, i) => {
-            const rad = ((i * STEP - 90) * Math.PI) / 180;
+          {values.map((v, i) => {
+            const rad = ((i * step - 90) * Math.PI) / 180;
             const isActive = active === i;
             return (
               <g key={v.title}>
@@ -216,8 +245,9 @@ function Compass({
         aria-live="polite"
         className="mt-4 text-center font-mono text-[0.68rem] uppercase tracking-[0.2em] text-ink-muted"
       >
-        {label ?? `${coreValues.values.length} values, one direction`}
+        {label ?? `${values.length} values, one direction`}
       </p>
     </div>
   );
 }
+

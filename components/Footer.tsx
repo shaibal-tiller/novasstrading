@@ -1,6 +1,25 @@
-import { footerBlurb, nav, site } from "@/lib/content";
+import type {
+  footerBlurb as FooterBlurbContent,
+  nav as NavContent,
+  site as SiteContent,
+} from "@/lib/content";
+import { Editable } from "./admin/Editable";
 
-export function Footer() {
+export function Footer({
+  footerBlurb,
+  nav,
+  site,
+}: {
+  footerBlurb: typeof FooterBlurbContent;
+  nav: typeof NavContent;
+  site: typeof SiteContent;
+}) {
+  // Local item-id widening: the DB-backed nav rows carry a numeric `id`, but
+  // lib/content.ts's static shape (and thus this prop's type) has none. Same
+  // nav.<id> ids as Header (Task 8) — same underlying content_items rows.
+  type NavItemWithId = (typeof nav)[number] & { id: number };
+  const navItems = nav as unknown as NavItemWithId[];
+
   return (
     <footer className="bg-ivory-deep text-ink">
       <div className="shell py-10 sm:py-16">
@@ -15,7 +34,7 @@ export function Footer() {
               </span>
             </div>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-ink-muted">
-              {footerBlurb}
+              <Editable id="footerBlurb.text" kind="text">{footerBlurb}</Editable>
             </p>
           </div>
 
@@ -24,13 +43,15 @@ export function Footer() {
               Quick links
             </h2>
             <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 sm:block sm:space-y-2.5">
-              {nav.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.href}>
                   <a
                     href={item.href}
                     className="text-sm text-ink/70 transition-colors hover:text-brass-dark"
                   >
-                    {item.label}
+                    <Editable id={`nav.${item.id}`} kind="item" as="span">
+                      {item.label}
+                    </Editable>
                   </a>
                 </li>
               ))}
@@ -115,3 +136,4 @@ function WhatsAppIcon() {
     </svg>
   );
 }
+
