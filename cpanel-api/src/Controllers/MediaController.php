@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Http\Request;
+use App\ImageOptimizer;
 use App\Http\Response;
 use App\Middleware\RequireApiKey;
 use App\Middleware\RequireSession;
@@ -77,25 +78,41 @@ final class MediaController
             return Response::json(['error' => 'file exceeds 5MB limit'], 422);
         }
 
-        // Check if the uploaded file is a PDF
         if (substr($req->uploadedFileBytes, 0, 5) === '%PDF-') {
-            $filename = bin2hex(random_bytes(16)) . '.pdf';
+            // Documents are stored untouched.
+            $stored = [
+                'bytes' => $req->uploadedFileBytes,
+                'ext' => 'pdf',
+                'mime' => 'application/pdf',
+                'width' => 0,
+                'height' => 0,
+                'optimized' => false,
+            ];
         } else {
-            // Existing image validation
-            if (getimagesizefromstring($req->uploadedFileBytes) === false) {
-                return Response::json(['error' => 'invalid image data'], 422);
+            try {
+                $stored = ImageOptimizer::optimize($req->uploadedFileBytes);
+            } catch (\InvalidArgumentException $e) {
+                return Response::json(['error' => $e->getMessage()], 422);
             }
-            $filename = bin2hex(random_bytes(16)) . '.webp';
         }
+
+        $filename = bin2hex(random_bytes(16)) . '.' . $stored['ext'];
 
         if (!is_dir($this->mediaDir)) {
             mkdir($this->mediaDir, 0775, true);
         }
-        $targetPath = $this->mediaDir . '/' . $filename;
-        file_put_contents($targetPath, $req->uploadedFileBytes);
+        file_put_contents($this->mediaDir . '/' . $filename, $stored['bytes']);
 
-        $path = 'media/' . $filename;
-        return Response::json(['path' => $path], 201);
+        // Report what was actually stored (not what was uploaded) so the caller
+        // can record accurate size/dimensions in the media table.
+        return Response::json([
+            'path' => 'media/' . $filename,
+            'bytes' => strlen($stored['bytes']),
+            'width' => $stored['width'],
+            'height' => $stored['height'],
+            'mime_type' => $stored['mime'],
+            'optimized' => $stored['optimized'],
+        ], 201);
     }
 }
 

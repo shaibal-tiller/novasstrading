@@ -28,12 +28,20 @@ request / two SQL queries.
 
 ## Images
 
-- **On upload**: auto-rotated from EXIF, resized to max 1600px, re-encoded to WebP quality 80 (`sharp`).
+- **On upload (on the cPanel server, `cpanel-api/src/ImageOptimizer.php`)**: the portal forwards the original
+  file and PHP does the work — bakes in EXIF rotation, downsizes to max 1600px on the long edge, re-encodes to
+  WebP quality 80, strips metadata. Uses Imagick if it can write WebP, otherwise GD (`imagewebp`).
+  If the host has neither, the original is stored unchanged under its real extension (an upload never fails
+  because of a missing library). A WebP that already fits is left alone, so nothing is compressed twice.
+  PDFs are stored untouched. Images over 40 megapixels are rejected to protect shared-host memory.
+- **What the DB records** is what PHP actually stored (real bytes/width/height/mime), returned by the upload endpoint.
 - **On display**: `next/image` serves AVIF/WebP at the right size via Vercel's image optimizer, cached
   31 days at the edge. Below-the-fold images lazy-load; only the hero/header use `priority`.
 - **From cPanel**: `public/media/.htaccess` sends `Cache-Control: public, max-age=31536000, immutable`
   (filenames are unique per upload) and blocks script execution in that folder.
-- PDFs are served straight from cPanel with the same headers.
+
+Check once on Exonhost: cPanel -> Select PHP Version -> Extensions, and make sure `gd` (or `imagick`) is ticked.
+Also `exif` if you want phone-photo rotation under GD.
 
 ## If you outgrow cPanel disk
 

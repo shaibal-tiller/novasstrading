@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import sharp from "sharp";
 import { createMedia } from "@/lib/cpanel-api";
 import { uploadFileToCpanel } from "@/lib/cpanel-media-upload";
 import { verifySessionCookie } from "@/lib/session";
 
 const MAX_BYTES = 5 * 1024 * 1024;
-const MAX_DIMENSION = 1600;
 
 export async function POST(request: Request): Promise<Response> {
   const cookie = cookies().get("nova_admin_session")?.value;
@@ -26,52 +24,30 @@ export async function POST(request: Request): Promise<Response> {
 
   const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "-");
 
-  // PDFs (Company Profile documents) pass through unprocessed — sharp only
-  // understands image formats, so running a PDF through the same
-  // resize/webp pipeline below would fail. Everything else is treated as an
-  // image and re-encoded to WebP, same as before.
-  if (file.type === "application/pdf") {
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const filename = `${Date.now()}-${safeName}${safeName.toLowerCase().endsWith(".pdf") ? "" : ".pdf"}`;
-    const path = await uploadFileToCpanel(bytes, filename, token);
-
-    const id = await createMedia(
-      {
-        path,
-        original_filename: file.name,
-        bytes: bytes.byteLength,
-        width: 0,
-        height: 0,
-        mime_type: "application/pdf",
-      },
-      token
-    );
-
-    return NextResponse.json({ id, path }, { status: 201 });
-  }
-
+  // Images and PDFs are forwarded as-is: the cPanel API is the single place
+  // that validates and optimizes (EXIF rotate, downsize, WebP — see
+  // cpanel-api/src/ImageOptimizer.php) and PDFs are stored untouched. It
+  // returns the real stored size/dimensions, which is what we record.
   const original = Buffer.from(await file.arrayBuffer());
-  // .rotate() with no args bakes in the EXIF orientation: sharp drops the EXIF
-  // tag when re-encoding, so phone photos would otherwise end up sideways.
-  const resized = sharp(original).rotate().resize({ width: MAX_DIMENSION, height: MAX_DIMENSION, fit: "inside", withoutEnlargement: true });
-  const webp = await resized.webp({ quality: 80 }).toBuffer();
-  const meta = await sharp(webp).metadata();
-
-  const filename = `${Date.now()}-${safeName}.webp`;
-  const path = await uploadFileToCpanel(webp, filename, token);
+  let stored;
+  try {
+    stored = await uploadFileToCpanel(original, `${Date.now()}-${safeName}`, token, file.type);
+  } catch (err) {
+    console.error("media upload failed:", err);
+    return NextResponse.json({ error: "upload failed" }, { status: 502 });
+  }
 
   const id = await createMedia(
     {
-      path,
+      path: stored.path,
       original_filename: file.name,
-      bytes: webp.byteLength,
-      width: meta.width ?? 0,
-      height: meta.height ?? 0,
-      mime_type: "image/webp",
+      bytes: stored.bytes,
+      width: stored.width,
+      height: stored.height,
+      mime_type: stored.mime_type,
     },
     token
   );
 
-  return NextResponse.json({ id, path }, { status: 201 });
+  return NextResponse.json({ id, path: stored.path }, { status: 201 });
 }
-

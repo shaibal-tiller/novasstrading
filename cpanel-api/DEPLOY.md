@@ -55,3 +55,9 @@ One-time setup:
 This step requires cPanel dashboard access — hand-off to the account owner rather
 than something an agent can complete unattended.
 
+
+## Image optimization needs a PHP image extension
+
+Uploads are optimized on this server (see `src/ImageOptimizer.php`). In cPanel -> **Select PHP Version -> Extensions**
+enable `gd` (with WebP support) or `imagick`, plus `exif` for phone-photo rotation under GD. Without them uploads
+still work but are stored unoptimized.
