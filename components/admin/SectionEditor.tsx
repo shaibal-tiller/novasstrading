@@ -623,7 +623,10 @@ export function SectionEditor({
 
       {reorderPanel}
 
-      <div className="sticky bottom-0 mt-6 flex flex-col gap-2 border-t border-ink/10 bg-paper p-4">
+      {/* z-50: the previewed section's own content is stacked above a bare sticky
+          element (grid is z-2), which made Confirm/Discard unclickable whenever a
+          highlighted block sat underneath the bar. */}
+      <div className="sticky bottom-0 z-50 mt-6 flex flex-col gap-2 border-t border-ink/10 bg-paper p-4">
         {failures.length > 0 && (
           <ul className="text-sm text-red-700" role="alert">
             {failures.map((f, i) => (
