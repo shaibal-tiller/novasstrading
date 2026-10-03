@@ -50,6 +50,34 @@ final class MediaRepository
         return (int) $db->lastInsertId();
     }
 
+    /** @return array{id:int, path:string}|null */
+    public function find(int $id): ?array
+    {
+        $stmt = Db::connection()->prepare('SELECT id, path FROM media WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
+        return $row === false ? null : ['id' => (int) $row['id'], 'path' => $row['path']];
+    }
+
+    /**
+     * True if any content (live sections, live items AND soft-deleted items that
+     * could still be restored from the trash) mentions this file. Matches on the
+     * file name only, so it does not matter how the JSON escaped the slash.
+     */
+    public function isReferenced(string $path): bool
+    {
+        $needle = '%' . addcslashes(basename($path), '\\%_') . '%';
+        $db = Db::connection();
+        foreach (['content_sections', 'content_items'] as $table) {
+            $stmt = $db->prepare("SELECT 1 FROM {$table} WHERE fields_json LIKE ? LIMIT 1");
+            $stmt->execute([$needle]);
+            if ($stmt->fetchColumn() !== false) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function delete(int $id): void
     {
         $stmt = Db::connection()->prepare('DELETE FROM media WHERE id = ?');

@@ -62,8 +62,34 @@ final class MediaController
         if ($err = $this->authorized($req)) {
             return $err;
         }
+        $row = $this->repo->find($id);
+        if ($row === null) {
+            return Response::json(['error' => 'not found'], 404);
+        }
+        // Deleting a file that content still points at would leave broken images
+        // on the live site (and in restorable trash items).
+        if ($this->repo->isReferenced($row['path'])) {
+            return Response::json(['error' => 'media is in use'], 409);
+        }
         $this->repo->delete($id);
+        $this->removeFile($row['path']);
         return Response::json(['ok' => true]);
+    }
+
+    /** Deletes the stored file for a "media/<name>" path. Strictly confined to the media folder. */
+    private function removeFile(string $path): void
+    {
+        if (!str_starts_with($path, 'media/')) {
+            return;
+        }
+        $name = basename($path);
+        if (!preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $name)) {
+            return;
+        }
+        $full = $this->mediaDir . '/' . $name;
+        if (is_file($full)) {
+            @unlink($full);
+        }
     }
 
     public function uploadFile(Request $req): Response

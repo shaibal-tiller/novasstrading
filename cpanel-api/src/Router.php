@@ -71,10 +71,13 @@ final class Router
             }
         }
 
-        if ($method === 'GET' && $path === '/media') {
+        // The upload folder is public/media/, so the bare path /media can be swallowed by the
+        // web server's own "add a trailing slash to a directory" redirect (301) before PHP
+        // runs. /media-library is the same API with no such folder behind it - clients use it.
+        if ($method === 'GET' && in_array($path, ['/media', '/media-library'], true)) {
             return (new MediaController())->index($req);
         }
-        if ($method === 'POST' && $path === '/media') {
+        if ($method === 'POST' && in_array($path, ['/media', '/media-library'], true)) {
             return (new MediaController())->store($req);
         }
         if ($method === 'POST' && $path === '/media/upload-file') {

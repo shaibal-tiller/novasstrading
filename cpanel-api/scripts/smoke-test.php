@@ -93,8 +93,8 @@ if ($token === '') {
     exit(1);
 }
 
-$r = http('GET', "{$base}/media", ["X-Api-Key: {$key}"]);
-check('GET /media lists the library', $r['status'] === 200, (string) $r['status']);
+$r = http('GET', "{$base}/media-library", ["X-Api-Key: {$key}"]);
+check('GET /media-library lists the library', $r['status'] === 200, (string) $r['status']);
 
 if (!function_exists('imagecreatetruecolor') || !function_exists('imagejpeg')) {
     echo "  (this PHP has no GD - cannot generate the test image here)\n";

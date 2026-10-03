@@ -1,8 +1,13 @@
+import { cookies } from "next/headers";
 import { listTrash } from "@/lib/cpanel-api";
+import { verifySessionCookie } from "@/lib/session";
 import { restoreItemAction } from "./actions";
 
 export default async function TrashPage() {
-  const trashed = await listTrash();
+  const cookie = cookies().get("nova_admin_session")?.value;
+  const token = cookie ? verifySessionCookie(cookie) : null;
+  if (!token) throw new Error("Not authenticated");
+  const trashed = await listTrash(token);
 
   return (
     <main className="flex flex-col gap-4">

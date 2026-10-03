@@ -134,15 +134,19 @@ export async function reorderItems(section: string, ids: number[], sessionToken:
 }
 
 export async function listMedia(): Promise<MediaRow[]> {
-  const res = await call("/media");
+  const res = await call("/media-library"); // not "/media": that is also the upload folder (see Router.php)
+  if (!res.ok) throw new Error(`Failed to list media (${res.status})`);
   return res.json();
 }
 
 export async function createMedia(meta: Omit<MediaRow, "id" | "used_by_count" | "created_at">, sessionToken: string): Promise<number> {
-  const res = await call("/media", { method: "POST", body: JSON.stringify(meta), sessionToken });
+  const res = await call("/media-library", { method: "POST", body: JSON.stringify(meta), sessionToken });
   if (!res.ok) throw new Error(`Failed to create media record (${res.status})`);
   const data = await res.json();
-  return data.id as number;
+  // A redirected/rewritten request can come back 200 with the wrong body (e.g. the
+  // library list); never report success without a real id.
+  if (typeof data?.id !== "number") throw new Error("Media record was not created (no id returned)");
+  return data.id;
 }
 
 export async function deleteMedia(id: number, sessionToken: string): Promise<void> {
@@ -150,8 +154,12 @@ export async function deleteMedia(id: number, sessionToken: string): Promise<voi
   if (!res.ok) throw new Error(`Failed to delete media ${id} (${res.status})`);
 }
 
-export async function listTrash(): Promise<{ id: number; section: string; fields: Fields; deletedAt: string }[]> {
-  const res = await call("/items/trash");
+export async function listTrash(sessionToken: string): Promise<{ id: number; section: string; fields: Fields; deletedAt: string }[]> {
+  // The trash list is admin-only on the PHP side (it exposes soft-deleted content),
+  // so it needs the session token, and a failure must surface instead of being
+  // parsed as if it were the list.
+  const res = await call("/items/trash", { sessionToken });
+  if (!res.ok) throw new Error(`Failed to list trash (${res.status})`);
   return res.json();
 }
 
