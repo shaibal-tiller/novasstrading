@@ -42,7 +42,14 @@ const nextConfig = {
     ];
   },
   async headers() {
+    // Staging only (ROBOTS_NOINDEX=1): also say it in a header, which covers every
+    // page including the admin portal, not just robots.txt.
+    const noindex =
+      process.env.ROBOTS_NOINDEX === "1"
+        ? [{ source: "/(.*)", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }]
+        : [];
     return [
+      ...noindex,
       {
         source: "/(.*)",
         headers: [
