@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "migrate:content": "tsx scripts/migrate-content.ts"
+    "migrate:content": "NODE_OPTIONS=--conditions=react-server tsx scripts/migrate-content.ts",
+    "verify:content": "NODE_OPTIONS=--conditions=react-server tsx scripts/verify-content.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
