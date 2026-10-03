@@ -8,7 +8,10 @@
  *   E2E_PASSWORD='...' node --env-file=.env.local scripts/e2e-staging.mjs
  *
  * Env: CPANEL_API_URL, CPANEL_API_KEY, SESSION_COOKIE_SECRET (from .env.local),
- *      E2E_PASSWORD (admin password), APP_URL (default http://localhost:3001)
+ *      E2E_PASSWORD (admin password), APP_URL (default http://localhost:3001),
+ *      VERCEL_BYPASS (optional: the project's "Protection Bypass for Automation"
+ *      secret, needed when APP_URL is a Vercel deployment behind Vercel Authentication;
+ *      SESSION_COOKIE_SECRET must then be the value set on THAT deployment)
  */
 import { createHmac } from "node:crypto";
 import sharp from "sharp";
@@ -19,6 +22,7 @@ const SECRET = process.env.SESSION_COOKIE_SECRET;
 const APP = process.env.APP_URL || "http://localhost:3001";
 const PASSWORD = process.env.E2E_PASSWORD;
 const EMAIL = "it-support@novasstrading.com";
+const BYPASS = process.env.VERCEL_BYPASS ? { "x-vercel-protection-bypass": process.env.VERCEL_BYPASS } : {};
 const LIST = "coreValues.values";
 
 if (!API || !KEY || !SECRET || !PASSWORD) {
@@ -64,12 +68,12 @@ const sections = "site nav hero about coreValues whyUs products portfolio sourci
 const pages = ["/admin/content", "/admin/content/media", "/admin/content/trash", ...sections.map((k) => `/admin/content/edit/${k}`)];
 let pageFails = [];
 for (const p of pages) {
-  const r = await fetch(APP + p, { headers: { cookie } });
+  const r = await fetch(APP + p, { headers: { cookie, ...BYPASS } });
   const t = await r.text();
   if (r.status !== 200 || /Application error|Internal Server Error/i.test(t)) pageFails.push(`${p} -> ${r.status}`);
 }
 ok(`all ${pages.length} admin pages load (dashboard, media, trash, 16 editors)`, pageFails.length === 0, pageFails.join("; "));
-const anon = await fetch(APP + "/admin/content", { redirect: "manual" });
+const anon = await fetch(APP + "/admin/content", { redirect: "manual", headers: BYPASS });
 ok("admin pages redirect to login without a session", anon.status >= 300 && anon.status < 400, String(anon.status));
 
 // ---- items: update / reorder / delete+restore ------------------------------
@@ -122,11 +126,11 @@ const src = await sharp({ create: { width: 3000, height: 2000, channels: 3, back
   .toBuffer();
 const form = new FormData();
 form.set("file", new File([src], "e2e-photo.jpg", { type: "image/jpeg" }));
-const up = await fetch(APP + "/admin/content/media/upload", { method: "POST", headers: { cookie }, body: form });
+const up = await fetch(APP + "/admin/content/media/upload", { method: "POST", headers: { cookie, ...BYPASS }, body: form });
 const upJson = await up.json().catch(() => ({}));
 ok("upload through the portal route", up.status === 201 && !!upJson.path, `${up.status} ${upJson.path ?? JSON.stringify(upJson)}`);
 
-const noCookie = await fetch(APP + "/admin/content/media/upload", { method: "POST", body: form });
+const noCookie = await fetch(APP + "/admin/content/media/upload", { method: "POST", headers: BYPASS, body: form });
 ok("upload without a session is rejected", noCookie.status === 401, String(noCookie.status));
 
 if (upJson.path) {
@@ -138,7 +142,7 @@ if (upJson.path) {
   ok("file is served publicly as WebP", file.status === 200 && (file.headers.get("content-type") || "").includes("image/webp"), `${file.status} ${file.headers.get("content-type")}`);
   ok("file has long-lived immutable cache headers", /immutable/i.test(file.headers.get("cache-control") || ""), file.headers.get("cache-control") || "no cache-control");
 
-  const img = await fetch(`${APP}/_next/image?url=${encodeURIComponent(`${API}/${upJson.path}`)}&w=640&q=75`, { headers: { accept: "image/avif,image/webp" } });
+  const img = await fetch(`${APP}/_next/image?url=${encodeURIComponent(`${API}/${upJson.path}`)}&w=640&q=75`, { headers: { accept: "image/avif,image/webp", ...BYPASS } });
   ok("next/image can optimize the uploaded file (AVIF/WebP, resized)", img.status === 200, `${img.status} ${img.headers.get("content-type")}`);
 
   // In-use guard: point a content item at the file, then try to delete the media.
@@ -149,8 +153,15 @@ if (upJson.path) {
 
   const del = await api("DELETE", `/media/${upJson.id}`, { token });
   ok("deleting unused media succeeds", del.status === 200, String(del.status));
-  const gone = await fetch(`${API}/${upJson.path}`);
-  ok("the file itself is removed from the server", gone.status === 404, `${gone.status}${gone.status === 200 ? " (old PHP: row deleted, file left behind)" : ""}`);
+  // The web server keeps a static file handle cached for a few seconds, so give
+  // the 404 up to ~15s to appear before calling it a failure.
+  let goneStatus = 0;
+  for (let i = 0; i < 15; i++) {
+    goneStatus = (await fetch(`${API}/${upJson.path}?probe=${i}`)).status;
+    if (goneStatus === 404) break;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  ok("the file itself is removed from the server", goneStatus === 404, `status ${goneStatus}`);
   const lib2 = (await api("GET", "/media-library")).json;
   ok("media row is gone from the library", !lib2?.some((m) => m.id === upJson.id));
 }
