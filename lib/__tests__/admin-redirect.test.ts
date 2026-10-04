@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { chooserDecision, normalizeAdminEmail, safeNextPath } from "@/lib/admin-redirect";
+import { MODULE_LINKS, chooserDecision, normalizeAdminEmail, safeNextPath } from "@/lib/admin-redirect";
 
 describe("safeNextPath", () => {
   it.each([
@@ -42,12 +42,24 @@ describe("normalizeAdminEmail", () => {
 });
 
 describe("chooserDecision", () => {
-  it("redirects straight to the only module", () => {
-    expect(chooserDecision(["website"])).toEqual({ kind: "redirect", href: "/admin/content" });
+  it("redirects straight there when only one destination is left (Assets-only)", () => {
     expect(chooserDecision(["assets"])).toEqual({ kind: "redirect", href: "/admin/inventory/assets" });
   });
-  it("offers a choice with Website first", () => {
-    expect(chooserDecision(["assets", "website"])).toEqual({ kind: "choose", modules: ["website", "assets"] });
+  it("gives a website-only user two cards: Website and Analytics", () => {
+    expect(chooserDecision(["website"])).toEqual({ kind: "choose", destinations: ["website", "analytics"] });
+  });
+  it("offers every destination in order Website, Analytics, Assets", () => {
+    expect(chooserDecision(["assets", "website"])).toEqual({
+      kind: "choose",
+      destinations: ["website", "analytics", "assets"],
+    });
+  });
+  it("links Analytics to /admin/analytics with its blurb", () => {
+    expect(MODULE_LINKS.analytics).toMatchObject({
+      href: "/admin/analytics",
+      label: "Analytics",
+      blurb: "Visitors, where they come from, and what they search on Google.",
+    });
   });
   it("reports no access", () => {
     expect(chooserDecision([])).toEqual({ kind: "none" });

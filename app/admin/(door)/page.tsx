@@ -29,10 +29,10 @@ export default async function AdminHomePage() {
         </p>
       ) : (
         <ul className="flex flex-col gap-4">
-          {decision.modules.map((m, i) => {
-            const link = MODULE_LINKS[m];
+          {decision.destinations.map((d, i) => {
+            const link = MODULE_LINKS[d];
             return (
-              <li key={m}>
+              <li key={d}>
                 <ModuleCard href={link.href} label={link.label} blurb={link.blurb} primary={i === 0} />
               </li>
             );

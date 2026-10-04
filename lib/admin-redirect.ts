@@ -20,23 +20,48 @@ export function normalizeAdminEmail(input: string): string {
   return trimmed.includes("@") ? trimmed : `${trimmed}@novasstrading.com`;
 }
 
-export const MODULE_LINKS: Record<AdminModule, { href: string; label: string; blurb: string }> = {
-  website: { href: "/admin/content", label: "Website", blurb: "Edit the public site's text, photos and lists." },
-  assets: { href: "/admin/inventory/assets", label: "Assets", blurb: "Track company equipment and who has it." },
+/**
+ * A card on the /admin chooser. Destinations are not the same as modules:
+ * the "website" module grants both the editor and Analytics.
+ */
+export type AdminDestination = "website" | "analytics" | "assets";
+
+export const MODULE_LINKS: Record<
+  AdminDestination,
+  { href: string; label: string; blurb: string; module: AdminModule }
+> = {
+  website: {
+    href: "/admin/content",
+    label: "Website",
+    blurb: "Edit the public site's text, photos and lists.",
+    module: "website",
+  },
+  analytics: {
+    href: "/admin/analytics",
+    label: "Analytics",
+    blurb: "Visitors, where they come from, and what they search on Google.",
+    module: "website",
+  },
+  assets: {
+    href: "/admin/inventory/assets",
+    label: "Assets",
+    blurb: "Track company equipment and who has it.",
+    module: "assets",
+  },
 };
 
 /** Website first: it is the default door. */
-const MODULE_ORDER: readonly AdminModule[] = ["website", "assets"];
+const DESTINATION_ORDER: readonly AdminDestination[] = ["website", "analytics", "assets"];
 
 export type ChooserDecision =
   | { kind: "redirect"; href: string }
-  | { kind: "choose"; modules: AdminModule[] }
+  | { kind: "choose"; destinations: AdminDestination[] }
   | { kind: "none" };
 
 /** What /admin should do for a signed-in user with these modules. */
 export function chooserDecision(modules: readonly AdminModule[]): ChooserDecision {
-  const ordered = MODULE_ORDER.filter((m) => modules.includes(m));
+  const ordered = DESTINATION_ORDER.filter((d) => modules.includes(MODULE_LINKS[d].module));
   if (ordered.length === 0) return { kind: "none" };
   if (ordered.length === 1) return { kind: "redirect", href: MODULE_LINKS[ordered[0]].href };
-  return { kind: "choose", modules: ordered };
+  return { kind: "choose", destinations: ordered };
 }

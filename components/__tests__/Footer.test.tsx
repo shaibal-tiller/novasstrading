@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Footer } from "../Footer";
 import { EditModeProvider } from "../admin/EditModeProvider";
 
@@ -57,5 +58,27 @@ describe("Footer", () => {
     expect(
       screen.getByLabelText("Test Co on LinkedIn").closest("[data-editable-id]")
     ).toBeNull();
+  });
+});
+
+describe("Footer cookie settings link", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    delete window.openCookieSettings;
+  });
+
+  it("is absent when analytics is not configured", () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "");
+    render(<Footer footerBlurb="Blurb" nav={NAV} site={SITE} />);
+    expect(screen.queryByRole("button", { name: "Cookie settings" })).toBeNull();
+  });
+
+  it("reopens the consent banner when analytics is configured", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_MEASUREMENT_ID", "G-TEST123");
+    const open = vi.fn();
+    window.openCookieSettings = open;
+    render(<Footer footerBlurb="Blurb" nav={NAV} site={SITE} />);
+    await userEvent.click(screen.getByRole("button", { name: "Cookie settings" }));
+    expect(open).toHaveBeenCalledTimes(1);
   });
 });
