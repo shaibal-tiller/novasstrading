@@ -1,6 +1,7 @@
 # One admin door: website editor + assets module
 
-Status: **plan only** - nothing in this document has been changed on any server.
+Status: **building on STAGING only** (`staging.novasstrading.com`). Nothing runs against the live site, the live
+Vercel project, live mail, or the current assets app. Production phases below stay on paper until you say otherwise.
 Written 2026-10-04 after reading both codebases, the live deployments and the cPanel backup.
 
 ## 1. What exists today (verified, not assumed)
@@ -27,7 +28,7 @@ Facts that shape the plan:
 | # | Finding | Severity | Suggested action |
 |---|---|---|---|
 | F1 | `assets.novasstrading.com` serves a **public directory listing** (shows `api.php`, `auth.php`, `config.php`, `users.php`, `data/`, `__MACOSX/`). Code runs without leaking source and `data/` is blocked (403), so no data is leaked - but the structure is exposed. | Medium | `Options -Indexes` in that folder's `.htaccess`, delete `__MACOSX/`; retire the whole legacy site after migration. |
-| F2 | MySQL **port 3306 is open to the internet** (needed because Vercel connects remotely). Password + TLS are the only guard. | Medium | Strong random DB password, TLS verification on (`DATABASE_SSL=strict`), DB user limited to that one database. Longer term: put DB access behind the cPanel PHP API so 3306 can be closed. |
+| F2 | MySQL **port 3306 is open to the internet** (needed because Vercel connects remotely), the server has **SSL disabled** (`have_ssl=DISABLED`, so the connection is unencrypted) and DB users are granted from any host (`@'%'`). A strong password is the only guard. | **High** for production | Ask Exonhost to enable TLS, or route DB access through an HTTPS API on cPanel and close 3306. Fine for throwaway staging data. |
 | F3 | The inventory repo is **public**. History scanned: no leaked keys or passwords. It still exposes internal architecture and the legacy PHP code. | Low | Make it private. |
 | F4 | The two encryption keys (`FIELD_ENCRYPTION_KEY`, `FILE_ENCRYPTION_KEY`) exist only as hidden Vercel variables. If they are not in a password manager, deleting or recreating that Vercel project makes all encrypted employee details and stored files **unrecoverable**. | High if not backed up | Confirm they are saved. Do not recreate the project without them. |
 | F5 | The 8 GB cPanel backup you downloaded is **incomplete** (525 MB, archive truncated) and the server copy was deleted. The database dump inside is complete. | Info | Take a fresh, smaller backup (database dumps + the two folders that matter) before any change. |
@@ -65,19 +66,22 @@ Break-glass: if the email service is down nobody can sign in. A documented recov
 
 **Vercel / DNS** - a staging copy of the assets project; env variables; no DNS changes needed.
 
-## 5. Phases (each ends with something you can check, and a way back)
+## 5. Phases (updated 2026-10-04: staging only; legacy is optional)
 
-| Phase | What | Touches production? | Rollback |
-|---|---|---|---|
-| 0 | **Safety first**: fresh small backup (DB dumps + legacy data folder + `nova_secure_files` listing), confirm encryption keys are saved, make the inventory repo private, close the directory listing (F1) | Only F1 (a `.htaccess` line) | delete the line |
-| 1 | **Staging copy of the assets module**: new staging database + FTP folder + Vercel project from the Git repo, own keys; mounted under `staging.novasstrading.com/admin/inventory` | No | delete the staging pieces |
-| 2 | **Build the door** in both repos on branches; unit tests; run on staging | No | nothing deployed to prod |
-| 3 | **Full rehearsal on staging**: scripted checks (code login, wrong code, rate limit, module gating, switch module, sign out of both, viewer cannot see Website, revoked user loses access, content editing still works, assets create/transfer/photo/sticker still work) + you clicking through | No | - |
-| 4 | **Data**: import the legacy records (about 2 KB) into the new database - on staging first, then production; you spot-check | Production DB (additive) | restore the Phase 0 dump |
-| 5 | **Cutover** (after you approve): production env variables, rebuild the assets app with the base path, merge to `main` (only after you ask three times), switch the entry to `/admin` | **Yes** | revert the env change / redeploy previous build; legacy stays up until Phase 6 |
-| 6 | **Retire legacy**: shut down `assets.novasstrading.com`, remove old direct URL, weekly cleanup cron on production | Yes | restore from Phase 0 backup |
+You decided: nothing touches `novasstrading.com` for now, and the old `assets.novasstrading.com` system is **not required**
+(it may be replaced or its subdomain deleted later). So there is **no legacy data migration** and no work on the old site.
 
-Nothing in phases 1-3 can affect the live site, mail, or the current assets app.
+| Phase | What | Touches production? |
+|---|---|---|
+| 1 | **Staging copy of the assets module**: its own Vercel project (`novass-inventory-staging`), the existing staging database (new tables only), new throwaway keys; mounted at `staging.novasstrading.com/admin/inventory` | **No** |
+| 2 | **Build the door** on branches in both repos; unit tests | **No** |
+| 3 | **Rehearse on staging**: scripted checks (code login, wrong code, rate limit, module gating, switch module, sign out of both, content editing still works, assets create/transfer still work) + you clicking through | **No** |
+| 4 | *(later, only on your word)* **Production cutover**: new keys saved first, production env, merge to `main` (after you ask three times) | Yes |
+| 5 | *(later, optional)* Retire the legacy `assets.novasstrading.com` site and subdomain | Yes |
+
+Open security item before any production use: the assets app's database connection is **not encrypted** (MariaDB has SSL
+disabled) and the DB user is allowed from any host. Options: ask Exonhost to enable TLS for MySQL; or route database access
+through an HTTPS API on cPanel (like the website editor already does) and close port 3306; or use a managed database.
 
 ## 6. Decisions (recorded 2026-10-04)
 
