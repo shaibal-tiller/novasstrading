@@ -20,6 +20,28 @@ final class Router
             return Response::json(['ok' => true]);
         }
 
+        // Ops diagnostic: which PHP and image libraries is the WEB server really running?
+        // (The CLI PHP and the web PHP are different builds on shared hosting.)
+        if ($method === 'GET' && $path === '/diag') {
+            if (!\App\Middleware\RequireApiKey::check($req)) {
+                return Response::json(['error' => 'invalid api key'], 401);
+            }
+            return Response::json([
+                'php' => PHP_VERSION,
+                'sapi' => PHP_SAPI,
+                'ini' => php_ini_loaded_file() ?: null,
+                'memory_limit' => ini_get('memory_limit'),
+                'extensions' => [
+                    'gd' => extension_loaded('gd'),
+                    'imagick' => extension_loaded('imagick'),
+                    'exif' => extension_loaded('exif'),
+                    'mbstring' => extension_loaded('mbstring'),
+                    'pdo_mysql' => extension_loaded('pdo_mysql'),
+                ],
+                'webp_encoder' => function_exists('imagewebp') || class_exists('Imagick'),
+            ]);
+        }
+
         if ($method === 'POST' && $path === '/auth/login') {
             return (new AuthController())->login($req);
         }
