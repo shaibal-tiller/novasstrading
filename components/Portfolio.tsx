@@ -23,6 +23,7 @@ import {
   type PortfolioPhoto,
 } from "@/lib/portfolio-photo";
 import { transparentImages } from "@/lib/transparentImages";
+import { useConnectionQuality } from "@/lib/use-connection";
 import { clsx } from "@/lib/utils";
 import { Editable } from "./admin/Editable";
 import { useEditMode } from "./admin/EditModeProvider";
@@ -30,6 +31,10 @@ import { Reveal } from "./Reveal";
 
 /** Rows of photos shown before the grid asks to be expanded. */
 const COLLAPSED_ROWS = 2;
+
+/** Grid thumbnail: next/image picks the 256-384px rendition at this quality - roughly 3-5 KB per photo. */
+const THUMB_SIZES = "160px";
+const THUMB_QUALITY = 40;
 
 export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent }) {
   // Local item-id widening: DB rows carry a numeric `id`; the static content
@@ -46,6 +51,8 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
   // Full-screen view loads progressively: the grid-size picture (already cached from the
   // grid) shows at once, and the big one fades in over it when it has finished loading.
   const [fullLoaded, setFullLoaded] = useState(false);
+  // Slow / data-saving visitors get light thumbnails only and no background prefetching.
+  const conn = useConnectionQuality();
   // Measured from the live grid so "two rows" holds at every breakpoint (the
   // column count differs: 2 / 3 / 4) and with bigger tiles mixed in.
   const [metrics, setMetrics] = useState({ ready: false, collapsedHeight: 0, visibleCount: 0 });
@@ -104,9 +111,10 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
     [photos.length],
   );
 
-  // Prefetch the neighbouring lightbox images so arrow navigation is instant
+  // Prefetch the neighbouring lightbox images so arrow navigation is instant - but never
+  // spend a slow or data-saving visitor's bandwidth on photos they have not asked for.
   useEffect(() => {
-    if (lightbox === null) return;
+    if (lightbox === null || !conn.ready || conn.slow) return;
     [1, -1].forEach((dir) => {
       const next = photos[(lightbox + dir + photos.length) % photos.length];
       [1080, 1920].forEach((w) => {
@@ -114,7 +122,7 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
         img.src = `/_next/image?url=${encodeURIComponent(photoUrl(next.src))}&w=${w}&q=75`;
       });
     });
-  }, [lightbox, photos]);
+  }, [lightbox, photos, conn.ready, conn.slow]);
 
   // Keyboard controls + scroll lock while the lightbox or gallery modal is open.
   // Escape closes whichever is on top: the single-image lightbox first, then
@@ -355,25 +363,28 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative h-[76vh] w-full">
-              {/* 1. Instant: same file/size the grid already loaded, so it comes from cache. */}
+              {/* 1. Instant: the picture the grid already loaded (the light thumb on slow
+                  connections, the sharper tile otherwise), so it comes from cache. */}
               <Image
                 key={`low-${photos[lightbox].src}`}
                 src={photoUrl(photos[lightbox].src)}
                 alt=""
                 aria-hidden
                 fill
-                sizes="(max-width: 768px) 50vw, 25vw"
+                sizes={conn.ready && conn.slow ? THUMB_SIZES : photoSizeForSizes(photos[lightbox])}
+                quality={conn.ready && conn.slow ? THUMB_QUALITY : undefined}
                 placeholder={photoBlur(photos[lightbox], blurData) ? "blur" : "empty"}
                 blurDataURL={photoBlur(photos[lightbox], blurData)}
                 className="object-contain"
               />
-              {/* 2. High-res fades in on top once it has loaded. */}
+              {/* 2. High-res fades in on top once it has loaded (lighter on slow connections). */}
               <Image
                 key={photos[lightbox].src}
                 src={photoUrl(photos[lightbox].src)}
                 alt={photos[lightbox].alt}
                 fill
-                sizes="90vw"
+                sizes={conn.ready && conn.slow ? "(max-width: 768px) 100vw, 800px" : "90vw"}
+                quality={conn.ready && conn.slow ? 60 : undefined}
                 onLoad={() => setFullLoaded(true)}
                 className={clsx(
                   "object-contain transition-opacity duration-500",
@@ -487,6 +498,11 @@ function PhotoCard({
   const isCutout = transparentImages.has(photo.src);
   const fit = photoFit(photo);
   const fitClass = fit ? FIT_CLASSES[fit] : isCutout ? "object-contain p-2" : "object-cover";
+  // Loading ladder: blur (inline) -> small thumb (a few KB, always) -> sharper tile that
+  // fades in over it, only after hydration and only on a connection that can afford it.
+  const conn = useConnectionQuality();
+  const [sharpLoaded, setSharpLoaded] = useState(false);
+  const upgrade = conn.ready && !conn.slow;
   const letterboxed = fit === "whole" || (!fit && isCutout);
   return (
     <button
@@ -511,19 +527,38 @@ function PhotoCard({
             : "bg-ivory",
         )}
       >
+        {/* Layer 1 - the thumb: tiny, shown right after the blur placeholder. */}
         <Image
           src={photoUrl(photo.src)}
           alt={photo.alt}
           fill
           loading="lazy"
+          quality={THUMB_QUALITY}
           placeholder={photoBlur(photo, blurData) ? "blur" : "empty"}
           blurDataURL={photoBlur(photo, blurData)}
-          sizes={photoSizeForSizes(photo)}
+          sizes={THUMB_SIZES}
           className={clsx(
             fitClass,
             "transition-transform duration-700 ease-out group-hover:scale-[1.04]",
           )}
         />
+        {/* Layer 2 - the sharp tile, faded in over the thumb once loaded. */}
+        {upgrade && (
+          <Image
+            src={photoUrl(photo.src)}
+            alt=""
+            aria-hidden
+            fill
+            loading="lazy"
+            sizes={photoSizeForSizes(photo)}
+            onLoad={() => setSharpLoaded(true)}
+            className={clsx(
+              fitClass,
+              "transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.04]",
+              sharpLoaded ? "opacity-100" : "opacity-0",
+            )}
+          />
+        )}
 
         {photo.badge === "new" && (
           <span className="absolute left-2 top-2 rounded-full bg-brass px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-ivory shadow">

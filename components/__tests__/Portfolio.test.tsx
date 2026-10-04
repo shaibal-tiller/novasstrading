@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Portfolio } from "../Portfolio";
 import { EditModeProvider } from "../admin/EditModeProvider";
@@ -121,5 +121,34 @@ describe("Portfolio", () => {
     expect(screen.getByText("October hero")).toBeInTheDocument();
     expect(screen.queryByText("Old caption")).toBeNull();
   });
-});
 
+  describe("loading ladder (blur -> thumb -> sharp tile)", () => {
+    const photo = [{ src: "products/a.jpg", alt: "Cat — One" }];
+    const setConnection = (c: unknown) =>
+      Object.defineProperty(navigator, "connection", { value: c, configurable: true });
+    const imgs = () => document.querySelectorAll("#portfolio button img");
+
+    it("loads thumb + sharp tile on a normal connection", async () => {
+      setConnection({ effectiveType: "4g", saveData: false });
+      render(<Portfolio portfolio={tabWith(photo)} />);
+      await screen.findByRole("button", { name: /View Cat/i });
+      // after hydration the sharp layer is added over the thumb
+      await vi.waitFor(() => expect(imgs().length).toBe(2));
+    });
+
+    it("keeps to the light thumb only on a slow or data-saving connection", async () => {
+      setConnection({ effectiveType: "3g", saveData: false });
+      const { unmount } = render(<Portfolio portfolio={tabWith(photo)} />);
+      await screen.findByRole("button", { name: /View Cat/i });
+      await new Promise((r) => setTimeout(r, 50));
+      expect(imgs().length).toBe(1);
+      unmount();
+
+      setConnection({ effectiveType: "4g", saveData: true });
+      render(<Portfolio portfolio={tabWith(photo)} />);
+      await screen.findByRole("button", { name: /View Cat/i });
+      await new Promise((r) => setTimeout(r, 50));
+      expect(imgs().length).toBe(1);
+    });
+  });
+});
