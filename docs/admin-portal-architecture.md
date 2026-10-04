@@ -29,7 +29,7 @@ request / two SQL queries.
 ## Images
 
 - **On upload (on the cPanel server, `cpanel-api/src/ImageOptimizer.php`)**: the portal forwards the original
-  file and PHP does the work — bakes in EXIF rotation, downsizes to max 1600px on the long edge, re-encodes to
+  file and PHP does the work — bakes in EXIF rotation, downsizes to max 1000px on the long edge (shrunk in the browser first, so 4K/8K originals never travel), re-encodes to
   WebP quality 80, strips metadata. Uses Imagick if it can write WebP, otherwise GD (`imagewebp`).
   If the host has neither, the original is stored unchanged under its real extension (an upload never fails
   because of a missing library). A WebP that already fits is left alone, so nothing is compressed twice.

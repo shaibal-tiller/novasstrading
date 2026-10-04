@@ -11,7 +11,8 @@ use App\Repositories\MediaRepository;
 
 final class MediaController
 {
-    private const MAX_BYTES = 5 * 1024 * 1024;
+    /** Largest raw upload accepted. Photos above ImageOptimizer::MAX_DIMENSION are shrunk, so an 8K phone photo is fine. */
+    private const MAX_BYTES = 15 * 1024 * 1024;
 
     private MediaRepository $repo;
     private string $mediaDir;
@@ -59,7 +60,7 @@ final class MediaController
             return $err;
         }
         if ($req->body['bytes'] > self::MAX_BYTES) {
-            return Response::json(['error' => 'file exceeds 5MB limit'], 422);
+            return Response::json(['error' => 'file exceeds the 15MB limit'], 422);
         }
         $id = $this->repo->create($req->body);
         return Response::json(['id' => $id], 201);
@@ -109,7 +110,7 @@ final class MediaController
             return Response::json(['error' => 'missing file'], 422);
         }
         if (strlen($req->uploadedFileBytes) > self::MAX_BYTES) {
-            return Response::json(['error' => 'file exceeds 5MB limit'], 422);
+            return Response::json(['error' => 'file exceeds the 15MB limit'], 422);
         }
 
         if (substr($req->uploadedFileBytes, 0, 5) === '%PDF-') {

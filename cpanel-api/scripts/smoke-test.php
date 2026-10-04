@@ -101,7 +101,7 @@ if (!function_exists('imagecreatetruecolor') || !function_exists('imagejpeg')) {
     exit($failures > 0 ? 1 : 0);
 }
 
-// A 3200x2400 striped JPEG: bigger than the 1600px limit, so a working optimizer must shrink it.
+// A 3200x2400 striped JPEG: bigger than the 1000px limit, so a working optimizer must shrink it.
 $img = imagecreatetruecolor(3200, 2400);
 for ($i = 0; $i < 24; $i++) {
     $c = imagecolorallocate($img, ($i * 10) % 256, 255 - $i * 10, ($i * 37) % 256);
@@ -134,8 +134,8 @@ if (isset($up['path'])) {
         $up['mime_type'] ?? '?'
     );
     check(
-        'photo was optimized (WebP, max 1600px)',
-        ($up['optimized'] ?? false) === true && ($up['mime_type'] ?? '') === 'image/webp' && max((int) $up['width'], (int) $up['height']) <= 1600,
+        'photo was optimized (WebP, max 1000px)',
+        ($up['optimized'] ?? false) === true && ($up['mime_type'] ?? '') === 'image/webp' && max((int) $up['width'], (int) $up['height']) <= 1000,
         ($up['optimized'] ?? false) ? 'ok' : 'NOT optimized - the web PHP has no WebP encoder; enable GD or switch to PHP 8.2'
     );
 

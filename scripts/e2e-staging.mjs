@@ -136,7 +136,7 @@ ok("upload without a session is rejected", noCookie.status === 401, String(noCoo
 if (upJson.path) {
   const lib = (await api("GET", "/media-library")).json;
   const row = lib?.find((m) => m.id === upJson.id);
-  ok("media row recorded with the REAL stored size", !!row && row.mime_type === "image/webp" && Math.max(row.width, row.height) <= 1600, row ? `${row.width}x${row.height} ${row.mime_type} ${row.bytes}B (source ${src.length}B)` : "no row");
+  ok("media row recorded with the REAL stored size", !!row && row.mime_type === "image/webp" && Math.max(row.width, row.height) <= 1000, row ? `${row.width}x${row.height} ${row.mime_type} ${row.bytes}B (source ${src.length}B)` : "no row");
 
   const file = await fetch(`${API}/${upJson.path}`);
   ok("file is served publicly as WebP", file.status === 200 && (file.headers.get("content-type") || "").includes("image/webp"), `${file.status} ${file.headers.get("content-type")}`);

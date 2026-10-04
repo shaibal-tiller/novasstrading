@@ -32,8 +32,8 @@ import { Reveal } from "./Reveal";
 /** Rows of photos shown before the grid asks to be expanded. */
 const COLLAPSED_ROWS = 2;
 
-/** Grid thumbnail: next/image picks the 256-384px rendition at this quality - roughly 3-5 KB per photo. */
-const THUMB_SIZES = "160px";
+/** Grid thumbnail: next/image picks 128 / 256 / 384 px for 1x / 2x / 3x screens at this quality: about 1-5 KB per photo. */
+const THUMB_SIZES = "128px";
 const THUMB_QUALITY = 40;
 
 export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent }) {

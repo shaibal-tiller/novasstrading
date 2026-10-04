@@ -31,7 +31,7 @@ final class ImageOptimizerTest extends TestCase
         $this->assertSame('webp', $out['ext']);
         $this->assertSame('image/webp', $out['mime']);
         $this->assertSame(ImageOptimizer::MAX_DIMENSION, max($out['width'], $out['height']));
-        $this->assertSame(800, min($out['width'], $out['height']));
+        $this->assertSame(500, min($out['width'], $out['height']));  // 2400x1200 -> 1000x500
         $this->assertSame('image/webp', getimagesizefromstring($out['bytes'])['mime']);
     }
 

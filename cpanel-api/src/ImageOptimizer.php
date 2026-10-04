@@ -20,10 +20,16 @@ namespace App;
  */
 final class ImageOptimizer
 {
-    public const MAX_DIMENSION = 1600;
+    /** Longest side a stored photo may have. Mirror of MAX_PHOTO_EDGE in lib/media-limits.ts - keep in step. */
+    public const MAX_DIMENSION = 1000;
     public const WEBP_QUALITY = 80;
-    /** Decoding allocates ~4 bytes/pixel; refuse images that could exhaust shared-host memory. */
+    /**
+     * Decoding allocates ~4 bytes/pixel (an 8K photo is ~33 megapixels = ~130 MB). We raise
+     * the memory limit while decoding and refuse anything bigger than this, rather than
+     * letting a huge file crash the request.
+     */
     private const MAX_PIXELS = 40_000_000;
+    private const DECODE_MEMORY = '320M';
 
     private const EXTENSIONS = [
         'image/jpeg' => 'jpg',
@@ -45,8 +51,10 @@ final class ImageOptimizer
         [$width, $height] = $info;
         $mime = $info['mime'];
         if ($width * $height > self::MAX_PIXELS) {
-            throw new \InvalidArgumentException('image dimensions too large');
+            throw new \InvalidArgumentException('image dimensions too large (over 40 megapixels)');
         }
+        // Huge originals (4K / 8K) need headroom to decode; harmless if the host disallows it.
+        @ini_set('memory_limit', self::DECODE_MEMORY);
 
         $original = [
             'bytes' => $bytes,

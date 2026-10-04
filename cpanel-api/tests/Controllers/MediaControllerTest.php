@@ -201,19 +201,19 @@ class MediaControllerTest extends TestCase
         }
     }
 
-    public function test_upload_file_rejects_pdf_over_5mb(): void
+    public function test_upload_file_rejects_pdf_over_15mb(): void
     {
         $tempDir = sys_get_temp_dir() . '/media-test-' . uniqid();
         mkdir($tempDir, 0775, true);
 
         try {
             $controller = new MediaController($tempDir);
-            $bytes = "%PDF-1.4\n" . str_repeat('x', 6 * 1024 * 1024);
+            $bytes = "%PDF-1.4\n" . str_repeat('x', 16 * 1024 * 1024);
 
             $res = $controller->uploadFile($this->uploadReq($bytes, 'large.pdf'));
 
             $this->assertSame(422, $res->status);
-            $this->assertSame(['error' => 'file exceeds 5MB limit'], $res->body);
+            $this->assertSame(['error' => 'file exceeds the 15MB limit'], $res->body);
             $this->assertSame([], glob($tempDir . '/*'));
         } finally {
             @rmdir($tempDir);

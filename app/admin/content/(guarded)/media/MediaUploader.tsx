@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { shrinkImage } from "@/lib/admin/shrink-image";
 import { UploadForm } from "./UploadForm";
 
 export function MediaUploader() {
@@ -13,8 +14,9 @@ export function MediaUploader() {
     setUploading(true);
     setError(null);
 
+    // Big photos are shrunk to the 1000px limit before they leave the browser.
     const formData = new FormData();
-    formData.set("file", file);
+    formData.set("file", await shrinkImage(file));
 
     try {
       const res = await fetch("/admin/content/media/upload", {

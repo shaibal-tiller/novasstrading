@@ -13,36 +13,15 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { MAX_UPLOAD_BYTES } from "@/lib/media-limits";
+import { shrinkImage } from "@/lib/admin/shrink-image";
 import { PHOTO_SIZES, isPhotoHidden, photoSize, photoUrl, type PortfolioPhoto } from "@/lib/portfolio-photo";
 import { useEditMode } from "./EditModeProvider";
 import type { DraftItem, Fields, SectionDraft } from "./SectionEditor";
 
 const LIST = "portfolio.photos";
 const UPLOAD_URL = "/admin/content/media/upload";
-/** Photos bigger than this are shrunk in the browser first (Vercel rejects request bodies over ~4.5 MB). */
-const SHRINK_ABOVE_BYTES = 1.5 * 1024 * 1024;
-const SHRINK_MAX_EDGE = 2400;
-const MAX_FILE_BYTES = 25 * 1024 * 1024;
-
 type Draftable = { setDraft: (fn: (prev: SectionDraft) => SectionDraft) => void };
-
-/** Shrinks an oversized photo in the browser (also bakes in EXIF rotation). Falls back to the original on any problem. */
-async function prepareForUpload(file: File): Promise<File> {
-  if (!file.type.startsWith("image/") || file.size <= SHRINK_ABOVE_BYTES) return file;
-  try {
-    const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, SHRINK_MAX_EDGE / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/jpeg", 0.9));
-    if (!blob || blob.size >= file.size) return file;
-    return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
-  } catch {
-    return file;
-  }
-}
 
 function prettyName(filename: string): string {
   return filename
@@ -141,8 +120,8 @@ export function PortfolioPhotoManager() {
     for (const original of files) {
       try {
         if (!original.type.startsWith("image/")) throw new Error("not an image");
-        if (original.size > MAX_FILE_BYTES) throw new Error("larger than 25 MB");
-        const file = await prepareForUpload(original);
+        if (original.size > MAX_UPLOAD_BYTES) throw new Error("larger than 25 MB");
+        const file = await shrinkImage(original);
         const form = new FormData();
         form.set("file", file);
         const res = await fetch(UPLOAD_URL, { method: "POST", body: form });
