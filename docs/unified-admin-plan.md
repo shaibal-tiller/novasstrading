@@ -105,3 +105,12 @@ If the 9 employees turn out to be real people whose details matter, tell me befo
 ## 7. Not in scope (deliberately)
 
 Redesigning either module, changing how photos/documents are stored, moving to another host, closing MySQL port 3306 (flagged, longer term).
+
+## 8. Added scope (decided 2026-10-04)
+
+| Item | Decision | Notes |
+|---|---|---|
+| Analytics module | **Google Analytics 4 + Search Console**, shown as a third module in `/admin` | Read-only via a Google service account (Viewer on the GA4 property, user on the Search Console property); key held only as a hidden Vercel variable. Tracking tag loads on the **production** site only; staging uses a separate test property. |
+| Cookie consent | **Small Accept / Decline banner**; GA4 loads only after Accept | Needed for EU/UK visitors. |
+| Weekly backups | **Google Drive + a private GitHub repo** | Weekly cron on cPanel: dump both databases locally (no network exposure), archive uploaded files + encrypted asset files, encrypt the archive with `age` (private key kept offline by you), upload to Drive (rclone, your Google account); the small encrypted DB dumps also go to a private GitHub repo. Nothing is left on the hosting disk afterwards. Retention: 12 weekly + 6 monthly. A restore drill into staging proves the backups work. |
+| Legacy `assets.novasstrading.com` | **Untouched until after the real production deploy is tested; deleted only if you then choose to** | Not used by the new system. |
