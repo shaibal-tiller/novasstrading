@@ -7,26 +7,35 @@
  *
  *   E2E_PASSWORD='...' node --env-file=.env.local scripts/e2e-staging.mjs
  *
- * Env: CPANEL_API_URL, CPANEL_API_KEY, SESSION_COOKIE_SECRET (from .env.local),
+ * Sign-in: the shared /admin door uses the Assets app's `nova_session` cookie. Login codes are
+ * emailed, which a script cannot read, so for STAGING tests this script creates a short-lived
+ * session row directly in the staging Assets database (and removes it at the end). Nothing in the
+ * apps themselves is bypassed.
+ *
+ *   E2E_PASSWORD='...' node --env-file=.env.local --env-file=.env.inventory-staging scripts/e2e-staging.mjs
+ *
+ * Env: CPANEL_API_URL, CPANEL_API_KEY (from .env.local), DATABASE_URL = the Assets staging DB
+ *      (from .env.inventory-staging), E2E_EMAIL (default it-support@novasstrading.com),
  *      E2E_PASSWORD (admin password), APP_URL (default http://localhost:3001),
  *      VERCEL_BYPASS (optional: the project's "Protection Bypass for Automation"
- *      secret, needed when APP_URL is a Vercel deployment behind Vercel Authentication;
- *      SESSION_COOKIE_SECRET must then be the value set on THAT deployment)
+ *      secret, needed when APP_URL is a Vercel deployment behind Vercel Authentication)
  */
-import { createHmac } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
+import mysql from "mysql2/promise";
 import sharp from "sharp";
 
 const API = process.env.CPANEL_API_URL;
 const KEY = process.env.CPANEL_API_KEY;
-const SECRET = process.env.SESSION_COOKIE_SECRET;
+const INV_DB = process.env.INVENTORY_DATABASE_URL || process.env.DATABASE_URL;
+const E2E_EMAIL = process.env.E2E_EMAIL || "it-support@novasstrading.com";
 const APP = process.env.APP_URL || "http://localhost:3001";
 const PASSWORD = process.env.E2E_PASSWORD;
 const EMAIL = "it-support@novasstrading.com";
 const BYPASS = process.env.VERCEL_BYPASS ? { "x-vercel-protection-bypass": process.env.VERCEL_BYPASS } : {};
 const LIST = "coreValues.values";
 
-if (!API || !KEY || !SECRET || !PASSWORD) {
-  console.error("Need CPANEL_API_URL, CPANEL_API_KEY, SESSION_COOKIE_SECRET and E2E_PASSWORD");
+if (!API || !KEY || !INV_DB || !PASSWORD) {
+  console.error("Need CPANEL_API_URL, CPANEL_API_KEY, DATABASE_URL (Assets staging DB) and E2E_PASSWORD");
   process.exit(1);
 }
 
@@ -48,10 +57,22 @@ async function api(method, path, { body, token } = {}) {
   return { status: res.status, json };
 }
 
-const sign = (token) => {
-  const payload = Buffer.from(token, "utf8").toString("base64url");
-  return `${payload}.${createHmac("sha256", SECRET).update(payload).digest("base64url")}`;
-};
+// A real `nova_session` for the e2e user, created the same way the Assets app does
+// (sha256 of a random token stored in `sessions`), valid for one hour.
+async function createTestSession(email) {
+  const db = await mysql.createConnection(INV_DB);
+  const [[user]] = await db.query("SELECT id FROM users WHERE email = ? AND status = 'active'", [email]);
+  if (!user) throw new Error(`no active Assets user ${email} in the staging DB`);
+  const token = randomBytes(32).toString("hex");
+  const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+  const id = Array.from(randomBytes(26), (b) => alphabet[b % 32]).join("");
+  await db.query(
+    "INSERT INTO sessions (id, token_hash, user_id, created_at, last_seen_at, expires_at, user_agent, ip_address) VALUES (?, ?, ?, NOW(3), NOW(3), DATE_ADD(NOW(3), INTERVAL 1 HOUR), 'e2e-staging', NULL)",
+    [id, createHash("sha256").update(token).digest("hex"), user.id],
+  );
+  return { token, id, db };
+}
+;
 
 console.log(`E2E against API ${API}\n           and app ${APP}\n`);
 
@@ -60,7 +81,27 @@ const login = await api("POST", "/auth/login", { body: { email: EMAIL, password:
 const token = login.json?.token;
 ok("admin login", login.status === 200 && !!token, String(login.status));
 if (!token) process.exit(1);
-const cookie = `nova_admin_session=${sign(token)}`;
+const testSession = await createTestSession(E2E_EMAIL);
+const cookie = `nova_session=${testSession.token}`;
+
+// ---- the shared /admin door -------------------------------------------------
+console.log("\nShared sign-in door (/admin)");
+const manual = { redirect: "manual" };
+const doorLogin = await fetch(APP + "/admin/login", { headers: BYPASS });
+ok("/admin/login shows the sign-in page", doorLogin.status === 200 && /sign in|email/i.test(await doorLogin.text()), String(doorLogin.status));
+const doorAnon = await fetch(APP + "/admin", { ...manual, headers: BYPASS });
+ok("/admin without a session goes to /admin/login", doorAnon.status >= 300 && doorAnon.status < 400 && (doorAnon.headers.get("location") || "").includes("/admin/login"), `${doorAnon.status} ${doorAnon.headers.get("location")}`);
+const door = await fetch(APP + "/admin", { headers: { cookie, ...BYPASS } });
+const doorHtml = await door.text();
+ok("/admin signed in shows both modules (Website first)", door.status === 200 && doorHtml.includes("Website") && doorHtml.includes("Assets") && doorHtml.indexOf("Website") < doorHtml.indexOf("Assets"), String(door.status));
+const meViaSite = await fetch(APP + "/admin/inventory/api/auth/me", { headers: { cookie, ...BYPASS } });
+const meJson = await meViaSite.json().catch(() => ({}));
+ok("the Assets app answers through the site's /admin/inventory rewrite", meViaSite.status === 200 && meJson.email === E2E_EMAIL, String(meViaSite.status));
+ok("the session carries both modules", Array.isArray(meJson.modules) && meJson.modules.includes("website") && meJson.modules.includes("assets"), JSON.stringify(meJson.modules));
+const assetsPage = await fetch(APP + "/admin/inventory/assets", { headers: { cookie, ...BYPASS } });
+ok("Assets module opens through the site with the same session", assetsPage.status === 200, String(assetsPage.status));
+const bogus = await fetch(APP + "/admin", { ...manual, headers: { cookie: "nova_session=not-a-real-token", ...BYPASS } });
+ok("a forged session cookie is rejected", bogus.status >= 300 && bogus.status < 400, String(bogus.status));
 
 // ---- pages -----------------------------------------------------------------
 console.log("\nPages (Next app, signed cookie)");
@@ -217,6 +258,15 @@ ok("media library flags usage per file (in_use)", Array.isArray(lib3) && lib3.ev
 console.log("\nFinal state");
 const finalList = await list();
 ok(`${LIST} is exactly as it started`, JSON.stringify(finalList) === JSON.stringify(original));
+
+// ---- sign out ends the shared session everywhere ---------------------------
+console.log("\nSign out");
+const out = await fetch(APP + "/admin/inventory/api/auth/logout", { method: "POST", headers: { cookie, ...BYPASS } });
+ok("sign out succeeds", out.status === 200, String(out.status));
+const afterOut = await fetch(APP + "/admin/inventory/api/auth/me", { headers: { cookie, ...BYPASS } });
+ok("the same cookie no longer works anywhere after sign out", afterOut.status === 401, String(afterOut.status));
+await testSession.db.query("DELETE FROM sessions WHERE id = ?", [testSession.id]); // in case sign-out failed
+await testSession.db.end();
 
 console.log(failures === 0 ? "\nALL E2E CHECKS PASSED" : `\n${failures} E2E CHECK(S) FAILED`);
 process.exit(failures === 0 ? 0 : 1);

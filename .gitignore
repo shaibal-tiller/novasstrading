@@ -21,3 +21,6 @@ Products.zip
 # cPanel API: uploaded media lives on the server, not in git (keep the folder rules)
 cpanel-api/public/media/*
 !cpanel-api/public/media/.htaccess
+
+# Claude Code agent worktrees (never commit)
+.claude/worktrees/
