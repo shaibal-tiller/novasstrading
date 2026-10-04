@@ -29,6 +29,7 @@ describe("POST /admin/content/media/upload", () => {
       width: 1600,
       height: 1200,
       mime_type: "image/webp",
+      blur_data_url: "data:image/webp;base64,AAAA",
     });
     const original = Buffer.from("pretend these are 3MB of jpeg bytes");
 
@@ -36,7 +37,7 @@ describe("POST /admin/content/media/upload", () => {
     const response = await POST(uploadRequest(original, "big photo.jpg", "image/jpeg"));
 
     expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ id: 42, path: "media/abc123.webp" });
+    expect(await response.json()).toEqual({ id: 42, path: "media/abc123.webp", blur: "data:image/webp;base64,AAAA" });
     // The portal no longer re-encodes — cPanel is the only optimizer.
     expect(uploadFileMock).toHaveBeenCalledWith(
       original,
@@ -64,13 +65,14 @@ describe("POST /admin/content/media/upload", () => {
       width: 0,
       height: 0,
       mime_type: "application/pdf",
+      blur_data_url: null,
     });
 
     const { POST } = await import("../route");
     const response = await POST(uploadRequest(Buffer.from("%PDF-1.4 fake pdf contents"), "profile.pdf", "application/pdf"));
 
     expect(response.status).toBe(201);
-    expect(await response.json()).toEqual({ id: 42, path: "media/def456.pdf" });
+    expect(await response.json()).toEqual({ id: 42, path: "media/def456.pdf", blur: null });
     expect(createMediaMock).toHaveBeenCalledWith(
       expect.objectContaining({ mime_type: "application/pdf", original_filename: "profile.pdf" }),
       "cpanel-token"

@@ -6,6 +6,7 @@ use App\Http\Response;
 use App\Middleware\RequireApiKey;
 use App\Middleware\RequireSession;
 use App\Repositories\ContentItemRepository;
+use App\Storage\MediaCleaner;
 
 final class ItemsController
 {
@@ -87,5 +88,27 @@ final class ItemsController
         }
         $this->repo->restore($id);
         return Response::json(['ok' => true]);
+    }
+
+    /** Permanently deletes one TRASHED item and frees its photos if nothing else uses them. */
+    public function purge(Request $req, int $id): Response
+    {
+        if ($err = $this->authorized($req)) {
+            return $err;
+        }
+        $result = (new MediaCleaner())->purgeItem($id);
+        if (!$result['purged']) {
+            return Response::json(['error' => 'not in the trash'], 404);
+        }
+        return Response::json($result);
+    }
+
+    /** Permanently deletes everything in the trash. */
+    public function emptyTrash(Request $req): Response
+    {
+        if ($err = $this->authorized($req)) {
+            return $err;
+        }
+        return Response::json((new MediaCleaner())->emptyTrash());
     }
 }

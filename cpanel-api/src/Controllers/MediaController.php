@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Http\Request;
 use App\ImageOptimizer;
+use App\Storage\MediaCleaner;
 use App\Http\Response;
 use App\Middleware\RequireApiKey;
 use App\Middleware\RequireSession;
@@ -42,7 +43,14 @@ final class MediaController
         if (!RequireApiKey::check($req)) {
             return Response::json(['error' => 'invalid api key'], 401);
         }
-        return Response::json($this->repo->all());
+        // Flag each file that no content mentions any more, so the library can show it as
+        // removable (one pass over the stored content, not one query per file).
+        $hay = (new MediaCleaner($this->mediaDir))->haystack();
+        $rows = array_map(
+            static fn(array $row) => $row + ['in_use' => str_contains($hay, basename($row['path']))],
+            $this->repo->all()
+        );
+        return Response::json($rows);
     }
 
     public function store(Request $req): Response
@@ -138,6 +146,8 @@ final class MediaController
             'height' => $stored['height'],
             'mime_type' => $stored['mime'],
             'optimized' => $stored['optimized'],
+            // Tiny blurred preview the site shows while the real photo loads (null for PDFs).
+            'blur_data_url' => $stored['mime'] === 'application/pdf' ? null : ImageOptimizer::blurDataUrl($stored['bytes']),
         ], 201);
     }
 }

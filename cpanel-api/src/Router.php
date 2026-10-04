@@ -6,6 +6,7 @@ use App\Controllers\ContentController;
 use App\Controllers\ItemsController;
 use App\Controllers\MediaController;
 use App\Controllers\SectionsController;
+use App\Controllers\StorageController;
 use App\Http\Request;
 use App\Http\Response;
 
@@ -79,6 +80,18 @@ final class Router
         }
         if ($method === 'GET' && $path === '/items/trash') {
             return (new ItemsController())->trash($req);
+        }
+        if ($method === 'DELETE' && $path === '/items/trash') {
+            return (new ItemsController())->emptyTrash($req);
+        }
+        if (preg_match('#^/items/(\d+)/purge$#', $path, $m) && $method === 'DELETE') {
+            return (new ItemsController())->purge($req, (int) $m[1]);
+        }
+        if ($method === 'GET' && $path === '/storage') {
+            return (new StorageController())->usage($req);
+        }
+        if ($method === 'POST' && $path === '/storage/cleanup') {
+            return (new StorageController())->cleanup($req);
         }
         if (preg_match('#^/items/(\d+)/restore$#', $path, $m) && $method === 'PUT') {
             return (new ItemsController())->restore($req, (int) $m[1]);

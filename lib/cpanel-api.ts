@@ -12,6 +12,16 @@ export type MediaRow = {
   mime_type: string;
   used_by_count: number;
   created_at: string;
+  /** From the server: does any content (live or trashed) still mention this file? */
+  in_use?: boolean;
+};
+
+export type StorageUsage = { files: number; bytes: number; unused_files: number; unused_bytes: number; trashed_items: number };
+export type CleanupReport = {
+  dry_run: boolean;
+  purged_items: number;
+  deleted: { path: string; bytes: number; why: string }[];
+  bytes_freed: number;
 };
 
 function baseUrl(): string {
@@ -168,3 +178,24 @@ export async function restoreItem(id: number, sessionToken: string): Promise<voi
   if (!res.ok) throw new Error(`Failed to restore item ${id} (${res.status})`);
 }
 
+export async function purgeItem(id: number, sessionToken: string): Promise<void> {
+  const res = await call(`/items/${id}/purge`, { method: "DELETE", sessionToken });
+  if (!res.ok) throw new Error(`Failed to permanently delete item ${id} (${res.status})`);
+}
+
+export async function emptyTrash(sessionToken: string): Promise<void> {
+  const res = await call("/items/trash", { method: "DELETE", sessionToken });
+  if (!res.ok) throw new Error(`Failed to empty the trash (${res.status})`);
+}
+
+export async function getStorageUsage(sessionToken: string): Promise<StorageUsage> {
+  const res = await call("/storage", { sessionToken });
+  if (!res.ok) throw new Error(`Failed to read storage usage (${res.status})`);
+  return res.json();
+}
+
+export async function runCleanup(dryRun: boolean, sessionToken: string): Promise<CleanupReport> {
+  const res = await call("/storage/cleanup", { method: "POST", body: JSON.stringify({ dryRun }), sessionToken });
+  if (!res.ok) throw new Error(`Cleanup failed (${res.status})`);
+  return res.json();
+}

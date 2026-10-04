@@ -166,6 +166,53 @@ if (upJson.path) {
   ok("media row is gone from the library", !lib2?.some((m) => m.id === upJson.id));
 }
 
+// ---- storage & garbage -----------------------------------------------------
+console.log("\nStorage (usage, permanent delete, cleanup preview)");
+const usageNoAuth = await api("GET", "/storage");
+ok("storage usage requires a session", usageNoAuth.status === 401, String(usageNoAuth.status));
+const usage = await api("GET", "/storage", { token });
+ok("storage usage is reported", usage.status === 200 && typeof usage.json?.bytes === "number", JSON.stringify(usage.json));
+const cleanNoAuth = await api("POST", "/storage/cleanup", { body: { dryRun: true } });
+ok("cleanup requires a session", cleanNoAuth.status === 401, String(cleanNoAuth.status));
+const purgeNoAuth = await api("DELETE", "/items/1/purge");
+ok("permanent delete requires a session", purgeNoAuth.status === 401, String(purgeNoAuth.status));
+
+// Full life of a photo: upload -> add as a photo item -> trash it -> "delete forever" -> file is gone.
+const png = await sharp({ create: { width: 800, height: 600, channels: 3, background: { r: 200, g: 60, b: 60 } } }).jpeg().toBuffer();
+const gform = new FormData();
+gform.set("file", new File([png], "e2e-garbage.jpg", { type: "image/jpeg" }));
+const gup = await fetch(APP + "/admin/content/media/upload", { method: "POST", headers: { cookie, ...BYPASS }, body: gform });
+const gj = await gup.json().catch(() => ({}));
+ok("upload for the garbage test", gup.status === 201 && !!gj.path, `${gup.status}`);
+ok("upload returns a blur-up placeholder", typeof gj.blur === "string" && gj.blur.startsWith("data:image/") && gj.blur.length < 2000, gj.blur ? `${gj.blur.length} chars` : "none (GD missing?)");
+if (gj.path) {
+  const created = await api("POST", "/items", { body: { section: "portfolio.photos", fields: { tab: "woman", src: gj.path, alt: "e2e garbage", size: "normal" } }, token });
+  const itemId = created.json?.id;
+  ok("photo item created", created.status === 201 && !!itemId, String(created.status));
+  const stillThere = async () => (await fetch(`${API}/${gj.path}?p=${Math.random()}`)).status;
+  await api("DELETE", `/items/${itemId}`, { token });
+  ok("trashed photo keeps its file (it can still be restored)", (await stillThere()) === 200);
+  const blocked2 = await api("DELETE", `/media/${gj.id}`, { token });
+  ok("...and the media delete is refused while the trashed item references it", blocked2.status === 409, String(blocked2.status));
+  const dry = await api("POST", "/storage/cleanup", { body: { dryRun: true, minAgeHours: 0 }, token });
+  ok("cleanup preview does NOT list a file a trashed item still uses", dry.status === 200 && !dry.json.deleted.some((d) => d.path === gj.path), `${dry.json?.deleted?.length} candidates`);
+  const purged = await api("DELETE", `/items/${itemId}/purge`, { token });
+  ok("delete forever succeeds and reports the freed file", purged.status === 200 && purged.json.files?.some((f) => f.path === gj.path), JSON.stringify(purged.json?.files));
+  let gone2 = 0;
+  for (let i = 0; i < 15; i++) {
+    gone2 = (await fetch(`${API}/${gj.path}?q=${i}`)).status;
+    if (gone2 === 404) break;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  ok("the photo file is really deleted from the server", gone2 === 404, `status ${gone2}`);
+  const libAfter = (await api("GET", "/media-library")).json;
+  ok("and its library entry is gone", !libAfter?.some((m) => m.id === gj.id));
+  const notInTrash = (await api("GET", "/items/trash", { token })).json;
+  ok("and it is no longer in the trash", !notInTrash?.some((t) => t.id === itemId));
+}
+const lib3 = (await api("GET", "/media-library")).json;
+ok("media library flags usage per file (in_use)", Array.isArray(lib3) && lib3.every((m) => typeof m.in_use === "boolean"));
+
 // ---- final: everything back as it was --------------------------------------
 console.log("\nFinal state");
 const finalList = await list();

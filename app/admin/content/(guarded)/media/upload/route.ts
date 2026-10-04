@@ -49,5 +49,5 @@ export async function POST(request: Request): Promise<Response> {
     token
   );
 
-  return NextResponse.json({ id, path: stored.path }, { status: 201 });
+  return NextResponse.json({ id, path: stored.path, blur: stored.blur_data_url }, { status: 201 });
 }

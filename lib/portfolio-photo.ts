@@ -26,6 +26,13 @@ export type PortfolioPhoto = {
   visibility?: "shown" | "hidden";
   /** "new" shows a small NEW badge on the tile. */
   badge?: "none" | "new";
+  /**
+   * Tiny blurred preview shown while the full photo loads. Only valid for the file it was
+   * made from: `blurSrc` records which `src` that was, so replacing the photo never shows
+   * the old picture's blur.
+   */
+  blur?: string;
+  blurSrc?: string;
   /** Present only in the editor: the real DB id (or a "new-*" sentinel) used by `<Editable>`. */
   id?: number | string;
 };
@@ -58,6 +65,11 @@ export function photoSize(p: Pick<PortfolioPhoto, "size">): PhotoSize {
 
 export function photoFit(p: Pick<PortfolioPhoto, "fit">): PhotoFit | undefined {
   return p.fit && (PHOTO_FITS as readonly string[]).includes(p.fit) ? p.fit : undefined;
+}
+
+/** The blur-up placeholder for a photo: the bundled map for bundled photos, the stored one for uploads. */
+export function photoBlur(p: Pick<PortfolioPhoto, "src" | "blur" | "blurSrc">, bundled?: Record<string, string>): string | undefined {
+  return bundled?.[p.src] ?? (p.blur && p.blurSrc === p.src ? p.blur : undefined);
 }
 
 export function isPhotoHidden(p: Pick<PortfolioPhoto, "visibility">): boolean {

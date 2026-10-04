@@ -7,6 +7,8 @@ export type StoredMedia = {
   width: number;
   height: number;
   mime_type: string;
+  /** Tiny blurred preview (data URL) the site paints while the real photo loads; null for PDFs / no GD. */
+  blur_data_url: string | null;
 };
 
 /**
@@ -45,5 +47,6 @@ export async function uploadFileToCpanel(
     width: typeof data.width === "number" ? data.width : 0,
     height: typeof data.height === "number" ? data.height : 0,
     mime_type: typeof data.mime_type === "string" ? data.mime_type : declaredMime,
+    blur_data_url: typeof data.blur_data_url === "string" ? data.blur_data_url : null,
   };
 }

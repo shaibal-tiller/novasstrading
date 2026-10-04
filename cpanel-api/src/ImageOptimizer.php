@@ -81,6 +81,46 @@ final class ImageOptimizer
         return $encoded;
     }
 
+    /**
+     * A tiny (about 24px wide, a few hundred bytes) blurred copy of an image as a data URL.
+     * The website paints it instantly while the real photo downloads, then fades the sharp
+     * one in ("blur-up"). Returns null if GD is unavailable - the site then just waits for
+     * the photo, as before.
+     */
+    public static function blurDataUrl(string $bytes): ?string
+    {
+        if (!function_exists('imagecreatefromstring') || !function_exists('imagescale')) {
+            return null;
+        }
+        try {
+            $img = @imagecreatefromstring($bytes);
+            if ($img === false) {
+                return null;
+            }
+            $w = imagesx($img);
+            $h = imagesy($img);
+            $small = imagescale($img, 24, max(1, (int) round($h * 24 / max(1, $w))), IMG_BILINEAR_FIXED);
+            imagedestroy($img);
+            if ($small === false) {
+                return null;
+            }
+            if (function_exists('imagepalettetotruecolor')) {
+                imagepalettetotruecolor($small);
+            }
+            $webp = function_exists('imagewebp');
+            ob_start();
+            $ok = $webp ? @imagewebp($small, null, 40) : @imagejpeg($small, null, 40);
+            $out = ob_get_clean();
+            imagedestroy($small);
+            if (!$ok || $out === false || $out === '') {
+                return null;
+            }
+            return 'data:' . ($webp ? 'image/webp' : 'image/jpeg') . ';base64,' . base64_encode($out);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
     private static function reencode(string $bytes, string $mime): ?array
     {
         if (class_exists(\Imagick::class)) {

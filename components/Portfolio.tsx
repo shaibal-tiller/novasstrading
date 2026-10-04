@@ -16,6 +16,7 @@ import {
   SIZE_CLASSES,
   isPhotoHidden,
   photoCaption,
+  photoBlur,
   photoFit,
   photoSize,
   photoUrl,
@@ -42,6 +43,9 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
   const [active, setActive] = useState(tabs[0].key);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  // Full-screen view loads progressively: the grid-size picture (already cached from the
+  // grid) shows at once, and the big one fades in over it when it has finished loading.
+  const [fullLoaded, setFullLoaded] = useState(false);
   // Measured from the live grid so "two rows" holds at every breakpoint (the
   // column count differs: 2 / 3 / 4) and with bigger tiles mixed in.
   const [metrics, setMetrics] = useState({ ready: false, collapsedHeight: 0, visibleCount: 0 });
@@ -88,6 +92,8 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
     ro.observe(grid);
     return () => ro.disconnect();
   }, [tab.key, photos.length]);
+
+  useEffect(() => setFullLoaded(false), [lightbox]);
 
   const close = useCallback(() => setLightbox(null), []);
   const step = useCallback(
@@ -349,15 +355,30 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative h-[76vh] w-full">
+              {/* 1. Instant: same file/size the grid already loaded, so it comes from cache. */}
+              <Image
+                key={`low-${photos[lightbox].src}`}
+                src={photoUrl(photos[lightbox].src)}
+                alt=""
+                aria-hidden
+                fill
+                sizes="(max-width: 768px) 50vw, 25vw"
+                placeholder={photoBlur(photos[lightbox], blurData) ? "blur" : "empty"}
+                blurDataURL={photoBlur(photos[lightbox], blurData)}
+                className="object-contain"
+              />
+              {/* 2. High-res fades in on top once it has loaded. */}
               <Image
                 key={photos[lightbox].src}
                 src={photoUrl(photos[lightbox].src)}
                 alt={photos[lightbox].alt}
                 fill
                 sizes="90vw"
-                placeholder={blurData[photos[lightbox].src] ? "blur" : "empty"}
-                blurDataURL={blurData[photos[lightbox].src]}
-                className="animate-fade-up object-contain"
+                onLoad={() => setFullLoaded(true)}
+                className={clsx(
+                  "object-contain transition-opacity duration-500",
+                  fullLoaded ? "opacity-100" : "opacity-0",
+                )}
                 priority
               />
             </div>
@@ -495,11 +516,9 @@ function PhotoCard({
           alt={photo.alt}
           fill
           loading="lazy"
-          placeholder={blurData[photo.src] ? "blur" : "empty"}
-          blurDataURL={blurData[photo.src]}
-          sizes={
-            photoSizeForSizes(photo)
-          }
+          placeholder={photoBlur(photo, blurData) ? "blur" : "empty"}
+          blurDataURL={photoBlur(photo, blurData)}
+          sizes={photoSizeForSizes(photo)}
           className={clsx(
             fitClass,
             "transition-transform duration-700 ease-out group-hover:scale-[1.04]",

@@ -147,7 +147,7 @@ export function PortfolioPhotoManager() {
         form.set("file", file);
         const res = await fetch(UPLOAD_URL, { method: "POST", body: form });
         if (!res.ok) throw new Error(res.status === 401 ? "signed out - sign in again" : `server said ${res.status}`);
-        const { path } = (await res.json()) as { path: string };
+        const { path, blur } = (await res.json()) as { path: string; blur?: string | null };
         created.push({
           id: `new-p${counter.current++}`,
           fields: {
@@ -159,6 +159,8 @@ export function PortfolioPhotoManager() {
             fit: "center",
             visibility: "shown",
             badge: "none",
+            // Blur-up placeholder for this exact file (see PortfolioPhoto.blur).
+            ...(blur ? { blur, blurSrc: path } : {}),
           },
         });
       } catch (err) {

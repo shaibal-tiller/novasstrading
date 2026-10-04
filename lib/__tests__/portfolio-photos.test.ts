@@ -55,3 +55,14 @@ describe("portfolio photo helpers", () => {
     expect(isPhotoHidden({})).toBe(false);
   });
 });
+
+import { photoBlur } from "@/lib/portfolio-photo";
+describe("blur-up placeholders", () => {
+  it("prefers the bundled map, then a stored blur - but only for the file it was made from", () => {
+    expect(photoBlur({ src: "a.jpg" }, { "a.jpg": "data:bundled" })).toBe("data:bundled");
+    expect(photoBlur({ src: "media/x.webp", blur: "data:own", blurSrc: "media/x.webp" })).toBe("data:own");
+    // photo was replaced: the stored blur belongs to the OLD file and must not be shown
+    expect(photoBlur({ src: "media/new.webp", blur: "data:own", blurSrc: "media/old.webp" })).toBeUndefined();
+    expect(photoBlur({ src: "media/x.webp" })).toBeUndefined();
+  });
+});

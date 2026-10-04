@@ -1,15 +1,24 @@
-import { listMedia } from "@/lib/cpanel-api";
+import { cookies } from "next/headers";
+import { getStorageUsage, listMedia } from "@/lib/cpanel-api";
+import { verifySessionCookie } from "@/lib/session";
 import { ContentMedia } from "@/components/ContentMedia";
 import { MediaUploader } from "./MediaUploader";
+import { StoragePanel } from "./StoragePanel";
 import { deleteMediaAction } from "./actions";
 
 export default async function MediaLibraryPage() {
   const media = await listMedia();
-  const unused = media.filter((m) => m.used_by_count === 0);
+  const cookie = cookies().get("nova_admin_session")?.value;
+  const token = cookie ? verifySessionCookie(cookie) : null;
+  const usage = token ? await getStorageUsage(token).catch(() => null) : null;
+  // in_use comes from the server's real check of the stored content (the old
+  // used_by_count counter was never maintained, so everything read as "Unused").
+  const unused = media.filter((m) => m.in_use === false);
 
   return (
     <main className="flex flex-col gap-8">
       <h1 className="display-md text-ink">Media library</h1>
+      {usage && <StoragePanel usage={usage} />}
       <MediaUploader />
 
       <section>
@@ -23,13 +32,15 @@ export default async function MediaLibraryPage() {
               <p className="mt-2 truncate text-xs text-ink-muted">{m.original_filename}</p>
               <p className="text-xs text-ink-muted">{(m.bytes / 1024).toFixed(0)} KB · {m.width}×{m.height}</p>
               <p className="text-xs font-medium text-brass-dark">
-                {m.used_by_count > 0 ? `Used ${m.used_by_count}×` : "Unused"}
+                {m.in_use === false ? "Unused - safe to delete" : "In use"}
               </p>
-              <form action={deleteMediaAction.bind(null, m.id)}>
-                <button type="submit" className="btn btn-outline mt-2 w-full text-xs">
-                  Delete
-                </button>
-              </form>
+              {m.in_use === false && (
+                <form action={deleteMediaAction.bind(null, m.id)}>
+                  <button type="submit" className="btn btn-outline mt-2 w-full text-xs">
+                    Delete
+                  </button>
+                </form>
+              )}
             </li>
           ))}
         </ul>
@@ -38,7 +49,10 @@ export default async function MediaLibraryPage() {
       {unused.length > 0 && (
         <section>
           <h2 className="field-label mb-3">Cleanup — unused files ({unused.length})</h2>
-          <p className="lede">These aren&apos;t referenced by any content. Review and delete what you don&apos;t need.</p>
+          <p className="lede">
+            These aren&apos;t used by any content (including the trash). Delete them here, or let the automatic cleanup
+            remove them after 3 days.
+          </p>
         </section>
       )}
     </main>
