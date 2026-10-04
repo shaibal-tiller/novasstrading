@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { listTrash } from "@/lib/cpanel-api";
+import { photoUrl } from "@/lib/portfolio-photo";
 import { verifySessionCookie } from "@/lib/session";
 import { restoreItemAction } from "./actions";
 
@@ -16,7 +17,18 @@ export default async function TrashPage() {
       <ul className="flex flex-col gap-2">
         {trashed.map((t) => (
           <li key={t.id} className="flex items-center justify-between rounded-2xl border border-ink/10 p-3">
-            <span>{t.section} — {String(t.fields.title ?? t.fields.name ?? "(untitled)")}</span>
+            <span className="flex items-center gap-3">
+              {typeof t.fields.src === "string" && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photoUrl(t.fields.src)} alt="" loading="lazy" className="h-14 w-11 rounded object-cover" />
+              )}
+              <span>
+                {t.section} —{" "}
+                {String(
+                  t.fields.title ?? t.fields.name ?? t.fields.caption ?? t.fields.alt ?? t.fields.label ?? "(untitled)",
+                )}
+              </span>
+            </span>
             <form action={async () => { "use server"; await restoreItemAction(t.id); }}>
               <button type="submit" className="btn btn-outline">Restore</button>
             </form>
