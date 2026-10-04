@@ -37,6 +37,7 @@ const MIGRATED_LIST_KEYS = [
   "whyUs.reasons",
   "products.items",
   "portfolio.tabs",
+  "portfolio.photos",
   "sourcing.pillars",
   "sourcing.services",
   "sourcing.checklist",
@@ -255,7 +256,8 @@ describe("SECTION_REGISTRY", () => {
     const flagged = allItemFields
       .filter((f) => f.list === true)
       .map((f) => f.key);
-    expect(flagged.sort()).toEqual(["bullets", "categories"]);
+    // "detail" = a photo's lightbox spec lines (one per line), added with portfolio.photos.
+    expect(flagged.sort()).toEqual(["bullets", "categories", "detail"]);
 
     const bullets = SECTION_REGISTRY.find((e) => e.key === "divisions")!
       .lists.find((l) => l.listKey === "divisions.items")!
@@ -286,6 +288,7 @@ describe("SECTION_REGISTRY", () => {
     );
     expect(mediaFields).toEqual([
       "products.items.image",
+      "portfolio.photos.src",
       "compliance.certifications.src",
       "partners.logos.src",
       "partners.memberships.src",

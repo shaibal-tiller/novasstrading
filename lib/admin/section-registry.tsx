@@ -38,9 +38,9 @@
 //     baked into the URL). Ruled static/non-editable for this pass.
 //   - `leadTime.columns` — dead data; LeadTimeTable.tsx hardcodes its own
 //     `COLUMNS` constant and migrate-content.ts skips the field.
-//   - `portfolio.tabs[].photos` — a nested array of `{ src, alt }` objects
-//     inside an item's fields_json. ItemFieldKind has no nested-list kind, so
-//     it cannot be expressed here; see the note on that entry below.
+//   - `portfolio.tabs[].photos` — no longer nested: each photo is its own
+//     `portfolio.photos` item (see that list below). Old databases that still
+//     carry the nested array keep rendering until the photo migration is run.
 //
 // * !! THIS SCHEMA IS NOT THE WHOLE ROW. A field's absence from `itemFields`
 //   or `scalarFields` means "not editable here" — it NEVER means "safe to
@@ -80,6 +80,11 @@
 //   infer array-ness from an existing item's data.
 // ---------------------------------------------------------------------------
 
+import { PHOTO_FITS, PHOTO_SIZES } from "@/lib/portfolio-photo";
+
+/** The portfolio tab ids the photo "tab" field may take (see portfolio.tabs items). */
+const PORTFOLIO_TAB_KEYS = ["woman", "man", "kids", "lingerie"];
+
 export type FieldControl = "text" | "textarea" | "url" | "enum";
 export type ItemFieldKind = FieldControl | "media" | "document";
 
@@ -111,6 +116,11 @@ export type ListSpec = {
   itemFields: ItemField[];
   /** Which itemFields[].key labels the item in add/reorder UI. */
   titleField: string;
+  /**
+   * True when a dedicated panel manages this list (e.g. PortfolioPhotoManager), so the
+   * generic "+ Add" / "Reorder" buttons under the preview are not shown for it.
+   */
+  customManager?: boolean;
 };
 
 export type SectionEntry = {
@@ -331,17 +341,14 @@ export const SECTION_REGISTRY: SectionEntry[] = [
 
   // -------------------------------------------------------------------------
   // 8. Portfolio — components/Portfolio.tsx.
-  // KNOWN GAP: each tab also carries `photos: { src, alt }[]` (14–25 images
-  // per tab) nested inside the item's fields_json. ItemFieldKind has no
-  // nested-list kind, so those photos are not editable through this schema
-  // yet — Task 9 is explicitly licensed to extend this entry.
+  // Photos: one `portfolio.photos` item per photo (see the second list below),
+  // folded back into `portfolio.tabs[].photos` by content-assemble.ts. This is
+  // the section the client updates monthly, so every photo can be reordered,
+  // resized, re-framed, captioned, hidden, deleted (to Trash) and restored.
   //
-  // !! MUST BE PRESERVED ON SAVE. `photos` is undeclared, not disposable.
-  // Writing a portfolio tab back from `itemFields` alone — or through any
-  // save path that drops array-valued keys — deletes that tab's entire photo
-  // gallery on the first label edit. Saving a tab means: read the row's existing fields_json,
-  // overlay only the changed declared fields, write the merged object back.
-  // `categories` below is an array too and carries the same requirement.
+  // Tab rows in a database that has NOT been through the photo migration still
+  // carry a nested `photos` array, which is undeclared here. The merge-on-save
+  // rule at the top of this file keeps it intact when a tab label is edited.
   // -------------------------------------------------------------------------
   {
     key: "portfolio",
@@ -367,6 +374,27 @@ export const SECTION_REGISTRY: SectionEntry[] = [
           { key: "key", label: "Tab id (internal)", kind: "text" },
           { key: "label", label: "Tab label", kind: "text" },
           { key: "categories", label: "Categories (one per line)", kind: "textarea", list: true },
+        ],
+      },
+      // One item per photo. Folded back into portfolio.tabs[].photos by
+      // content-assemble.ts (see assemblePortfolioPhotos). Managed mainly through
+      // PortfolioPhotoManager (bulk add, drag order, hide, delete) and the
+      // click-to-edit modal on each tile for the finer fields.
+      {
+        listKey: "portfolio.photos",
+        label: "Portfolio photos",
+        titleField: "alt",
+        customManager: true,
+        itemFields: [
+          { key: "src", label: "Photo", kind: "media" },
+          { key: "tab", label: "Category tab", kind: "enum", options: PORTFOLIO_TAB_KEYS },
+          { key: "caption", label: "Caption (shown under the photo; blank = use the description)", kind: "text" },
+          { key: "alt", label: "Description (for screen readers; \"Category — caption\" style)", kind: "text" },
+          { key: "detail", label: "Detail lines shown in the full-screen view (one per line)", kind: "textarea", list: true },
+          { key: "size", label: "Tile size", kind: "enum", options: [...PHOTO_SIZES] },
+          { key: "fit", label: "Framing inside the tile", kind: "enum", options: [...PHOTO_FITS] },
+          { key: "visibility", label: "Visibility", kind: "enum", options: ["shown", "hidden"] },
+          { key: "badge", label: "NEW badge", kind: "enum", options: ["none", "new"] },
         ],
       },
     ],

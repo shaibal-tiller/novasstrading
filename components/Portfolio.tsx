@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -10,9 +11,20 @@ import {
 } from "react";
 import { blurData } from "@/lib/blurData";
 import type { portfolio as PortfolioContent } from "@/lib/content";
+import {
+  FIT_CLASSES,
+  SIZE_CLASSES,
+  isPhotoHidden,
+  photoCaption,
+  photoFit,
+  photoSize,
+  photoUrl,
+  type PortfolioPhoto,
+} from "@/lib/portfolio-photo";
 import { transparentImages } from "@/lib/transparentImages";
 import { clsx } from "@/lib/utils";
 import { Editable } from "./admin/Editable";
+import { useEditMode } from "./admin/EditModeProvider";
 import { Reveal } from "./Reveal";
 
 /** Rows of photos shown before the grid asks to be expanded. */
@@ -22,29 +34,34 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
   // Local item-id widening: DB rows carry a numeric `id`; the static content
   // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
   // which is safe since Editable never reads it outside edit mode.
-  // `tabs[].photos` is deliberately NOT wrapped in Editable — see
-  // lib/admin/section-registry.tsx's `portfolio` entry KNOWN GAP note.
+  // Each photo tile is wrapped in <Editable id="portfolio.photos.<id>"> (editor
+  // only); the photos themselves are managed by PortfolioPhotoManager.
   type TabWithId = (typeof portfolio.tabs)[number] & { id: number };
   const tabs = portfolio.tabs as TabWithId[];
 
   const [active, setActive] = useState(tabs[0].key);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
-  // Measured from the live grid so "two rows" holds at every breakpoint,
-  // where the column count differs (2 / 3 / 4).
-  const [metrics, setMetrics] = useState({ perRow: 0, collapsedHeight: 0 });
+  // Measured from the live grid so "two rows" holds at every breakpoint (the
+  // column count differs: 2 / 3 / 4) and with bigger tiles mixed in.
+  const [metrics, setMetrics] = useState({ ready: false, collapsedHeight: 0, visibleCount: 0 });
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const tab = tabs.find((t) => t.key === active) ?? tabs[0];
-  const photos = tab.photos;
+  // In the editor every photo shows (hidden ones dimmed); on the public site
+  // hidden photos are dropped (assembleContent already did, this is a backstop).
+  const editing = useEditMode() !== null;
 
-  const visibleCount =
-    metrics.perRow > 0 ? metrics.perRow * COLLAPSED_ROWS : photos.length;
-  const isOverflowing = metrics.perRow > 0 && photos.length > visibleCount;
+  const tab = tabs.find((t) => t.key === active) ?? tabs[0];
+  const allPhotos = (tab.photos ?? []) as PortfolioPhoto[];
+  const photos = editing ? allPhotos : allPhotos.filter((p) => !isPhotoHidden(p));
+
+  const visibleCount = metrics.ready ? metrics.visibleCount : photos.length;
+  const isOverflowing = metrics.ready && photos.length > visibleCount;
   const hiddenCount = Math.max(0, photos.length - visibleCount);
 
-  // Measure how many cards fit per row and where row two ends. Re-runs on tab
-  // switch (photo counts differ) and on resize (column count changes).
+  // Measure where the second row ends and how many cards sit above that line.
+  // Cards can span several columns/rows, so this looks at real positions rather
+  // than counting. Re-runs on tab switch and on resize (columns change).
   useLayoutEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -54,23 +71,23 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
       if (cards.length === 0) return;
 
       // offsetTop reflects layout position only. getBoundingClientRect would
-      // fold in the cards' staggered fade-up transforms and mis-count the row.
-      const firstTop = cards[0].offsetTop;
-      const perRow =
-        cards.filter((c) => c.offsetTop === firstTop).length || 1;
+      // fold in the cards' staggered fade-up transforms and mis-measure.
+      const style = getComputedStyle(grid);
+      const gap = parseFloat(style.rowGap) || 0;
+      const rowHeight =
+        parseFloat(style.gridAutoRows) || Math.min(...cards.map((c) => c.offsetHeight));
+      if (!rowHeight) return; // no layout yet (hidden/detached) - keep everything visible
+      const collapsedHeight = rowHeight * COLLAPSED_ROWS + gap * (COLLAPSED_ROWS - 1);
+      const visibleCount = cards.filter((c) => c.offsetTop < collapsedHeight - 1).length;
 
-      const lastIdx = Math.min(perRow * COLLAPSED_ROWS, cards.length) - 1;
-      const last = cards[lastIdx];
-      const collapsedHeight = last.offsetTop + last.offsetHeight;
-
-      setMetrics({ perRow, collapsedHeight });
+      setMetrics({ ready: true, collapsedHeight, visibleCount });
     };
 
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(grid);
     return () => ro.disconnect();
-  }, [tab.key]);
+  }, [tab.key, photos.length]);
 
   const close = useCallback(() => setLightbox(null), []);
   const step = useCallback(
@@ -88,7 +105,7 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
       const next = photos[(lightbox + dir + photos.length) % photos.length];
       [1080, 1920].forEach((w) => {
         const img = new window.Image();
-        img.src = `/_next/image?url=${encodeURIComponent(`/assets/${next.src}`)}&w=${w}&q=75`;
+        img.src = `/_next/image?url=${encodeURIComponent(photoUrl(next.src))}&w=${w}&q=75`;
       });
     });
   }, [lightbox, photos]);
@@ -196,27 +213,45 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
 
         {/* Photo grid — always clamped to two rows; "Show all" opens the full gallery in a modal */}
         <div
-          className="relative mt-10 overflow-hidden"
+          className="relative mt-10 overflow-hidden [container-type:inline-size]"
           style={{
             maxHeight: isOverflowing ? metrics.collapsedHeight : undefined,
           }}
         >
+          {/* Row height = one 3:4 tile, derived from the container width (cqw) so
+              wide / tall / featured tiles can span cells and everything still lines up. */}
           <div
             key={`grid-${tab.key}`}
             ref={gridRef}
-            className="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+            className="grid grid-flow-dense gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 [grid-auto-rows:calc((100cqw-1.25rem)/2*1.3333)] md:[grid-auto-rows:calc((100cqw-2.5rem)/3*1.3333)] lg:[grid-auto-rows:calc((100cqw-3.75rem)/4*1.3333)]"
           >
             {photos.map((p, i) => {
               // Cards below the fold are hidden from keyboard & AT while folded.
               const isHidden = isOverflowing && i >= visibleCount;
-              return (
+              const span = SIZE_CLASSES[photoSize(p)];
+              const card = (
                 <PhotoCard
-                  key={p.src}
                   photo={p}
                   index={i}
                   onOpen={() => setLightbox(i)}
                   hidden={isHidden}
+                  fill
+                  className={editing ? "h-full w-full" : clsx("h-full w-full", span)}
+                  editorHidden={editing && isPhotoHidden(p)}
                 />
+              );
+              return editing && p.id !== undefined ? (
+                <Editable
+                  key={`photo-${p.id}`}
+                  id={`portfolio.photos.${p.id}`}
+                  kind="item"
+                  as="div"
+                  className={span}
+                >
+                  {card}
+                </Editable>
+              ) : (
+                <Fragment key={`${p.src}-${i}`}>{card}</Fragment>
               );
             })}
           </div>
@@ -316,7 +351,7 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
             <div className="relative h-[76vh] w-full">
               <Image
                 key={photos[lightbox].src}
-                src={`/assets/${photos[lightbox].src}`}
+                src={photoUrl(photos[lightbox].src)}
                 alt={photos[lightbox].alt}
                 fill
                 sizes="90vw"
@@ -332,11 +367,9 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
                   {String(lightbox + 1).padStart(2, "0")} /{" "}
                   {String(photos.length).padStart(2, "0")}
                 </span>
-                <span className="text-sm">
-                  {photos[lightbox].alt.split("— ")[1] ?? photos[lightbox].alt}
-                </span>
+                <span className="text-sm">{photoCaption(photos[lightbox])}</span>
               </div>
-              {photos[lightbox].detail && (
+              {photos[lightbox].detail && photos[lightbox].detail!.length > 0 && (
                 <ul className="mt-3 space-y-1 border-t border-ivory/15 pt-3">
                   {photos[lightbox].detail!.map((line) => (
                     <li
@@ -388,7 +421,7 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
               <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
                 {photos.map((p, i) => (
                   <PhotoCard
-                    key={p.src}
+                    key={`${p.src}-${i}`}
                     photo={p}
                     index={i}
                     onOpen={() => setLightbox(i)}
@@ -410,19 +443,30 @@ function PhotoCard({
   onOpen,
   hidden,
   showCaption,
+  fill,
+  className,
+  editorHidden,
 }: {
-  photo: { src: string; alt: string; detail?: string[] };
+  photo: PortfolioPhoto;
   index: number;
   onOpen: () => void;
   hidden?: boolean;
   showCaption?: boolean;
+  /** Fill the grid cell (main grid, whose row height is fixed) instead of using a 3:4 box. */
+  fill?: boolean;
+  className?: string;
+  /** Editor only: this photo is hidden from the public site; draw it dimmed with a tag. */
+  editorHidden?: boolean;
 }) {
-  const caption = photo.alt.split("— ")[1] ?? photo.alt;
+  const caption = photoCaption(photo);
   // A confirmed-transparent cutout is safe to letterbox (contain) on a tinted
   // card. An opaque photo — lifestyle or otherwise — carries its own baked-in
   // background, so contain would show that as a mismatched box; cover fills
   // the card completely instead, same as any normal gallery thumbnail.
   const isCutout = transparentImages.has(photo.src);
+  const fit = photoFit(photo);
+  const fitClass = fit ? FIT_CLASSES[fit] : isCutout ? "object-contain p-2" : "object-cover";
+  const letterboxed = fit === "whole" || (!fit && isCutout);
   return (
     <button
       type="button"
@@ -430,30 +474,48 @@ function PhotoCard({
       aria-label={`View ${photo.alt} full screen`}
       tabIndex={hidden ? -1 : undefined}
       aria-hidden={hidden || undefined}
-      className="group animate-fade-up relative text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+      className={clsx(
+        "group animate-fade-up relative text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass",
+        editorHidden && "opacity-45",
+        className,
+      )}
       style={{ animationDelay: `${(index % 8) * 45}ms` }}
     >
       <div
         className={clsx(
-          "relative aspect-[3/4] w-full overflow-hidden rounded-sm border border-ink/5",
-          isCutout
+          "relative w-full overflow-hidden rounded-sm border border-ink/5",
+          fill ? "h-full" : "aspect-[3/4]",
+          letterboxed
             ? "bg-gradient-to-br from-ivory-light to-stone/50"
             : "bg-ivory",
         )}
       >
         <Image
-          src={`/assets/${photo.src}`}
+          src={photoUrl(photo.src)}
           alt={photo.alt}
           fill
           loading="lazy"
           placeholder={blurData[photo.src] ? "blur" : "empty"}
           blurDataURL={blurData[photo.src]}
-          sizes="(max-width: 768px) 50vw, 25vw"
+          sizes={
+            photoSizeForSizes(photo)
+          }
           className={clsx(
-            isCutout ? "object-contain p-2" : "object-cover",
+            fitClass,
             "transition-transform duration-700 ease-out group-hover:scale-[1.04]",
           )}
         />
+
+        {photo.badge === "new" && (
+          <span className="absolute left-2 top-2 rounded-full bg-brass px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-ivory shadow">
+            New
+          </span>
+        )}
+        {editorHidden && (
+          <span className="absolute right-2 top-2 rounded-full bg-ink px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-ivory">
+            Hidden
+          </span>
+        )}
 
         {/* Hover veil with centred + */}
         <span
@@ -490,6 +552,14 @@ function PhotoCard({
       )}
     </button>
   );
+}
+
+/** `sizes` hint for next/image: bigger tiles need a bigger source so they stay sharp. */
+function photoSizeForSizes(photo: PortfolioPhoto): string {
+  const size = photoSize(photo);
+  return size === "normal" || size === "tall"
+    ? "(max-width: 768px) 50vw, 25vw"
+    : "(max-width: 768px) 100vw, 50vw";
 }
 
 function ChevronIcon({ className }: { className?: string }) {

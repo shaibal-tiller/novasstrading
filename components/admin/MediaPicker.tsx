@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { listMedia, type MediaRow } from "@/lib/admin/media-client";
-import { resolveMediaUrl } from "@/lib/media-url";
+import { photoUrl } from "@/lib/portfolio-photo";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
 /** Resolves an uploaded/local media path to a browsable URL for a plain <img>/<a>. */
 export function mediaSrc(path: string): string {
-  return resolveMediaUrl(path);
+  // Uploaded media -> the cPanel media host; absolute paths/URLs untouched; bundled
+  // photos ("products/x.jpg", as in the portfolio) -> /assets.
+  return photoUrl(path);
 }
 
 /**

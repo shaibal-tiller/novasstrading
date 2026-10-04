@@ -585,9 +585,9 @@ export function SectionEditor({
     <EditModeContext.Provider value={ctxValue}>
       <EditorCanvas labelLookup={labelLookup}>{render(draft)}</EditorCanvas>
 
-      {entry.lists.length > 0 && (
+      {entry.lists.some((l) => !l.customManager) && (
         <div className="mt-4 flex flex-wrap gap-2">
-          {entry.lists.map((list) => {
+          {entry.lists.filter((l) => !l.customManager).map((list) => {
             const count = (draft.items[list.listKey] ?? []).length;
             return (
               <div key={list.listKey} className="flex gap-2">

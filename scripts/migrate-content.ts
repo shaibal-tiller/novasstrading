@@ -48,6 +48,22 @@ export function buildMigrationPlan(source: Record<string, unknown>): Plan {
         continue;
       }
 
+      // Portfolio tabs: each photo becomes its own `portfolio.photos` item (so it can
+      // be reordered / hidden / trashed individually) pointing at its tab; the tab
+      // row keeps only its label and categories. Tabs first, then photos in order.
+      if (exportName === "portfolio" && fieldName === "tabs" && Array.isArray(fieldValue)) {
+        const photoWrites: { section: string; fields: Record<string, unknown> }[] = [];
+        for (const tab of fieldValue as Record<string, unknown>[]) {
+          const { photos, ...tabFields } = tab;
+          plan.itemWrites.push({ section: "portfolio.tabs", fields: tabFields });
+          for (const photo of (photos as Record<string, unknown>[] | undefined) ?? []) {
+            photoWrites.push({ section: "portfolio.photos", fields: { tab: tab.key, ...photo } });
+          }
+        }
+        plan.itemWrites.push(...photoWrites);
+        continue;
+      }
+
       if (Array.isArray(fieldValue)) {
         for (const entry of fieldValue) {
           const fields = typeof entry === "string" ? { text: entry } : (entry as Record<string, unknown>);

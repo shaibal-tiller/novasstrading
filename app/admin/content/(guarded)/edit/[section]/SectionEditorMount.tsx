@@ -8,6 +8,7 @@ import {
   type SectionDraft,
 } from "@/components/admin/SectionEditor";
 import { Editable } from "@/components/admin/Editable";
+import { PortfolioPhotoManager } from "@/components/admin/PortfolioPhotoManager";
 import { assembleContent, type RawItem } from "@/lib/content-assemble";
 import { applyChangesetAction } from "./actions";
 
@@ -116,7 +117,12 @@ function renderSection(
     case "products":
       return <ProductRange products={c.products} />;
     case "portfolio":
-      return <Portfolio portfolio={c.portfolio} />;
+      return (
+        <>
+          <Portfolio portfolio={c.portfolio} />
+          <PortfolioPhotoManager />
+        </>
+      );
     case "sourcing":
       return <Sourcing sourcing={c.sourcing} />;
     case "process":

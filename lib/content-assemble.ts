@@ -68,6 +68,9 @@ export function assembleContent(
   }
 
   for (const [listKey, items] of Object.entries(itemsByListKey)) {
+    // Folded into portfolio.tabs[].photos by assemblePortfolioPhotos() below.
+    if (listKey === "portfolio.photos") continue;
+
     if (listKey === "leadTime.rows") {
       const rows = items.map((i) => {
         const f = i.fields as {
@@ -104,6 +107,38 @@ export function assembleContent(
     (result[exportName] as Fields)[arrayFieldName] = values;
   }
 
+  assemblePortfolioPhotos(result, itemsByListKey["portfolio.photos"] ?? [], keepIds);
+
   return result;
+}
+
+/**
+ * Each portfolio photo is its own `portfolio.photos` item (so it can be
+ * reordered, hidden, trashed and restored one by one). This folds them back
+ * into `portfolio.tabs[].photos`, the shape the gallery component reads.
+ *
+ * - Public render (`keepIds` false): photos marked hidden are dropped, and the
+ *   internal `tab` pointer is stripped, so the result is exactly lib/content.ts.
+ * - Editor (`keepIds` true): hidden photos stay (the editor shows them dimmed)
+ *   and every photo carries its real `id` for the `<Editable>` instrumentation.
+ * - If there are no photo items at all (a database that has not been through
+ *   the photo migration yet), each tab keeps whatever `photos` array is nested
+ *   in its own row, so an un-migrated database still renders.
+ */
+function assemblePortfolioPhotos(result: Record<string, unknown>, photoItems: RawItem[], keepIds: boolean) {
+  if (photoItems.length === 0) return;
+  const portfolio = result.portfolio as Fields | undefined;
+  const tabs = portfolio?.tabs;
+  if (!Array.isArray(tabs)) return;
+
+  for (const tab of tabs as Fields[]) {
+    const mine = photoItems.filter((item) => item.fields.tab === tab.key);
+    tab.photos = mine
+      .filter((item) => keepIds || item.fields.visibility !== "hidden")
+      .map((item) => {
+        const { tab: _tab, ...photo } = item.fields;
+        return keepIds ? { id: item.id, ...photo } : photo;
+      });
+  }
 }
 
