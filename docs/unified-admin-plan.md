@@ -79,13 +79,24 @@ Break-glass: if the email service is down nobody can sign in. A documented recov
 
 Nothing in phases 1-3 can affect the live site, mail, or the current assets app.
 
-## 6. Decisions needed from you
+## 6. Decisions (recorded 2026-10-04)
 
-1. Sign-in method: email code only, or password **and** code.
-2. Who gets in: only `it-support@` and `admin@` (what exists), or also viewers for Assets - and should viewers ever see the Website editor (proposed: no).
-3. Is anyone entering real inventory data in the new app today?
-4. Are the two encryption keys saved in a password manager?
-5. Okay to make the inventory repo private and close the public directory listing?
+| # | Question | Answer | Effect on the plan |
+|---|---|---|---|
+| 1 | Sign-in method | **Email code only** | No password anywhere in the new door; the old password login is removed. |
+| 2 | Who gets in | **`it-support@` and `admin@`, both modules** | No new accounts now; the Access page can add people later. |
+| 3 | Real data in the new assets app? | **No - still testing** | Phase 4 is a small, low-risk import; no live data to protect during cutover. |
+| 4 | Encryption keys saved? | **Not sure / no** | See below. |
+
+### Handling the encryption keys (decision 4)
+
+The current keys exist only as hidden Vercel variables and cannot be read back. Because the new app holds **only trial data** (9 trial employees; assets, photos and documents are empty), the safe fix is **not to depend on those keys at all**:
+
+1. Generate two **new** keys (`openssl rand -base64 32`, twice) and **save them in a password manager before anything else**.
+2. Use them for the staging copy (Phase 1) so the process is rehearsed.
+3. At cutover, set the same new keys on the production assets project. The 9 trial employees' encrypted contact fields become unreadable - they are re-entered (or replaced by the legacy import in Phase 4). Nothing of value is lost, and from then on the keys are safely backed up.
+
+If the 9 employees turn out to be real people whose details matter, tell me before Phase 5 and we will handle that differently.
 
 ## 7. Not in scope (deliberately)
 
