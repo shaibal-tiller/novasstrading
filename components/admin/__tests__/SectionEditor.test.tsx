@@ -884,3 +884,37 @@ describe("SectionEditor", () => {
     expect(dispatched.sectionWrites).toEqual([]);
   });
 });
+
+describe("computeChangeset ordering of new items", () => {
+  const entry = {
+    key: "e",
+    label: "E",
+    primarySectionKeys: [],
+    scalarFields: [],
+    lists: [{ listKey: "l", label: "L", titleField: "t", itemFields: [] }],
+  } as never;
+  const mk = (...ids: (number | string)[]) => ids.map((id) => ({ id, fields: { t: String(id) } }));
+
+  it("emits no reorder when new items are simply appended", () => {
+    const cs = computeChangeset({ sections: {}, items: { l: mk(1, 2) } }, { sections: {}, items: { l: mk(1, 2, "new-0") } }, entry);
+    expect(cs.itemCreates).toHaveLength(1);
+    expect(cs.reorders).toEqual([]);
+  });
+
+  it("emits a reorder when a new item is placed at the top (newest first)", () => {
+    const cs = computeChangeset({ sections: {}, items: { l: mk(1, 2) } }, { sections: {}, items: { l: mk("new-0", 1, 2) } }, entry);
+    expect(cs.reorders).toEqual([{ section: "l", ids: ["new-0", 1, 2] }]);
+  });
+
+  it("emits a reorder when a new item is inserted in the middle", () => {
+    const cs = computeChangeset({ sections: {}, items: { l: mk(1, 2) } }, { sections: {}, items: { l: mk(1, "new-0", 2) } }, entry);
+    expect(cs.reorders).toEqual([{ section: "l", ids: [1, "new-0", 2] }]);
+  });
+
+  it("still emits a reorder for swapped existing items, and none when nothing moved", () => {
+    const swap = computeChangeset({ sections: {}, items: { l: mk(1, 2) } }, { sections: {}, items: { l: mk(2, 1) } }, entry);
+    expect(swap.reorders).toHaveLength(1);
+    const same = computeChangeset({ sections: {}, items: { l: mk(1, 2) } }, { sections: {}, items: { l: mk(1, 2) } }, entry);
+    expect(same.reorders).toEqual([]);
+  });
+});

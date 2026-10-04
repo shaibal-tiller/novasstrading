@@ -169,9 +169,22 @@ export function computeChangeset(baseline: SectionDraft, draft: SectionDraft, en
       .filter((i): i is DraftItem & { id: number } => typeof i.id === "number" && draftNumericIds.has(i.id))
       .map((i) => i.id);
 
+    // A brand-new item is saved by createItem, which always APPENDS it. So the
+    // list only stays correct without a reorder if the draft is exactly "the
+    // surviving existing items in their baseline order, then the new items". Any
+    // other arrangement - existing items swapped, OR a new item placed anywhere but
+    // the tail (e.g. "newest photos first") - needs an explicit reorder to persist.
+    const expectedOrder: (number | string)[] = [
+      ...baselineOrderFiltered,
+      ...draftItems.filter((i) => typeof i.id !== "number").map((i) => i.id),
+    ];
+    const draftOrder = draftItems
+      .filter((i) => typeof i.id !== "number" || baselineById.has(i.id))
+      .map((i) => i.id);
     const orderChanged =
       draftExistingOrder.length !== baselineOrderFiltered.length ||
-      draftExistingOrder.some((id, i) => id !== baselineOrderFiltered[i]);
+      draftOrder.length !== expectedOrder.length ||
+      draftOrder.some((id, i) => id !== expectedOrder[i]);
 
     if (orderChanged) {
       changeset.reorders.push({ section: listKey, ids: draftItems.map((i) => i.id) });
