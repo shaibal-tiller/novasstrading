@@ -1,6 +1,5 @@
-import { cookies } from "next/headers";
 import { getStorageUsage, listMedia } from "@/lib/cpanel-api";
-import { verifySessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 import { ContentMedia } from "@/components/ContentMedia";
 import { MediaUploader } from "./MediaUploader";
 import { StoragePanel } from "./StoragePanel";
@@ -8,8 +7,7 @@ import { deleteMediaAction } from "./actions";
 
 export default async function MediaLibraryPage() {
   const media = await listMedia();
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
+  const token = await requireContentToken().catch(() => null);
   const usage = token ? await getStorageUsage(token).catch(() => null) : null;
   // in_use comes from the server's real check of the stored content (the old
   // used_by_count counter was never maintained, so everything read as "Unused").

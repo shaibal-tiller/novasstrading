@@ -72,34 +72,6 @@ export async function getContentBundle(): Promise<{
   return res.json();
 }
 
-export async function login(email: string, password: string): Promise<string> {
-  const res = await call("/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) throw new Error("invalid credentials");
-  const data = await res.json();
-  return data.token as string;
-}
-
-export async function requestOtp(email: string): Promise<void> {
-  const res = await call("/auth/otp/request", {
-    method: "POST",
-    body: JSON.stringify({ email }),
-  });
-  if (!res.ok) throw new Error(`Failed to request OTP (${res.status})`);
-}
-
-export async function verifyOtp(email: string, code: string): Promise<string> {
-  const res = await call("/auth/otp/verify", {
-    method: "POST",
-    body: JSON.stringify({ email, code }),
-  });
-  if (!res.ok) throw new Error("invalid or expired code");
-  const data = await res.json();
-  return data.token as string;
-}
-
 export async function getSections(): Promise<Record<string, Fields>> {
   const res = await call("/sections");
   return res.json();

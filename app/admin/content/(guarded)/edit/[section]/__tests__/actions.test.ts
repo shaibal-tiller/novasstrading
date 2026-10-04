@@ -1,14 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("@/lib/cpanel-api");
-vi.mock("next/headers");
+vi.mock("@/lib/admin-auth", () => ({ requireContentToken: vi.fn() }));
 vi.mock("next/cache");
 
 import { applyChangesetAction } from "../actions";
 import { createItem, deleteItem, reorderItems, updateItem, updateSection } from "@/lib/cpanel-api";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { signSessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 import type { Changeset } from "@/components/admin/SectionEditor";
 
 const updateSectionMock = updateSection as ReturnType<typeof vi.fn>;
@@ -23,21 +22,18 @@ function emptyChangeset(): Changeset {
 }
 
 beforeEach(() => {
-  vi.stubEnv("SESSION_COOKIE_SECRET", "test-cookie-secret");
   updateSectionMock.mockReset().mockResolvedValue(undefined);
   createItemMock.mockReset();
   updateItemMock.mockReset().mockResolvedValue(undefined);
   deleteItemMock.mockReset().mockResolvedValue(undefined);
   reorderItemsMock.mockReset().mockResolvedValue(undefined);
   revalidatePathMock.mockReset();
-  (cookies as ReturnType<typeof vi.fn>).mockReturnValue({
-    get: (name: string) => (name === "nova_admin_session" ? { value: signSessionCookie("session-token") } : undefined),
-  });
+  (requireContentToken as ReturnType<typeof vi.fn>).mockReset().mockResolvedValue("session-token");
 });
 
 describe("applyChangesetAction", () => {
-  it("throws when there is no valid session cookie", async () => {
-    (cookies as ReturnType<typeof vi.fn>).mockReturnValue({ get: () => undefined });
+  it("throws when there is no valid admin session", async () => {
+    (requireContentToken as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Not authenticated"));
     await expect(applyChangesetAction(emptyChangeset())).rejects.toThrow("Not authenticated");
   });
 

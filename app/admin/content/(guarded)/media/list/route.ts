@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { listMedia } from "@/lib/cpanel-api";
-import { verifySessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 
 /**
  * JSON media listing for the visual editor's MediaPicker (a "use client"
@@ -11,9 +10,9 @@ import { verifySessionCookie } from "@/lib/session";
  * fetches instead.
  */
 export async function GET(): Promise<Response> {
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
-  if (!token) {
+  try {
+    await requireContentToken();
+  } catch {
     return NextResponse.json({ error: "not authenticated" }, { status: 401 });
   }
 

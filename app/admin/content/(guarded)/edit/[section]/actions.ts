@@ -1,17 +1,9 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePublicContent } from "@/lib/revalidate-content";
 import { createItem, deleteItem, reorderItems, updateItem, updateSection } from "@/lib/cpanel-api";
-import { verifySessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 import type { ApplyChangesetResult, Changeset } from "@/components/admin/SectionEditor";
-
-function requireToken(): string {
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
-  if (!token) throw new Error("Not authenticated");
-  return token;
-}
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : "Unknown error";
@@ -34,7 +26,7 @@ function errorMessage(err: unknown): string {
  * the failures outstanding for a retry.
  */
 export async function applyChangesetAction(changeset: Changeset): Promise<ApplyChangesetResult> {
-  const token = requireToken();
+  const token = await requireContentToken();
 
   const result: ApplyChangesetResult = {
     createdIds: {},

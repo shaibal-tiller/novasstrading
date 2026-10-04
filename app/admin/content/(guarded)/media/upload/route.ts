@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createMedia } from "@/lib/cpanel-api";
 import { uploadFileToCpanel } from "@/lib/cpanel-media-upload";
-import { verifySessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
 export async function POST(request: Request): Promise<Response> {
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
-  if (!token) {
+  let token: string;
+  try {
+    token = await requireContentToken();
+  } catch {
     return NextResponse.json({ error: "not authenticated" }, { status: 401 });
   }
 

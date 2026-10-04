@@ -1,13 +1,10 @@
-import { cookies } from "next/headers";
 import { listTrash } from "@/lib/cpanel-api";
 import { photoUrl } from "@/lib/portfolio-photo";
-import { verifySessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 import { emptyTrashAction, purgeItemAction, restoreItemAction } from "./actions";
 
 export default async function TrashPage() {
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
-  if (!token) throw new Error("Not authenticated");
+  const token = await requireContentToken();
   const trashed = await listTrash(token);
 
   return (

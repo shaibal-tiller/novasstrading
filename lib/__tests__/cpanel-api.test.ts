@@ -7,9 +7,6 @@ import {
   deleteItem,
   reorderItems,
   createItem,
-  login,
-  requestOtp,
-  verifyOtp,
   listTrash,
   restoreItem,
 } from "@/lib/cpanel-api";
@@ -100,48 +97,6 @@ describe("cpanel-api client", () => {
     await expect(updateItem(1, { title: "X" }, "t")).resolves.toBeUndefined();
     await expect(deleteItem(1, "t")).resolves.toBeUndefined();
     await expect(reorderItems("hero.stats", [1], "t")).resolves.toBeUndefined();
-  });
-
-  it("login returns the token from the response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ token: "abc123" }) })
-    );
-    expect(await login("a@example.com", "secret")).toBe("abc123");
-  });
-
-  it("login throws on invalid credentials", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401 }));
-    await expect(login("a@example.com", "wrong")).rejects.toThrow();
-  });
-
-  it("requestOtp posts the email and resolves regardless of the response body", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
-    vi.stubGlobal("fetch", fetchMock);
-
-    await expect(requestOtp("it-support@novasstrading.com")).resolves.toBeUndefined();
-
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://content-api.example.com/auth/otp/request",
-      expect.objectContaining({
-        method: "POST",
-        headers: expect.objectContaining({ "X-Api-Key": "test-key" }),
-        body: JSON.stringify({ email: "it-support@novasstrading.com" }),
-      })
-    );
-  });
-
-  it("verifyOtp returns the token from the response", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ token: "otp-token" }) })
-    );
-    expect(await verifyOtp("it-support@novasstrading.com", "123456")).toBe("otp-token");
-  });
-
-  it("verifyOtp throws on an invalid or expired code", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 401 }));
-    await expect(verifyOtp("it-support@novasstrading.com", "000000")).rejects.toThrow();
   });
 
   it("listTrash sends the API key header and returns parsed JSON", async () => {

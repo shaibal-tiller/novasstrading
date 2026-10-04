@@ -4,22 +4,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const listMediaMock = vi.fn();
 vi.mock("@/lib/cpanel-api", () => ({ listMedia: listMediaMock }));
 
-const getCookieMock = vi.fn();
-vi.mock("next/headers", () => ({ cookies: () => ({ get: getCookieMock }) }));
-
-const verifyMock = vi.fn();
-vi.mock("@/lib/session", () => ({ verifySessionCookie: verifyMock }));
+const requireTokenMock = vi.fn();
+vi.mock("@/lib/admin-auth", () => ({ requireContentToken: requireTokenMock }));
 
 beforeEach(() => {
   listMediaMock.mockReset();
-  getCookieMock.mockReset();
-  verifyMock.mockReset();
+  requireTokenMock.mockReset();
 });
 
 describe("GET /admin/content/media/list", () => {
   it("returns the media library as JSON when authenticated", async () => {
-    getCookieMock.mockReturnValue({ value: "signed-cookie" });
-    verifyMock.mockReturnValue("cpanel-token");
+    requireTokenMock.mockResolvedValue("cpanel-token");
     listMediaMock.mockResolvedValue([
       { id: 1, path: "media/a.webp", original_filename: "a.webp", bytes: 1, width: 1, height: 1, mime_type: "image/webp", used_by_count: 0, created_at: "" },
     ]);
@@ -34,8 +29,8 @@ describe("GET /admin/content/media/list", () => {
     ]);
   });
 
-  it("returns 401 without a valid session cookie", async () => {
-    getCookieMock.mockReturnValue(undefined);
+  it("returns 401 without a valid admin session", async () => {
+    requireTokenMock.mockRejectedValue(new Error("Not authenticated"));
 
     const { GET } = await import("../route");
     const response = await GET();

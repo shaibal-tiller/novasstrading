@@ -7,8 +7,8 @@ vi.mock("@/lib/cpanel-api", () => ({ createMedia: createMediaMock }));
 const uploadFileMock = vi.fn();
 vi.mock("@/lib/cpanel-media-upload", () => ({ uploadFileToCpanel: uploadFileMock }));
 
-vi.mock("next/headers", () => ({ cookies: () => ({ get: () => ({ value: "signed-cookie" }) }) }));
-vi.mock("@/lib/session", () => ({ verifySessionCookie: () => "cpanel-token" }));
+const requireTokenMock = vi.fn(async () => "cpanel-token");
+vi.mock("@/lib/admin-auth", () => ({ requireContentToken: requireTokenMock }));
 
 function uploadRequest(bytes: Buffer, name: string, type: string): Request {
   const form = new FormData();
@@ -89,5 +89,17 @@ describe("POST /admin/content/media/upload", () => {
     expect(response.status).toBe(502);
     expect(createMediaMock).not.toHaveBeenCalled();
     spy.mockRestore();
+  });
+
+  it("returns 401 JSON and uploads nothing without a valid admin session", async () => {
+    requireTokenMock.mockRejectedValueOnce(new Error("Not authenticated"));
+
+    const { POST } = await import("../route");
+    const response = await POST(uploadRequest(Buffer.from("x"), "x.jpg", "image/jpeg"));
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: "not authenticated" });
+    expect(uploadFileMock).not.toHaveBeenCalled();
+    expect(createMediaMock).not.toHaveBeenCalled();
   });
 });

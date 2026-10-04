@@ -1,14 +1,11 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { deleteMedia, runCleanup, type CleanupReport } from "@/lib/cpanel-api";
-import { verifySessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 
 export async function deleteMediaAction(id: number): Promise<void> {
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
-  if (!token) throw new Error("Not authenticated");
+  const token = await requireContentToken();
 
   await deleteMedia(id, token);
   revalidatePath("/admin/content/media");
@@ -20,9 +17,7 @@ export async function deleteMediaAction(id: number): Promise<void> {
  * `dryRun` only reports what would go.
  */
 export async function runCleanupAction(dryRun: boolean): Promise<CleanupReport> {
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
-  if (!token) throw new Error("Not authenticated");
+  const token = await requireContentToken();
   const report = await runCleanup(dryRun, token);
   if (!dryRun) {
     revalidatePath("/admin/content/media");

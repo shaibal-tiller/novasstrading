@@ -2,6 +2,31 @@
 
 Status: rebuilt on branch `admin-content-portal-rebuild`. Not merged, not deployed.
 
+## Sign-in (one shared door)
+
+There is one admin sign-in for the whole host, at **`/admin/login`** — no passwords, an emailed 6-digit code.
+
+- **Identity lives in the Assets app** (`/admin/inventory/*`, a separate Next app behind the rewrites in
+  `next.config.mjs`). The login page calls its `POST /admin/inventory/api/auth/request-code` and
+  `verify-code`; on success that app sets the httpOnly `nova_session` cookie for the whole host.
+  Typing a bare name (no `@`) means `name@novasstrading.com`. Codes last 10 minutes; resend after 60 s.
+- **`/admin`** is the chooser: it lists the modules the account has (`website` → `/admin/content`,
+  `assets` → `/admin/inventory/assets`), jumps straight in if there is only one, and says "no access" if none.
+- **The website editor** (`app/admin/content/(guarded)`) checks the session on every request with
+  `getAdminSession()` (`lib/admin-session.ts`): it forwards the cookie to
+  `${INVENTORY_URL}/admin/inventory/api/auth/me` and caches the answer for 30 s (5 s for "no").
+  No session → `/admin/login`; signed in without the `website` module → `/admin`.
+- **Talking to the PHP content API**: server actions call `requireContentToken()` (`lib/admin-auth.ts`), which
+  re-checks the session and then mints a 5-minute bearer token in the PHP `Auth::issueToken` format
+  (`lib/content-api-token.ts`, signed with `CPANEL_SESSION_SECRET` = the PHP server's `SESSION_SECRET`).
+  The browser never sees that token. The PHP API itself is unchanged.
+- **Sign out** posts to `/admin/inventory/api/auth/logout` and returns to `/admin/login`.
+- The old editor-only login (`/admin/content/login`, `nova_admin_session` cookie, `SESSION_COOKIE_SECRET`)
+  is gone; that URL redirects to `/admin/login`.
+
+Env needed: `INVENTORY_URL` (without it nobody can sign in; the public site still works) and
+`CPANEL_SESSION_SECRET`.
+
 ## Where data lives
 
 | Data | Where | Why |

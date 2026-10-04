@@ -1,14 +1,11 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePublicContent } from "@/lib/revalidate-content";
 import { updateSection } from "@/lib/cpanel-api";
-import { verifySessionCookie } from "@/lib/session";
+import { requireContentToken } from "@/lib/admin-auth";
 
 export async function saveSectionAction(sectionKey: string, fields: Record<string, unknown>): Promise<void> {
-  const cookie = cookies().get("nova_admin_session")?.value;
-  const token = cookie ? verifySessionCookie(cookie) : null;
-  if (!token) throw new Error("Not authenticated");
+  const token = await requireContentToken();
 
   await updateSection(sectionKey, fields, token);
   revalidatePublicContent(); // public homepage re-reads this section on next request
