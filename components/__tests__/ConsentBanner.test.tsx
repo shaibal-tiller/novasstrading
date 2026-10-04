@@ -7,6 +7,7 @@ vi.mock("next/navigation", () => ({ usePathname: pathnameMock }));
 // Stand-in for next/script so the test can see whether gtag.js would be requested.
 vi.mock("next/script", () => ({
   default: (props: { id?: string; src?: string; strategy?: string }) => (
+    // eslint-disable-next-line @next/next/no-sync-scripts -- test double for next/script, never shipped
     <script data-testid="next-script" id={props.id} src={props.src} data-strategy={props.strategy} />
   ),
 }));
