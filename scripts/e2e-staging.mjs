@@ -93,7 +93,7 @@ const doorAnon = await fetch(APP + "/admin", { ...manual, headers: BYPASS });
 ok("/admin without a session goes to /admin/login", doorAnon.status >= 300 && doorAnon.status < 400 && (doorAnon.headers.get("location") || "").includes("/admin/login"), `${doorAnon.status} ${doorAnon.headers.get("location")}`);
 const door = await fetch(APP + "/admin", { headers: { cookie, ...BYPASS } });
 const doorHtml = await door.text();
-ok("/admin signed in shows both modules (Website first)", door.status === 200 && doorHtml.includes("Website") && doorHtml.includes("Assets") && doorHtml.indexOf("Website") < doorHtml.indexOf("Assets"), String(door.status));
+ok("/admin signed in shows Website, Analytics, Assets (in that order)", door.status === 200 && doorHtml.includes("Website") && doorHtml.includes("Assets") && doorHtml.indexOf("Website") < doorHtml.indexOf("/admin/analytics") && doorHtml.indexOf("/admin/analytics") < doorHtml.indexOf("Assets"), String(door.status));
 const meViaSite = await fetch(APP + "/admin/inventory/api/auth/me", { headers: { cookie, ...BYPASS } });
 const meJson = await meViaSite.json().catch(() => ({}));
 ok("the Assets app answers through the site's /admin/inventory rewrite", meViaSite.status === 200 && meJson.email === E2E_EMAIL, String(meViaSite.status));
@@ -116,6 +116,11 @@ for (const p of pages) {
 ok(`all ${pages.length} admin pages load (dashboard, media, trash, 16 editors)`, pageFails.length === 0, pageFails.join("; "));
 const anon = await fetch(APP + "/admin/content", { redirect: "manual", headers: BYPASS });
 ok("admin pages redirect to login without a session", anon.status >= 300 && anon.status < 400, String(anon.status));
+const analytics = await fetch(APP + "/admin/analytics", { headers: { cookie, ...BYPASS } });
+const analyticsHtml = await analytics.text();
+ok("Analytics page loads (connected or 'Not connected yet')", analytics.status === 200 && analyticsHtml.includes("Analytics") && !/Application error|Internal Server Error/i.test(analyticsHtml), String(analytics.status));
+const analyticsAnon = await fetch(APP + "/admin/analytics", { redirect: "manual", headers: BYPASS });
+ok("Analytics redirects to login without a session", analyticsAnon.status >= 300 && analyticsAnon.status < 400, String(analyticsAnon.status));
 
 // ---- items: update / reorder / delete+restore ------------------------------
 console.log(`\nItems (${LIST})`);

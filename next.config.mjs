@@ -3,6 +3,11 @@ const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,
+  env: {
+    // Always inlined (as "" when unset) so app/layout.tsx's cookie-banner
+    // import is dead code on a build without analytics: no banner JS ships.
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "",
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     // Cache optimized images for 31 days — sources are versioned by filename.

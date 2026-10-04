@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Contact } from "../Contact";
 import { EditModeProvider } from "../admin/EditModeProvider";
 
@@ -60,5 +61,50 @@ describe("Contact", () => {
     // is never Editable.
     const mapLink = screen.getByRole("link", { name: /open office location/i });
     expect(mapLink.closest("[data-editable-id]")).toBeNull();
+  });
+});
+
+describe("Contact form analytics event", () => {
+  afterEach(() => {
+    delete window.gtag;
+    vi.unstubAllGlobals();
+  });
+
+  function stubSuccessfulSubmit() {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({ ok: true }) }),
+    );
+  }
+
+  it("fires gtag('event', 'contact_form_submit') after a successful submission when gtag is on the page", async () => {
+    stubSuccessfulSubmit();
+    const gtag = vi.fn();
+    window.gtag = gtag;
+    render(<Contact contact={CONTACT} site={SITE} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Submit inquiry" }));
+    expect(await screen.findByText("Inquiry received")).toBeInTheDocument();
+    expect(gtag).toHaveBeenCalledWith("event", "contact_form_submit");
+  });
+
+  it("submits normally without gtag (analytics not configured or declined)", async () => {
+    stubSuccessfulSubmit();
+    render(<Contact contact={CONTACT} site={SITE} />);
+    await userEvent.click(screen.getByRole("button", { name: "Submit inquiry" }));
+    expect(await screen.findByText("Inquiry received")).toBeInTheDocument();
+  });
+
+  it("does not fire the event when the submission fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: false, status: 400, json: async () => ({ ok: false, error: "Bad input" }) }),
+    );
+    const gtag = vi.fn();
+    window.gtag = gtag;
+    render(<Contact contact={CONTACT} site={SITE} />);
+    await userEvent.click(screen.getByRole("button", { name: "Submit inquiry" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Bad input");
+    expect(gtag).not.toHaveBeenCalled();
   });
 });

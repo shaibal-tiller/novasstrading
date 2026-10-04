@@ -4,6 +4,15 @@ import { PageParticles } from "@/components/PageParticles";
 import { site } from "@/lib/content";
 import "./globals.css";
 
+// Cookie banner + GA4, only on a build with a measurement ID. The value is
+// inlined at build time (next.config.mjs `env`), so without one this require
+// is dead code and none of the banner's JS is bundled. (A static import —
+// or next/dynamic — would always ship code.)
+const ConsentBanner: typeof import("@/components/ConsentBanner").ConsentBanner | null = process.env
+  .NEXT_PUBLIC_GA_MEASUREMENT_ID
+  ? require("@/components/ConsentBanner").ConsentBanner
+  : null;
+
 const fraunces = Fraunces({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -160,6 +169,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
   return (
     <html
       lang="en"
@@ -179,6 +189,8 @@ export default function RootLayout({
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Analytics + cookie banner: only when a GA4 measurement ID is configured. */}
+        {ConsentBanner && gaMeasurementId ? <ConsentBanner measurementId={gaMeasurementId} /> : null}
       </body>
     </html>
   );

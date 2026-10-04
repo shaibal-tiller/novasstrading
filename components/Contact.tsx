@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { contact as ContactContent, site as SiteContent } from "@/lib/content";
 import { clsx } from "@/lib/utils";
+import { trackEvent } from "@/lib/gtag";
 import { Editable } from "./admin/Editable";
 
 type Status = "idle" | "submitting" | "success";
@@ -53,6 +54,8 @@ export function Contact({
       if (res.ok && json.ok) {
         setState({ status: "success" });
         form.reset();
+        // GA4 key event — a no-op unless the visitor accepted analytics cookies.
+        trackEvent("contact_form_submit");
       } else {
         setState({ status: "idle", errorMsg: json.error ?? "Something went wrong. Please try again." });
       }

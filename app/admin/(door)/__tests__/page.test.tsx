@@ -37,20 +37,32 @@ describe("/admin chooser", () => {
     expect(await redirectOf()).toBe("/admin/login");
   });
 
-  it("goes straight to the only module", async () => {
-    getAdminSessionMock.mockResolvedValue({ email: "a@x.com", role: "admin", modules: ["website"] });
-    expect(await redirectOf()).toBe("/admin/content");
+  it("goes straight to the only destination (Assets-only)", async () => {
     getAdminSessionMock.mockResolvedValue({ email: "a@x.com", role: "viewer", modules: ["assets"] });
     expect(await redirectOf()).toBe("/admin/inventory/assets");
   });
 
-  it("shows both modules, Website first, with the signed-in email", async () => {
+  it("shows Website and Analytics to a website-only user", async () => {
+    getAdminSessionMock.mockResolvedValue({ email: "a@x.com", role: "admin", modules: ["website"] });
+    render(await AdminHomePage());
+
+    const links = screen.getAllByRole("link");
+    expect(links.map((l) => l.getAttribute("href"))).toEqual(["/admin/content", "/admin/analytics"]);
+    expect(links[1]).toHaveTextContent("Analytics");
+    expect(links[1]).toHaveTextContent("Visitors, where they come from, and what they search on Google.");
+  });
+
+  it("shows all three, in order Website, Analytics, Assets, with the signed-in email", async () => {
     getAdminSessionMock.mockResolvedValue({ email: "boss@novasstrading.com", role: "admin", modules: ["assets", "website"] });
     render(await AdminHomePage());
 
     expect(screen.getByText("boss@novasstrading.com")).toBeInTheDocument();
     const links = screen.getAllByRole("link");
-    expect(links.map((l) => l.getAttribute("href"))).toEqual(["/admin/content", "/admin/inventory/assets"]);
+    expect(links.map((l) => l.getAttribute("href"))).toEqual([
+      "/admin/content",
+      "/admin/analytics",
+      "/admin/inventory/assets",
+    ]);
     expect(links[0]).toHaveTextContent("Website");
     expect(links[0]).toHaveFocus();
   });
