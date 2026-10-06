@@ -13,7 +13,7 @@ export default async function AdminContentLayout({ children }: { children: React
   }
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="relative z-10 min-h-screen bg-canvas">
       <AdminHeader session={session} active="website" />
       <div className="px-4 py-6 sm:px-6">{children}</div>
     </div>
