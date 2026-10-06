@@ -60,10 +60,11 @@ describe("/admin/analytics access", () => {
     expect(await redirectOf(() => AnalyticsLayout({ children: null }))).toBe("/admin");
   });
 
-  it("shows the nav (Admin home + Sign out) to website users", async () => {
+  it("shows the shared header (Dashboard tab + Sign out) to website users", async () => {
     getAdminSessionMock.mockResolvedValue({ email: "boss@novasstrading.com", role: "admin", modules: ["website"] });
     render(await AnalyticsLayout({ children: <p>inside</p> }));
-    expect(screen.getByRole("link", { name: "Admin home" })).toHaveAttribute("href", "/admin");
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/admin");
+    expect(screen.getByRole("link", { name: "Analytics" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
     expect(screen.getByText("inside")).toBeInTheDocument();
   });

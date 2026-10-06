@@ -1,11 +1,14 @@
-/** Minimal shell for the shared sign-in door (/admin/login) and the module chooser (/admin). */
-export default function AdminDoorLayout({ children }: { children: React.ReactNode }) {
+import { getAdminSession } from "@/lib/admin-session";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+
+/** Shell for the shared sign-in door (/admin/login) and the dashboard (/admin). */
+export default async function AdminDoorLayout({ children }: { children: React.ReactNode }) {
+  // Cached for a few seconds, so the page's own session check does not cost a second request.
+  const session = await getAdminSession();
   return (
-    <div className="relative z-10 min-h-screen bg-canvas">
-      <header className="border-b border-ink/10 px-6 py-4">
-        <span className="field-label">Nova SS Trading — Admin</span>
-      </header>
-      <main className="mx-auto flex max-w-xl flex-col gap-6 px-6 py-16">{children}</main>
+    <div className="relative z-10 min-h-screen bg-ivory-light">
+      <AdminHeader session={session} active="home" />
+      <main className="mx-auto max-w-shell px-4 py-10 sm:px-6 sm:py-14">{children}</main>
     </div>
   );
 }

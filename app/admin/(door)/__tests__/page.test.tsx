@@ -52,11 +52,11 @@ describe("/admin chooser", () => {
     expect(links[1]).toHaveTextContent("Visitors, where they come from, and what they search on Google.");
   });
 
-  it("shows all three, in order Website, Analytics, Assets, with the signed-in email", async () => {
+  it("shows all three, in order Website, Analytics, Assets, with a welcome by name", async () => {
     getAdminSessionMock.mockResolvedValue({ email: "boss@novasstrading.com", role: "admin", modules: ["assets", "website"] });
     render(await AdminHomePage());
 
-    expect(screen.getByText("boss@novasstrading.com")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Welcome back, Boss");
     const links = screen.getAllByRole("link");
     expect(links.map((l) => l.getAttribute("href"))).toEqual([
       "/admin/content",
@@ -67,12 +67,11 @@ describe("/admin chooser", () => {
     expect(links[0]).toHaveFocus();
   });
 
-  it("shows a no-access message and a sign-out button when the account has no modules", async () => {
+  it("shows a no-access message and no cards when the account has no modules", async () => {
     getAdminSessionMock.mockResolvedValue({ email: "new@novasstrading.com", role: "viewer", modules: [] });
     render(await AdminHomePage());
 
     expect(screen.getByText(/does not have access/i)).toBeInTheDocument();
     expect(screen.queryAllByRole("link")).toHaveLength(0);
-    expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
   });
 });
