@@ -61,3 +61,18 @@ than something an agent can complete unattended.
 Uploads are optimized on this server (see `src/ImageOptimizer.php`). In cPanel -> **Select PHP Version -> Extensions**
 enable `gd` (with WebP support) or `imagick`, plus `exif` for phone-photo rotation under GD. Without them uploads
 still work but are stored unoptimized.
+
+
+## After every update: check the PHP version
+
+cPanel stores the chosen PHP version (MultiPHP Manager) inside `public/.htaccess`. Copying a new
+`public/` folder over the old one replaces that file and the site silently falls back to the
+account default (it once became PHP 8.2 without GD, so oversized uploads were no longer shrunk).
+Either keep the existing `.htaccess` when you copy (`rsync --exclude .htaccess`), or afterwards
+re-apply the version in cPanel -> MultiPHP Manager (`ea-php81`) and confirm:
+
+```
+curl -H "Authorization: Bearer <API_KEY>" -H "x-api-key: <API_KEY>" https://<api host>/diag
+```
+
+It must report `"gd": true` and `"webp_encoder": true`.
