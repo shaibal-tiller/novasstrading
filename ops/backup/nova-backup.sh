@@ -27,6 +27,7 @@ done
 HERE=$(cd "$(dirname "$0")" && pwd)
 STATE_DIR=${NOVA_BACKUP_HOME:-$HOME/.nova-backup}
 export PATH="$STATE_DIR/bin:$HOME/bin:$PATH"
+export RCLONE_LOG_LEVEL=ERROR   # rclone NOTICE lines (e.g. client_id warnings) would email on every run
 
 # Defaults, overridden by the config file.
 BACKUP_NAME=
