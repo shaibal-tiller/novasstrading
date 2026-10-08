@@ -72,6 +72,17 @@ function clean(val: unknown): string {
   return val.trim().replace(/<[^>]*>/g, "").slice(0, 2000);
 }
 
+/** Escapes text for safe interpolation into HTML markup or attribute values. */
+function escapeHtml(val: unknown): string {
+  if (typeof val !== "string") return "";
+  return val
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function toDhakaTime(): string {
   return new Date().toLocaleString("en-GB", {
     timeZone: "Asia/Dhaka",
@@ -108,13 +119,25 @@ function buildAdminEmail(fields: {
   country: string; subject: string; message: string;
   meta: Record<string, string>; spamLabel: string; csrfNote: string;
 }): string {
-  const { name, company, email, phone, country, subject, message, meta, spamLabel, csrfNote } = fields;
+  const { name: rawName, company: rawCompany, email: rawEmail, phone: rawPhone, country: rawCountry,
+          subject: rawSubject, message: rawMessage, meta, spamLabel: rawSpamLabel, csrfNote: rawCsrfNote } = fields;
+
+  const name      = escapeHtml(rawName);
+  const company   = escapeHtml(rawCompany);
+  const email     = escapeHtml(rawEmail);
+  const phone     = escapeHtml(rawPhone);
+  const country   = escapeHtml(rawCountry);
+  const subject   = escapeHtml(rawSubject);
+  const message   = escapeHtml(rawMessage);
+  const spamLabel = escapeHtml(rawSpamLabel);
+  const csrfNote  = escapeHtml(rawCsrfNote);
+  const mailtoSubject = encodeURIComponent(rawSubject);
 
   const metaRows = Object.entries(meta)
     .map(([k, v]) => `
       <tr>
-        <td style="padding:6px 14px;color:#94a3b8;font-size:12px;white-space:nowrap;border-top:1px solid #1e293b;">${k}</td>
-        <td style="padding:6px 14px;color:#cbd5e1;font-size:12px;border-top:1px solid #1e293b;">${v}</td>
+        <td style="padding:6px 14px;color:#94a3b8;font-size:12px;white-space:nowrap;border-top:1px solid #1e293b;">${escapeHtml(k)}</td>
+        <td style="padding:6px 14px;color:#cbd5e1;font-size:12px;border-top:1px solid #1e293b;">${escapeHtml(v)}</td>
       </tr>`)
     .join("");
 
@@ -170,7 +193,7 @@ function buildAdminEmail(fields: {
 
   <!-- Quick Reply CTA -->
   <tr><td style="padding:24px 36px 0;" align="center">
-    <a href="mailto:${email}?subject=Re: ${subject}" style="display:inline-block;background:#b08a4f;color:#0f172a;text-decoration:none;padding:13px 36px;border-radius:999px;font-size:14px;font-weight:700;letter-spacing:0.3px;">↩ Reply to ${name}</a>
+    <a href="mailto:${email}?subject=${encodeURIComponent("Re: ")}${mailtoSubject}" style="display:inline-block;background:#b08a4f;color:#0f172a;text-decoration:none;padding:13px 36px;border-radius:999px;font-size:14px;font-weight:700;letter-spacing:0.3px;">↩ Reply to ${name}</a>
   </td></tr>
 
   <!-- Metadata (collapsible) -->
@@ -193,7 +216,9 @@ function buildAdminEmail(fields: {
 }
 
 /** Customer auto-reply — supports system dark/light mode via media query */
-function buildAutoReply(name: string, subject: string): string {
+function buildAutoReply(rawName: string, rawSubject: string): string {
+  const name = escapeHtml(rawName);
+  const subject = escapeHtml(rawSubject);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -345,7 +370,7 @@ export async function POST(request: Request) {
   const companyName = clean(body.companyName);
   const phone       = clean(body.phone);
   const country     = clean(body.country);
-  const subject     = clean(body.subject) || "General Inquiry";
+  const subject     = (clean(body.subject) || "General Inquiry").replace(/[\r\n]+/g, " ");
   const message     = clean(body.message);
   const userAgent   = clean(body.userAgent) || hdrs.get("user-agent") || "";
   const referrer    = clean(body.referrer);
