@@ -101,6 +101,10 @@ export function Footer({
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <p className="text-xs text-ink-muted">
             © {new Date().getFullYear()} {site.name}. All rights reserved.
+            {" · "}
+            <a href="/privacy" className="underline-offset-2 transition-colors hover:text-brass-dark hover:underline">
+              Privacy policy
+            </a>
             {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() ? (
               <>
                 {" · "}

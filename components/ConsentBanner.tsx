@@ -85,7 +85,12 @@ export function ConsentBanner({
           className="fixed inset-x-0 bottom-0 z-[60] border-t border-ivory/10 bg-ink/95 text-ivory shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.45)] backdrop-blur"
         >
           <div className="shell flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-            <p className="text-sm text-ivory/85">We use analytics cookies to understand how visitors use this site.</p>
+            <p className="text-sm text-ivory/85">
+              We use analytics cookies to understand how visitors use this site.{" "}
+              <a href="/privacy" className="underline underline-offset-2 hover:text-brass-light">
+                Privacy policy
+              </a>
+            </p>
             <div className="flex shrink-0 gap-2">
               <button
                 ref={firstButton}

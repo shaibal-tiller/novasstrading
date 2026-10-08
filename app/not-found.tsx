@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { site } from "@/lib/content";
+import { NotFoundForm } from "@/components/NotFoundForm";
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-[90vh] flex-col items-center justify-center bg-canvas px-6 text-center">
+    <main className="flex min-h-[90vh] flex-col items-center justify-center bg-canvas px-6 py-16 text-center">
       <p className="font-mono text-sm font-semibold uppercase tracking-widest text-brass-dark">
         404
       </p>
@@ -11,14 +12,20 @@ export default function NotFound() {
       <p className="lede mt-6 max-w-md text-ink-muted">
         The page you are looking for doesn&apos;t exist or has been moved.
       </p>
-      <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="mt-8">
         <Link href="/" className="btn btn-primary">
           Return to Homepage
         </Link>
-        <a href={`mailto:${site.email}`} className="btn btn-outline">
-          Contact Support
-        </a>
       </div>
+      <div className="mt-12 flex w-full justify-center">
+        <NotFoundForm email={site.email} />
+      </div>
+      <p className="mt-6 text-sm text-ink-muted">
+        Or email us directly at{" "}
+        <a className="text-brass-dark underline underline-offset-2" href={`mailto:${site.email}`}>
+          {site.email}
+        </a>
+      </p>
     </main>
   );
 }
