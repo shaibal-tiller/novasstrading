@@ -35,8 +35,9 @@ Webmail and `public_html` are not part of it, and nothing in them is touched.
 
 1. Get the scripts and install the tools (age + rclone, pinned versions, checksum-verified):
    ```
-   cd ~/novass-src && git pull && bash ops/backup/install.sh
+   cd ~/novass-src && git pull && git sparse-checkout add ops && bash ops/backup/install.sh
    ```
+   (The server's clone only downloads chosen folders; `sparse-checkout add ops` is what brings in `ops/backup`.)
    It prints a **GitHub deploy key** (one line starting with `ssh-ed25519`).
 2. **GitHub**: create a private repo `novasstrading/novass-backups` (tick "Add a README"). Then go to
    Settings -> Deploy keys -> Add deploy key, paste the line, and tick **Allow write access**. On the server:
@@ -48,16 +49,21 @@ Webmail and `public_html` are not part of it, and nothing in them is touched.
    ```
 3. **Google Drive**: on the Mac, run `~/novass-tools/rclone authorize "drive" "eyJzY29wZSI6ImRyaXZlLmZpbGUifQ"`.
    A browser opens: sign in with the Google account that should own the backups and approve. The
-   access is limited to files rclone itself creates (`drive.file`). The command prints a token
-   (`{"access_token":...}`). On the server:
+   access is limited to files rclone itself creates (`drive.file`). The command prints a long code between
+   `--->` and `<---End paste`: decode it (base64) to get the token JSON. On the server write the remote
+   straight into rclone's config (`rclone config create` tries to open its own browser sign-in and hangs):
    ```
-   ~/.nova-backup/bin/rclone config create gdrive drive scope=drive.file token='<the token>'
+   mkdir -p ~/.config/rclone && (umask 077; printf '[gdrive]\ntype = drive\nscope = drive.file\ntoken = %s\n' '<token JSON>' > ~/.config/rclone/rclone.conf)
+   ~/.nova-backup/bin/rclone about gdrive:
    ```
+   The token is a secret: do not paste it anywhere else. rclone's shared Google client is being retired during
+   2026; before it stops, create our own OAuth client (same Google Cloud project as analytics) and re-run this step.
 4. Test run, then check the result:
    ```
    ~/.nova-backup/nova-backup.sh ~/.nova-backup/staging.conf && cat ~/.nova-backup/staging.last
    ```
-5. Schedule it weekly (this keeps the existing cleanup job):
+5. Schedule it weekly (this keeps the other jobs; check afterwards that the cleanup job is still listed, because
+   the staging cleanup entry went missing once):
    ```
    (crontab -l; echo '30 2 * * 0 $HOME/.nova-backup/nova-backup.sh $HOME/.nova-backup/staging.conf >> $HOME/.nova-backup/cron.out 2>&1') | crontab -
    crontab -l
