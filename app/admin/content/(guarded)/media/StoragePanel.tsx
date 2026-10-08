@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { CleanupReport, StorageUsage } from "@/lib/cpanel-api";
+import { plural } from "@/lib/admin/plural";
 import { runCleanupAction } from "./actions";
 
 const mb = (bytes: number) => `${(bytes / 1048576).toFixed(bytes < 10485760 ? 2 : 1)} MB`;
@@ -27,15 +28,26 @@ export function StoragePanel({ usage }: { usage: StorageUsage }) {
     <section className="rounded-2xl border border-ink/10 p-5">
       <h2 className="field-label mb-2">Storage</h2>
       <p className="text-sm text-ink">
-        Uploads use <strong>{mb(usage.bytes)}</strong> in {usage.files} files.{" "}
-        {usage.unused_files > 0 ? (
-          <>
-            <strong>{usage.unused_files}</strong> of them ({mb(usage.unused_bytes)}) are not used by any content.
-          </>
+        {usage.files === 0 ? (
+          "No files have been uploaded yet."
         ) : (
-          "Every file is in use."
+          <>
+            Uploads use <strong>{mb(usage.bytes)}</strong> in {plural(usage.files, "file")}.{" "}
+            {usage.unused_files > 0 ? (
+              <>
+                <strong>{usage.unused_files}</strong> of them ({mb(usage.unused_bytes)}){" "}
+                {usage.unused_files === 1 ? "is" : "are"} not used by any content.
+              </>
+            ) : (
+              "Every file is in use."
+            )}
+          </>
         )}{" "}
-        {usage.trashed_items > 0 && <>{usage.trashed_items} items are waiting in the trash.</>}
+        {usage.trashed_items > 0 && (
+          <>
+            {plural(usage.trashed_items, "item")} {usage.trashed_items === 1 ? "is" : "are"} waiting in the trash.
+          </>
+        )}
       </p>
       <p className="mt-1 text-xs text-ink-muted">
         Automatic cleanup removes trash older than 30 days and unused files older than 3 days. Files that live content,
@@ -56,7 +68,7 @@ export function StoragePanel({ usage }: { usage: StorageUsage }) {
         <div className="mt-3 text-sm text-ink">
           <p>
             {report.dry_run ? "Would free" : "Freed"} <strong>{mb(report.bytes_freed)}</strong>
-            {report.purged_items > 0 && ` and remove ${report.purged_items} expired trash items`}.
+            {report.purged_items > 0 && ` and remove ${plural(report.purged_items, "expired trash item")}`}.
             {report.deleted.length === 0 && report.purged_items === 0 && " Nothing to clean."}
           </p>
           {report.deleted.length > 0 && (

@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { requestedAdminPath } from "@/lib/admin-request-path";
 import { getAdminSession, hasModule, type AdminSession } from "@/lib/admin-session";
 
 /**
@@ -8,7 +9,7 @@ import { getAdminSession, hasModule, type AdminSession } from "@/lib/admin-sessi
  */
 export async function requireAnalyticsAccess(): Promise<AdminSession> {
   const session = await getAdminSession();
-  if (!session) redirect("/admin/login?next=" + encodeURIComponent("/admin/analytics"));
+  if (!session) redirect("/admin/login?next=" + encodeURIComponent(requestedAdminPath("/admin/analytics")));
   if (!hasModule(session, "website")) redirect("/admin");
   return session;
 }

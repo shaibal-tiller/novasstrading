@@ -58,7 +58,7 @@ describe("EditModal", () => {
     );
 
     const input = screen.getByRole("textbox");
-    expect(input).toHaveAttribute("type", "url");
+    expect(input).toHaveAttribute("inputmode", "url");
     await userEvent.clear(input);
     await userEvent.type(input, "https://new.example.com");
     await userEvent.click(screen.getByRole("button", { name: /^save$/i }));
@@ -289,6 +289,64 @@ describe("EditModal", () => {
     await userEvent.click(screen.getByRole("button", { name: /^save$/i }));
 
     expect(onSave).toHaveBeenCalledWith({ name: "ISO 9001", src: "media/new-image.file" });
+  });
+
+  it("shows the human label instead of the internal id, focuses the field, and closes on Esc", async () => {
+    const onClose = vi.fn();
+    render(
+      <EditModal id="hero.eyebrow" label="Eyebrow" kind="text" currentValue="x" onSave={vi.fn()} onClose={onClose} />
+    );
+    expect(screen.getByRole("dialog", { name: "Edit Eyebrow" })).toBeInTheDocument();
+    expect(screen.queryByText(/hero\.eyebrow/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox")).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it("Enter in a single-line box saves it", async () => {
+    const onSave = vi.fn();
+    render(<EditModal id="x" kind="text" currentValue="a" onSave={onSave} onClose={vi.fn()} />);
+    await userEvent.type(screen.getByRole("textbox"), "b{Enter}");
+    expect(onSave).toHaveBeenCalledWith("ab");
+  });
+
+  it("kind=url: blocks a junk link with a plain message, then accepts a real one", async () => {
+    const onSave = vi.fn();
+    render(<EditModal id="site.url" label="Site URL" kind="url" currentValue="" onSave={onSave} onClose={vi.fn()} />);
+    await userEvent.type(screen.getByRole("textbox"), "not a url !!");
+    await userEvent.click(screen.getByRole("button", { name: /^save$/i }));
+    expect(onSave).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent(/doesn't look like a link/i);
+
+    await userEvent.clear(screen.getByRole("textbox"));
+    await userEvent.type(screen.getByRole("textbox"), "https://novasstrading.com");
+    await userEvent.click(screen.getByRole("button", { name: /^save$/i }));
+    expect(onSave).toHaveBeenCalledWith("https://novasstrading.com");
+  });
+
+  it("kind=item: a NEW item with a blank title is not added", async () => {
+    const onSave = vi.fn();
+    const fields: ItemField[] = [
+      { key: "title", label: "Value", kind: "text" },
+      { key: "body", label: "Description", kind: "textarea" },
+    ];
+    render(
+      <EditModal
+        id="coreValues.values.new"
+        label="Core values"
+        kind="item"
+        currentValue={null}
+        itemFields={fields}
+        titleField="title"
+        onSave={onSave}
+        onClose={vi.fn()}
+      />
+    );
+    expect(screen.getByRole("dialog", { name: "Add to Core values" })).toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/description/i), "Only a description");
+    await userEvent.click(screen.getByRole("button", { name: /^add$/i }));
+    expect(onSave).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toHaveTextContent(/fill in “Value”/);
   });
 
   it("calls onClose when the close button is clicked", async () => {

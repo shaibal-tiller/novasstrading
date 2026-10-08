@@ -10,7 +10,7 @@ import {
 import { Editable } from "@/components/admin/Editable";
 import { PortfolioPhotoManager } from "@/components/admin/PortfolioPhotoManager";
 import { assembleContent, type RawItem } from "@/lib/content-assemble";
-import { applyChangesetAction } from "./actions";
+import { applyChangesetAction, discardUploadsAction } from "./actions";
 
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
@@ -55,7 +55,7 @@ function SettingsView({
   draft: SectionDraft;
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-2xl border border-ink/10 bg-paper">
+    <div className="flex min-w-0 flex-col gap-1 rounded-2xl border border-ink/10 bg-paper">
       {entry.scalarFields.map((field) => {
         const [sectionKey, ...rest] = field.path.split(".");
         const value = getPath(draft.sections[sectionKey] ?? {}, rest);
@@ -63,12 +63,13 @@ function SettingsView({
         return (
           <div
             key={field.path}
-            className="flex flex-col gap-1 border-b border-ink/10 px-4 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-4"
+            className="flex min-w-0 flex-col gap-1 border-b border-ink/10 px-4 py-3 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-4"
           >
             <span className="field-label sm:w-56 sm:flex-shrink-0">
               {field.label}
             </span>
-            <Editable id={field.path} kind="text" as="div" className="text-ink">
+            {/* break-all: a long Maps / WhatsApp link has no spaces and would otherwise push the page sideways. */}
+            <Editable id={field.path} kind="text" as="div" className="min-w-0 break-all text-ink">
               {display || (
                 <span className="italic text-ink-muted">Not set</span>
               )}
@@ -107,7 +108,8 @@ function renderSection(
     case "nav":
       return <Header nav={c.nav ?? []} site={site} />;
     case "hero":
-      return <Hero hero={c.hero} />;
+      // The page's own title is the one H1 here, so the preview's headline steps down to an H2.
+      return <Hero hero={c.hero} headingTag="h2" />;
     case "about":
       return <About about={c.about} />;
     case "coreValues":
@@ -164,6 +166,7 @@ export function SectionEditorMount({
       entry={entry}
       baseline={baseline}
       applyChangeset={applyChangesetAction}
+      discardUploads={discardUploadsAction}
       render={(draft) => renderSection(entry, draft, aux)}
     />
   );

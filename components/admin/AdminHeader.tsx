@@ -1,9 +1,9 @@
 import Image from "next/image";
-import Link from "next/link";
 import { MODULE_LINKS, type AdminDestination } from "@/lib/admin-redirect";
 import { displayNameFor, initialsFor } from "@/lib/admin-profile";
 import { hasModule, type AdminSession } from "@/lib/admin-session";
 import { AdminIcon, type AdminIconName } from "./AdminIcon";
+import { GuardedAnchor, GuardedLink } from "./GuardedLink";
 import { ProfileMenu } from "./ProfileMenu";
 import { SignOutButton } from "./SignOutButton";
 
@@ -31,7 +31,7 @@ export function AdminHeader({ session, active }: { session: AdminSession | null;
   return (
     <header className="border-b border-ink/10 bg-ivory/95 backdrop-blur-xl">
       <div className="mx-auto flex max-w-shell flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6">
-        <Link
+        <GuardedLink
           href={session ? "/admin" : "/admin/login"}
           className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
           aria-label="Nova SS Trading admin home"
@@ -43,36 +43,37 @@ export function AdminHeader({ session, active }: { session: AdminSession | null;
             </span>
             <span className="font-mono text-[0.6rem] uppercase tracking-[0.3em] text-ink-muted">Trading</span>
           </span>
-          <span className="ml-1 hidden rounded-full border border-brass/40 bg-brass/10 px-2.5 py-0.5 font-mono text-[0.6rem] font-medium uppercase tracking-[0.2em] text-brass-dark sm:inline">
+          <span className="ml-1 hidden rounded-full border border-brass/40 bg-brass/10 px-2.5 py-0.5 font-mono text-[0.6rem] font-medium uppercase tracking-[0.2em] text-[#6b5128] sm:inline">
             Admin
           </span>
-        </Link>
+        </GuardedLink>
 
         {session && (
           <div className="order-last flex w-full gap-1 overflow-x-auto md:order-none md:w-auto md:flex-1 md:justify-center">
-            <nav aria-label="Admin areas" className="flex gap-1">
+            {/* On phones the tabs share the row evenly (icons hidden) so none is cut off; it still scrolls as a fallback. */}
+            <nav aria-label="Admin areas" className="flex w-full gap-1 md:w-auto">
               {tabs.map((t) => {
                 const isActive = t === active;
                 const href = t === "home" ? "/admin" : MODULE_LINKS[t].href;
                 const label = t === "home" ? "Dashboard" : MODULE_LINKS[t].label;
-                const cls = `inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-[0.82rem] font-semibold transition-colors ${
+                const cls = `inline-flex min-h-10 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full px-2.5 py-2 text-[0.82rem] sm:flex-none sm:px-4 font-semibold transition-colors ${
                   isActive ? "bg-ink text-ivory" : "text-ink/80 hover:bg-brass/10 hover:text-brass-dark"
                 }`;
                 const inner = (
                   <>
-                    <AdminIcon name={AREA_ICONS[t]} className="h-4 w-4" />
+                    <AdminIcon name={AREA_ICONS[t]} className="hidden h-4 w-4 sm:block" />
                     {label}
                   </>
                 );
                 // Assets is a separate app behind a rewrite: it needs a full page load.
                 return t === "assets" ? (
-                  <a key={t} href={href} className={cls} aria-current={isActive ? "page" : undefined}>
+                  <GuardedAnchor key={t} href={href} className={cls} aria-current={isActive ? "page" : undefined}>
                     {inner}
-                  </a>
+                  </GuardedAnchor>
                 ) : (
-                  <Link key={t} href={href} className={cls} aria-current={isActive ? "page" : undefined}>
+                  <GuardedLink key={t} href={href} className={cls} aria-current={isActive ? "page" : undefined}>
                     {inner}
-                  </Link>
+                  </GuardedLink>
                 );
               })}
             </nav>

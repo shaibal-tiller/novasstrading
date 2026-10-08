@@ -35,7 +35,7 @@ describe("content section picker", () => {
 
   it("puts the portfolio photo manager first, then the media library and trash", () => {
     render(<ContentPickerPage />);
-    expect(screen.getByRole("link", { name: /portfolio photos/i })).toHaveAttribute("href", "/admin/content/edit/portfolio");
+    expect(screen.getByRole("link", { name: /portfolio photos/i })).toHaveAttribute("href", "/admin/content/edit/portfolio#photos");
     expect(screen.getByRole("link", { name: /media library/i })).toHaveAttribute("href", "/admin/content/media");
     expect(screen.getByRole("link", { name: /^trash/i })).toHaveAttribute("href", "/admin/content/trash");
   });

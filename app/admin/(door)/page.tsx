@@ -6,6 +6,7 @@ import type { AdminIconName } from "@/components/admin/AdminIcon";
 import { ModuleCard } from "./ModuleCard";
 
 export const dynamic = "force-dynamic";
+export const metadata = { title: "Dashboard" };
 
 const ICONS: Record<AdminDestination, AdminIconName> = {
   website: "globe",

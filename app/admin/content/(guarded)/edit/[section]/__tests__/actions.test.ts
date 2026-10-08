@@ -32,9 +32,11 @@ beforeEach(() => {
 });
 
 describe("applyChangesetAction", () => {
-  it("throws when there is no valid admin session", async () => {
+  it("reports signedOut (instead of throwing) when there is no valid admin session", async () => {
     (requireContentToken as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("Not authenticated"));
-    await expect(applyChangesetAction(emptyChangeset())).rejects.toThrow("Not authenticated");
+    const result = await applyChangesetAction(emptyChangeset());
+    expect(result.signedOut).toBe(true);
+    expect(result.failures).toEqual([]);
   });
 
   it("dispatches in order: section writes, then creates, then updates, then deletes, then reorders", async () => {

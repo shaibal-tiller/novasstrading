@@ -32,7 +32,7 @@ export function RangeFrame({ range, children }: { range: RangeDays; children: Re
                 href={`/admin/analytics?range=${days}`}
                 aria-current={active ? "true" : undefined}
                 onClick={(e) => choose(e, days)}
-                className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/40 ${
+                className={`inline-flex min-h-10 items-center rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brass/40 ${
                   active ? "bg-ink text-ivory" : "text-ink-muted hover:bg-brass/10 hover:text-ink"
                 }`}
               >

@@ -681,6 +681,49 @@ describe("SectionEditor", () => {
     expect(screen.getByRole("button", { name: /confirm/i })).toBeEnabled();
   });
 
+  it("offers a 'Sign in again' link when the session has expired, and warns before the tab closes while edits are unconfirmed", async () => {
+    const applyChangeset = vi.fn().mockResolvedValue({
+      createdIds: {},
+      updatedIds: [],
+      deletedIds: [],
+      reorderedSections: [],
+      writtenSectionKeys: [],
+      failures: [],
+      signedOut: true,
+    } satisfies ApplyChangesetResult);
+    render(
+      <SectionEditor
+        entry={heroEntry}
+        baseline={baselineFor()}
+        applyChangeset={applyChangeset}
+        render={(draft) => (
+          <Editable id="hero.eyebrow" kind="text">
+            {draft.sections.hero?.eyebrow as string}
+          </Editable>
+        )}
+      />
+    );
+
+    const leave = () => {
+      const event = new Event("beforeunload", { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    expect(leave()).toBe(false);
+
+    await userEvent.click(screen.getByText("Premier"));
+    await userEvent.type(screen.getByRole("textbox"), "!");
+    await userEvent.click(screen.getByRole("button", { name: /^save$/i }));
+    expect(leave()).toBe(true);
+
+    await userEvent.click(screen.getByRole("button", { name: /confirm/i }));
+    expect(await screen.findByText(/sign-in has expired/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /sign in again/i })).toHaveAttribute(
+      "href",
+      expect.stringMatching(/^\/admin\/login\?next=/)
+    );
+  });
+
   it("Confirm calls applyChangeset with the computed changeset and reports failures without losing pending edits", async () => {
     const applyChangeset = vi.fn().mockResolvedValue({
       createdIds: {},

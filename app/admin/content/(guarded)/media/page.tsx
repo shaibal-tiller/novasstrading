@@ -1,9 +1,12 @@
 import { getStorageUsage, listMedia } from "@/lib/cpanel-api";
 import { requireContentToken } from "@/lib/admin-auth";
 import { ContentMedia } from "@/components/ContentMedia";
+import { ConfirmButton } from "@/components/admin/ConfirmButton";
 import { MediaUploader } from "./MediaUploader";
 import { StoragePanel } from "./StoragePanel";
 import { deleteMediaAction } from "./actions";
+
+export const metadata = { title: "Media library" };
 
 export default async function MediaLibraryPage() {
   const media = await listMedia();
@@ -14,7 +17,7 @@ export default async function MediaLibraryPage() {
   const unused = media.filter((m) => m.in_use === false);
 
   return (
-    <main className="flex flex-col gap-8">
+    <main className="flex min-w-0 flex-col gap-8">
       <h1 className="display-md text-ink">Media library</h1>
       {usage && <StoragePanel usage={usage} />}
       <MediaUploader />
@@ -34,9 +37,12 @@ export default async function MediaLibraryPage() {
               </p>
               {m.in_use === false && (
                 <form action={deleteMediaAction.bind(null, m.id)}>
-                  <button type="submit" className="btn btn-outline mt-2 w-full text-xs">
+                  <ConfirmButton
+                    className="btn btn-outline mt-2 w-full text-xs"
+                    message={`Delete “${m.original_filename}” permanently? This cannot be undone.`}
+                  >
                     Delete
-                  </button>
+                  </ConfirmButton>
                 </form>
               )}
             </li>
