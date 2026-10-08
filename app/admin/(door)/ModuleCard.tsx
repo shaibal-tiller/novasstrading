@@ -50,7 +50,7 @@ export function ModuleCard({
         </span>
         {primary && (
           <span className="rounded-full border border-ivory/25 px-2.5 py-0.5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ivory/80">
-            Default
+            Opens first
           </span>
         )}
       </div>

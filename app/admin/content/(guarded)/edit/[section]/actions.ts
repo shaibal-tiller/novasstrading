@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePublicContent } from "@/lib/revalidate-content";
-import { createItem, deleteItem, reorderItems, updateItem, updateSection } from "@/lib/cpanel-api";
+import { createItem, deleteItem, deleteMedia, listMedia, reorderItems, updateItem, updateSection } from "@/lib/cpanel-api";
 import { requireContentToken } from "@/lib/admin-auth";
 import type { ApplyChangesetResult, Changeset } from "@/components/admin/SectionEditor";
 
@@ -26,8 +26,6 @@ function errorMessage(err: unknown): string {
  * the failures outstanding for a retry.
  */
 export async function applyChangesetAction(changeset: Changeset): Promise<ApplyChangesetResult> {
-  const token = await requireContentToken();
-
   const result: ApplyChangesetResult = {
     createdIds: {},
     updatedIds: [],
@@ -36,6 +34,14 @@ export async function applyChangesetAction(changeset: Changeset): Promise<ApplyC
     writtenSectionKeys: [],
     failures: [],
   };
+
+  let token: string;
+  try {
+    token = await requireContentToken();
+  } catch {
+    // Session expired: report it as a result (not a thrown 500) so the editor can offer "Sign in again".
+    return { ...result, signedOut: true };
+  }
 
   for (const write of changeset.sectionWrites) {
     try {
@@ -127,3 +133,22 @@ export async function applyChangesetAction(changeset: Changeset): Promise<ApplyC
   return result;
 }
 
+
+/**
+ * Best-effort cleanup after Discard: removes files uploaded in this editing session that no
+ * content (live or trashed) uses. Only files the server itself reports as unused are deleted,
+ * so a wrong id can never remove a photo that is on the site.
+ */
+export async function discardUploadsAction(mediaIds: number[]): Promise<void> {
+  const token = await requireContentToken();
+  const unused = new Set(
+    (await listMedia()).filter((m) => m.in_use === false && mediaIds.includes(m.id)).map((m) => m.id),
+  );
+  for (const id of Array.from(unused)) {
+    try {
+      await deleteMedia(id, token);
+    } catch {
+      // Leave it for the automatic cleanup of unused files.
+    }
+  }
+}

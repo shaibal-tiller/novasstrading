@@ -2,6 +2,8 @@ import { SECTION_REGISTRY } from "@/lib/admin/section-registry";
 import { FALLBACK_SECTION_INFO, SECTION_INFO, SITE_WIDE_KEYS } from "@/lib/admin/section-info";
 import { AdminCard } from "@/components/admin/AdminCard";
 
+export const metadata = { title: "Website content" };
+
 function Group({ title, hint, children }: { title: string; hint: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-4">
@@ -33,7 +35,7 @@ export default function ContentPickerPage() {
         <li>
           <AdminCard
             dark
-            href="/admin/content/edit/portfolio"
+            href="/admin/content/edit/portfolio#photos"
             icon="image"
             title="Portfolio photos"
             description="Add this month's collection, reorder, resize, frame, hide, caption or remove photos."

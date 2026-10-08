@@ -1,8 +1,10 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useRef, useState } from "react";
 import type { ItemField } from "@/lib/admin/section-registry";
+import { hasTitle, urlError } from "@/lib/admin/validate";
 import { MediaPicker, mediaSrc } from "./MediaPicker";
+import { useDialog } from "./useDialog";
 
 export type EditModalKind = "text" | "textarea" | "url" | "enum" | "media" | "document" | "item";
 
@@ -27,12 +29,21 @@ function joinLines(value: unknown): string {
 function ModalShell({
   title,
   onClose,
+  onSubmit,
+  overlay,
   children,
 }: {
   title: string;
   onClose: () => void;
+  /** When given, the body is a form: Enter in a single-line box submits it. */
+  onSubmit?: () => void;
+  /** Rendered outside the form (e.g. the media picker). */
+  overlay?: ReactNode;
   children: ReactNode;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useDialog(ref, onClose);
+
   return (
     <div
       role="dialog"
@@ -42,19 +53,52 @@ function ModalShell({
       onClick={onClose}
     >
       <div
+        ref={ref}
         className="flex max-h-[85vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-2xl bg-paper p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="field-label">{title}</h2>
-          <button type="button" aria-label="Close" onClick={onClose}>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-2xl leading-none text-ink hover:bg-ink/5"
+          >
             ×
           </button>
         </div>
-        {children}
+        {onSubmit ? (
+          <form
+            noValidate
+            className="flex flex-col gap-4"
+            onSubmit={(e: FormEvent) => {
+              e.preventDefault();
+              onSubmit();
+            }}
+          >
+            {children}
+          </form>
+        ) : (
+          children
+        )}
+        {overlay}
       </div>
     </div>
   );
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  return message ? (
+    <p id={`${id}-error`} role="alert" className="mt-2 text-sm text-red-700">
+      {message}
+    </p>
+  ) : null;
+}
+
+/** aria attributes that tie an input to its error message. */
+function invalidProps(id: string, message?: string) {
+  return message ? { "aria-invalid": true as const, "aria-describedby": `${id}-error` } : {};
 }
 
 /** One input per `ItemField.kind`, reused both for the top-level scalar
@@ -63,12 +107,14 @@ function FieldInput({
   fieldId,
   field,
   value,
+  error,
   onChange,
   onOpenMedia,
 }: {
   fieldId: string;
   field: Pick<ItemField, "kind" | "options" | "list">;
   value: unknown;
+  error?: string;
   onChange: (next: unknown) => void;
   onOpenMedia: () => void;
 }) {
@@ -81,6 +127,7 @@ function FieldInput({
           className="field mt-2"
           value={joinLines(value)}
           onChange={(e) => onChange(isList ? splitLines(e.target.value) : e.target.value)}
+          {...invalidProps(fieldId, error)}
         />
       );
     }
@@ -116,7 +163,7 @@ function FieldInput({
               <p className="field-label">No image selected.</p>
             )
           ) : path ? (
-            <span className="text-sm">{path}</span>
+            <span className="break-all text-sm">{path}</span>
           ) : (
             <p className="field-label">No document selected.</p>
           )}
@@ -132,10 +179,13 @@ function FieldInput({
       return (
         <input
           id={fieldId}
-          type={field.kind === "url" ? "url" : "text"}
+          // Not type="url": the browser's own pop-up message would replace our plain-language one.
+          type="text"
+          inputMode={field.kind === "url" ? "url" : undefined}
           className="field mt-2"
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value)}
+          {...invalidProps(fieldId, error)}
         />
       );
   }
@@ -143,18 +193,25 @@ function FieldInput({
 
 export function EditModal({
   id,
+  label,
   kind,
   currentValue,
   itemFields,
+  titleField,
   options,
   onSave,
   onDelete,
   onClose,
 }: {
+  /** Internal id of the thing being edited; only shown when no human `label` is given. */
   id: string;
+  /** Human name: the field's label, or the list's label for an item. */
+  label?: string;
   kind: EditModalKind;
   currentValue: unknown;
   itemFields?: ItemField[];
+  /** Which item field names a list row; a NEW row may not be added with it blank. */
+  titleField?: string;
   /** Enum options for the top-level "enum" kind — passed in, never looked up
    * internally, to keep this component decoupled from SECTION_REGISTRY. */
   options?: string[];
@@ -163,6 +220,10 @@ export function EditModal({
   onClose: () => void;
 }) {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const name = label ?? id;
+  // Error text per field key ("" is the single top-level field).
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const clearError = (key: string) => setErrors((prev) => (prev[key] ? { ...prev, [key]: "" } : prev));
 
   // --- text | textarea | url --------------------------------------------
   const isArrayBackedTextarea = kind === "textarea" && Array.isArray(currentValue);
@@ -189,14 +250,23 @@ export function EditModal({
 
   function setItemFieldValue(key: string, value: unknown) {
     setItemValues((prev) => ({ ...prev, [key]: value }));
+    clearError(key);
   }
 
   if (kind === "text" || kind === "url" || kind === "textarea") {
+    const submit = () => {
+      const error = kind === "url" ? urlError(scalarValue) : null;
+      if (error) {
+        setErrors({ "": error });
+        return;
+      }
+      onSave(isArrayBackedTextarea ? splitLines(scalarValue) : scalarValue);
+    };
     return (
-      <ModalShell title={`Edit ${id}`} onClose={onClose}>
+      <ModalShell title={`Edit ${name}`} onClose={onClose} onSubmit={submit}>
         <div>
           <label className="field-label" htmlFor="edit-field">
-            {id}
+            {name}
           </label>
           {kind === "textarea" ? (
             <textarea
@@ -208,18 +278,21 @@ export function EditModal({
           ) : (
             <input
               id="edit-field"
-              type={kind === "url" ? "url" : "text"}
+              // Not type="url": the browser's own pop-up message would replace our plain-language one.
+              type="text"
+              inputMode={kind === "url" ? "url" : undefined}
               className="field mt-2"
               value={scalarValue}
-              onChange={(e) => setScalarValue(e.target.value)}
+              onChange={(e) => {
+                setScalarValue(e.target.value);
+                clearError("");
+              }}
+              {...invalidProps("edit-field", errors[""])}
             />
           )}
+          <FieldError id="edit-field" message={errors[""]} />
         </div>
-        <button
-          type="button"
-          className="btn btn-primary self-start"
-          onClick={() => onSave(isArrayBackedTextarea ? splitLines(scalarValue) : scalarValue)}
-        >
+        <button type="submit" className="btn btn-primary self-start">
           Save
         </button>
       </ModalShell>
@@ -228,10 +301,10 @@ export function EditModal({
 
   if (kind === "enum") {
     return (
-      <ModalShell title={`Edit ${id}`} onClose={onClose}>
+      <ModalShell title={`Edit ${name}`} onClose={onClose} onSubmit={() => onSave(enumValue)}>
         <div>
           <label className="field-label" htmlFor="edit-field">
-            {id}
+            {name}
           </label>
           <select
             id="edit-field"
@@ -246,7 +319,7 @@ export function EditModal({
             ))}
           </select>
         </div>
-        <button type="button" className="btn btn-primary self-start" onClick={() => onSave(enumValue)}>
+        <button type="submit" className="btn btn-primary self-start">
           Save
         </button>
       </ModalShell>
@@ -256,7 +329,22 @@ export function EditModal({
   if (kind === "media" || kind === "document") {
     const path = typeof currentValue === "string" ? currentValue : "";
     return (
-      <ModalShell title={`Edit ${id}`} onClose={onClose}>
+      <ModalShell
+        title={`Edit ${name}`}
+        onClose={onClose}
+        overlay={
+          showMediaPicker && (
+            <MediaPicker
+              accept={kind === "media" ? "image" : "document"}
+              onSelect={(newPath) => {
+                setShowMediaPicker(false);
+                onSave(newPath);
+              }}
+              onClose={() => setShowMediaPicker(false)}
+            />
+          )
+        }
+      >
         <FieldInput
           fieldId="edit-field"
           field={{ kind }}
@@ -266,25 +354,55 @@ export function EditModal({
           }}
           onOpenMedia={() => setShowMediaPicker(true)}
         />
-        {showMediaPicker && (
-          <MediaPicker
-            accept={kind === "media" ? "image" : "document"}
-            onSelect={(newPath) => {
-              setShowMediaPicker(false);
-              onSave(newPath);
-            }}
-            onClose={() => setShowMediaPicker(false)}
-          />
-        )}
       </ModalShell>
     );
   }
 
   // --- item ---------------------------------------------------------------
   const activeField = (itemFields ?? []).find((f) => f.key === activeItemMediaKey);
+  const existingTitle = isExistingItem && titleField ? String(itemValues[titleField] ?? "").trim() : "";
+  const itemTitle = isExistingItem
+    ? `Edit ${name}${existingTitle ? ` — ${existingTitle}` : ""}`
+    : label
+      ? `Add to ${name}`
+      : `Add ${id}`;
+
+  function submitItem() {
+    const found: Record<string, string> = {};
+    for (const field of itemFields ?? []) {
+      const error = field.kind === "url" ? urlError(itemValues[field.key]) : null;
+      if (error) found[field.key] = error;
+    }
+    const titleBox = (itemFields ?? []).find((f) => f.key === titleField);
+    if (!isExistingItem && titleField && titleBox && !hasTitle(itemValues, titleField)) {
+      found[titleField] = `Please fill in “${titleBox.label}” before adding.`;
+    }
+    if (Object.keys(found).length > 0) {
+      setErrors(found);
+      return;
+    }
+    onSave(itemValues);
+  }
 
   return (
-    <ModalShell title={isExistingItem ? `Edit ${id}` : `Add ${id}`} onClose={onClose}>
+    <ModalShell
+      title={itemTitle}
+      onClose={onClose}
+      onSubmit={submitItem}
+      overlay={
+        activeField &&
+        (activeField.kind === "media" || activeField.kind === "document") && (
+          <MediaPicker
+            accept={activeField.kind === "media" ? "image" : "document"}
+            onSelect={(newPath) => {
+              setItemFieldValue(activeField.key, newPath);
+              setActiveItemMediaKey(null);
+            }}
+            onClose={() => setActiveItemMediaKey(null)}
+          />
+        )
+      }
+    >
       <div className="flex flex-col gap-4">
         {(itemFields ?? []).map((field) => {
           const fieldId = `item-field-${field.key}`;
@@ -297,9 +415,11 @@ export function EditModal({
                 fieldId={fieldId}
                 field={field}
                 value={itemValues[field.key]}
+                error={errors[field.key]}
                 onChange={(v) => setItemFieldValue(field.key, v)}
                 onOpenMedia={() => setActiveItemMediaKey(field.key)}
               />
+              <FieldError id={fieldId} message={errors[field.key]} />
             </div>
           );
         })}
@@ -311,26 +431,10 @@ export function EditModal({
             Delete this item
           </button>
         )}
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => onSave(itemValues)}
-        >
+        <button type="submit" className="btn btn-primary">
           {isExistingItem ? "Save" : "Add"}
         </button>
       </div>
-
-      {activeField && (activeField.kind === "media" || activeField.kind === "document") && (
-        <MediaPicker
-          accept={activeField.kind === "media" ? "image" : "document"}
-          onSelect={(newPath) => {
-            setItemFieldValue(activeField.key, newPath);
-            setActiveItemMediaKey(null);
-          }}
-          onClose={() => setActiveItemMediaKey(null)}
-        />
-      )}
     </ModalShell>
   );
 }
-

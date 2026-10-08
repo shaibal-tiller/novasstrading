@@ -3,7 +3,7 @@ import type { hero as HeroContent } from "@/lib/content";
 import { Editable } from "./admin/Editable";
 import { HeroCollage } from "./HeroCollage";
 
-export function Hero({ hero }: { hero: typeof HeroContent }) {
+export function Hero({ hero, headingTag: Heading = "h1" }: { hero: typeof HeroContent; headingTag?: "h1" | "h2" }) {
   // Local item-id widening: DB rows carry a numeric `id`; the static content
   // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
   // which is safe since Editable never reads it outside edit mode.
@@ -37,10 +37,10 @@ export function Hero({ hero }: { hero: typeof HeroContent }) {
             <p className="eyebrow">
               <Editable id="hero.eyebrow" kind="text">{hero.eyebrow}</Editable>
             </p>
-            <h1 className="display-xl mt-6 text-ink leading-[1.1]">
+            <Heading className="display-xl mt-6 text-ink leading-[1.1]">
               <Editable id="hero.companyName" kind="text">{hero.companyName}</Editable>
               <span className="text-brass-dark">.</span>
-            </h1>
+            </Heading>
             <p className="mt-4 font-display text-xl font-light italic tracking-wide text-ink-muted sm:text-2xl">
               <Editable id="hero.tagline" kind="text">{hero.tagline}</Editable>
             </p>

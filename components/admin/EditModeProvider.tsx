@@ -16,6 +16,8 @@ export type EditModeContextValue = {
   setOpenId: (id: string | null) => void;
   draft: unknown;
   setDraft: Dispatch<SetStateAction<unknown>>;
+  /** Tells the editor a file was just uploaded (its path and media id), so Discard can clean it up. */
+  rememberUpload?: (path: string, mediaId: number) => void;
 };
 
 /**

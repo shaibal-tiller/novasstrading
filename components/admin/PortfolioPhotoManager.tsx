@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -68,6 +68,12 @@ export function PortfolioPhotoManager() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  // "Manage photos" on the dashboard links here (…/edit/portfolio#photos): bring this panel into view.
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (window.location.hash === "#photos") panel.current?.scrollIntoView?.({ block: "start" });
+  }, []);
+
   if (!ctx) return null;
 
   function patchItems(fn: (items: DraftItem[]) => DraftItem[]) {
@@ -126,7 +132,9 @@ export function PortfolioPhotoManager() {
         form.set("file", file);
         const res = await fetch(UPLOAD_URL, { method: "POST", body: form });
         if (!res.ok) throw new Error(res.status === 401 ? "signed out - sign in again" : `server said ${res.status}`);
-        const { path, blur } = (await res.json()) as { path: string; blur?: string | null };
+        const { id, path, blur } = (await res.json()) as { id?: number; path: string; blur?: string | null };
+        // So "Discard changes" can remove this file again if the photo is never confirmed.
+        if (typeof id === "number") ctx?.rememberUpload?.(path, id);
         created.push({
           id: `new-p${counter.current++}`,
           fields: {
@@ -163,13 +171,18 @@ export function PortfolioPhotoManager() {
   const hiddenCount = mine.filter((i) => isPhotoHidden(i.fields as PortfolioPhoto)).length;
 
   return (
-    <section aria-label="Manage portfolio photos" className="mt-6 rounded-2xl border border-ink/10 bg-paper p-5">
+    <section
+      id="photos"
+      ref={panel}
+      aria-label="Manage portfolio photos"
+      className="mt-6 scroll-mt-4 rounded-2xl border border-ink/10 bg-paper p-5"
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-xl text-ink">Manage photos</h2>
           <p className="mt-1 text-sm text-ink-muted">
-            Drag to reorder. Click a photo for its caption, details, size and framing. Nothing goes live until you
-            confirm.
+            Drag a photo by its ⠿ handle to reorder. Click or tap a photo for its caption, details, size and framing.
+            Nothing goes live until you confirm.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -203,7 +216,7 @@ export function PortfolioPhotoManager() {
               aria-selected={t.key === tabKey}
               onClick={() => setActiveTab(t.key)}
               className={
-                "rounded-full border px-4 py-1.5 text-sm font-semibold " +
+                "min-h-10 rounded-full border px-4 py-1.5 text-sm font-semibold " +
                 (t.key === tabKey ? "border-brass bg-brass text-ivory" : "border-ink/15 text-ink hover:border-brass")
               }
             >
@@ -230,7 +243,7 @@ export function PortfolioPhotoManager() {
           </p>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={mine.map((i) => i.id)} strategy={rectSortingStrategy}>
-              <ul className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+              <ul className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
                 {mine.map((item, index) => (
                   <PhotoThumb
                     key={item.id}
@@ -280,14 +293,25 @@ function PhotoThumb({
   const size = photoSize(photo);
   const label = (photo.caption || photo.alt || "photo").toString();
 
+  // 28px with a mouse; 40px on phones/tablets (small screens or touch), where the controls also stay visible.
+  const touch = "max-sm:h-10 max-sm:min-w-10 [@media(pointer:coarse)]:h-10 [@media(pointer:coarse)]:min-w-10";
   const btn =
-    "grid h-7 min-w-7 place-items-center rounded-full bg-ink/80 px-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-ivory hover:bg-brass focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass";
+    "grid h-7 min-w-7 place-items-center rounded-full bg-ink/80 px-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-ivory hover:bg-brass focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass " +
+    touch;
+  const reveal =
+    "opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 max-sm:opacity-100 [@media(hover:none)]:opacity-100";
+  // The buttons sit on top of the clickable photo: their clicks must not also open the editor.
+  const act = (fn: () => void) => (e: MouseEvent) => {
+    e.stopPropagation();
+    fn();
+  };
 
   return (
-    <li ref={setNodeRef} style={style} className="group relative" {...attributes} {...listeners}>
+    <li ref={setNodeRef} style={style} className="group relative">
       <div
+        onClick={onEdit}
         className={
-          "relative aspect-[3/4] cursor-grab overflow-hidden rounded-md border border-ink/10 bg-ivory active:cursor-grabbing " +
+          "relative aspect-[3/4] cursor-pointer overflow-hidden rounded-md border border-ink/10 bg-ivory " +
           (hidden ? "opacity-45" : "") +
           (isDragging ? " shadow-xl ring-2 ring-brass" : "")
         }
@@ -300,31 +324,67 @@ function PhotoThumb({
           draggable={false}
           className={photo.fit === "whole" ? "object-contain p-1" : "object-cover"}
         />
-        <span className="absolute left-1.5 top-1.5 rounded bg-ink/80 px-1.5 py-0.5 font-mono text-[0.6rem] text-ivory">
-          {index + 1}
-        </span>
-        <span className="absolute bottom-1.5 left-1.5 flex flex-wrap gap-1">
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-1 p-1.5">
+          {/* The grab handle: touch-none, so a finger dragging it reorders instead of scrolling the page. */}
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`Move ${label} by dragging`}
+            title="Drag to reorder"
+            className={
+              "flex h-7 cursor-grab touch-none items-center gap-1 rounded-full bg-ink/80 px-2 font-mono text-[0.65rem] text-ivory hover:bg-brass focus-visible:outline focus-visible:outline-2 focus-visible:outline-brass active:cursor-grabbing " +
+              touch
+            }
+          >
+            <span aria-hidden>⠿</span>
+            {index + 1}
+          </button>
+          <button
+            type="button"
+            className={btn + " " + reveal}
+            onClick={act(onEdit)}
+            aria-label={`Edit ${label}`}
+            title="Edit caption, details, framing"
+          >
+            Edit
+          </button>
+        </div>
+        <span className="pointer-events-none absolute left-1.5 top-12 flex flex-wrap gap-1 max-sm:top-14">
           {size !== "normal" && <Tag>{size}</Tag>}
           {photo.badge === "new" && <Tag>new</Tag>}
           {hidden && <Tag>hidden</Tag>}
         </span>
 
-        <div className="absolute inset-x-0 top-0 flex justify-end gap-1 p-1.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-          <button type="button" className={btn} onClick={onEdit} aria-label={`Edit ${label}`} title="Edit caption, details, framing">
-            Edit
-          </button>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 flex flex-wrap justify-end gap-1 bg-gradient-to-t from-ink/70 to-transparent p-1.5 pt-6 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-          <button type="button" className={btn} onClick={onToTop} aria-label={`Move ${label} to the top`} title="Move to the top">
+        <div
+          className={
+            "absolute inset-x-0 bottom-0 flex flex-wrap justify-end gap-1 bg-gradient-to-t from-ink/70 to-transparent p-1.5 pt-6 " +
+            reveal
+          }
+        >
+          <button type="button" className={btn} onClick={act(onToTop)} aria-label={`Move ${label} to the top`} title="Move to the top">
             Top
           </button>
-          <button type="button" className={btn} onClick={onCycleSize} aria-label={`Change tile size of ${label}`} title="Cycle tile size: normal, wide, tall, featured">
+          <button
+            type="button"
+            className={btn}
+            onClick={act(onCycleSize)}
+            aria-label={`Change tile size of ${label}`}
+            title="Cycle tile size: normal, wide, tall, featured"
+          >
             Size
           </button>
-          <button type="button" className={btn} onClick={onToggleHidden} aria-label={`${hidden ? "Show" : "Hide"} ${label}`} title={hidden ? "Show on the site" : "Hide from the site"}>
+          <button
+            type="button"
+            className={btn}
+            onClick={act(onToggleHidden)}
+            aria-label={`${hidden ? "Show" : "Hide"} ${label}`}
+            title={hidden ? "Show on the site" : "Hide from the site"}
+          >
             {hidden ? "Show" : "Hide"}
           </button>
-          <button type="button" className={btn} onClick={onRemove} aria-label={`Delete ${label}`} title="Delete (goes to Trash)">
+          <button type="button" className={btn} onClick={act(onRemove)} aria-label={`Delete ${label}`} title="Delete (goes to Trash)">
             Del
           </button>
         </div>

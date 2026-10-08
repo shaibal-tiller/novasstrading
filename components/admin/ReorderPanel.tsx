@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DndContext, closestCenter, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useDialog } from "./useDialog";
 
 export type ReorderItem = { id: number | string; label: string };
 
@@ -48,7 +49,7 @@ function SortableRow({
         {...attributes}
         {...listeners}
         aria-label={`Drag ${item.label}`}
-        className="cursor-grab px-2 text-ink-muted"
+        className="h-10 min-w-10 cursor-grab touch-none px-2 text-ink-muted"
       >
         ⠿
       </button>
@@ -58,7 +59,7 @@ function SortableRow({
         aria-label={`Move ${item.label} up`}
         disabled={index === 0}
         onClick={() => onMove(index, index - 1)}
-        className="px-2 disabled:opacity-30"
+        className="h-10 min-w-10 px-2 disabled:opacity-30"
       >
         ↑
       </button>
@@ -67,7 +68,7 @@ function SortableRow({
         aria-label={`Move ${item.label} down`}
         disabled={index === count - 1}
         onClick={() => onMove(index, index + 1)}
-        className="px-2 disabled:opacity-30"
+        className="h-10 min-w-10 px-2 disabled:opacity-30"
       >
         ↓
       </button>
@@ -97,6 +98,8 @@ export function ReorderPanel({
   onClose: () => void;
 }) {
   const [order, setOrder] = useState<ReorderItem[]>(items);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialog(dialogRef, onClose);
 
   function move(from: number, to: number) {
     if (to < 0 || to >= order.length) return;
@@ -118,12 +121,18 @@ export function ReorderPanel({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
         className="flex max-h-[85vh] w-full max-w-lg flex-col gap-4 overflow-y-auto rounded-2xl bg-paper p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="field-label">{title}</h2>
-          <button type="button" aria-label="Close" onClick={onClose}>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-2xl leading-none text-ink hover:bg-ink/5"
+          >
             ×
           </button>
         </div>

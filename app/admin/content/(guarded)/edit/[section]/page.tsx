@@ -1,12 +1,18 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSections, listItems } from "@/lib/cpanel-api";
 import { SECTION_REGISTRY } from "@/lib/admin/section-registry";
+import { GuardedLink } from "@/components/admin/GuardedLink";
 import type { Fields, SectionDraft } from "@/components/admin/SectionEditor";
 import { SectionEditorMount } from "./SectionEditorMount";
 
 // The baseline must always reflect the live DB — never a cached fetch.
 export const dynamic = "force-dynamic";
+
+export function generateMetadata({ params }: { params: { section: string } }): Metadata {
+  const entry = SECTION_REGISTRY.find((e) => e.key === params.section);
+  return { title: entry ? `Edit ${entry.label}` : "Edit" };
+}
 
 export default async function EditSectionPage({
   params,
@@ -38,12 +44,12 @@ export default async function EditSectionPage({
   const nav = entry.key === "footerBlurb" ? await listItems("nav") : [];
 
   return (
-    <main className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+    <main className="flex min-w-0 flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-x-4">
         <h1 className="display-md text-ink">{entry.label}</h1>
-        <Link href="/admin/content" className="field-label hover:text-brass-dark">
+        <GuardedLink href="/admin/content" className="field-label inline-flex min-h-10 items-center hover:text-brass-dark">
           &larr; All sections
-        </Link>
+        </GuardedLink>
       </div>
 
       <SectionEditorMount

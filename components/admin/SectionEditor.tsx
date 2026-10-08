@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { FieldControl, ItemField, ListSpec, SectionEntry } from "@/lib/admin/section-registry";
+import { setUnsaved, UNSAVED_MESSAGE } from "@/lib/admin/unsaved";
 import { EditModal, type EditModalKind } from "./EditModal";
 import { EditModeContext, type EditModeContextValue } from "./EditModeProvider";
 import { EditorCanvas } from "./EditorCanvas";
@@ -55,6 +56,8 @@ export type ApplyChangesetResult = {
   /** section keys whose write succeeded. */
   writtenSectionKeys: string[];
   failures: ChangeFailure[];
+  /** True when nothing was attempted because the admin session has expired. */
+  signedOut?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -367,6 +370,7 @@ type ResolvedField =
       /** null = the "add new" trigger; number = persisted row; string = pending (`new-*`) row. */
       itemId: number | string | null;
       itemFields: ItemField[];
+      titleField: string;
       label: string;
       currentValue: Fields | null;
     };
@@ -392,7 +396,15 @@ function resolveOpenId(entry: SectionEntry, draft: SectionDraft, openId: string)
     if (!openId.startsWith(prefix)) continue;
     const remainder = openId.slice(prefix.length);
     if (remainder === "new") {
-      return { type: "item", listKey: list.listKey, itemId: null, itemFields: list.itemFields, label: list.label, currentValue: null };
+      return {
+        type: "item",
+        listKey: list.listKey,
+        itemId: null,
+        itemFields: list.itemFields,
+        titleField: list.titleField,
+        label: list.label,
+        currentValue: null,
+      };
     }
 
     const rows = draft.items[list.listKey] ?? [];
@@ -406,6 +418,7 @@ function resolveOpenId(entry: SectionEntry, draft: SectionDraft, openId: string)
       listKey: list.listKey,
       itemId,
       itemFields: list.itemFields,
+      titleField: list.titleField,
       label: list.label,
       currentValue: item.fields,
     };
@@ -430,12 +443,15 @@ export function SectionEditor({
   baseline: initialBaseline,
   applyChangeset,
   render,
+  discardUploads,
 }: {
   entry: SectionEntry;
   baseline: SectionDraft;
   /** Dispatches a computed changeset (via the server actions in
    * `edit/[section]/actions.ts`) and resolves with per-change results. */
   applyChangeset: (changeset: Changeset) => Promise<ApplyChangesetResult>;
+  /** Best-effort removal of files uploaded during this session that never made it into saved content. */
+  discardUploads?: (mediaIds: number[]) => Promise<unknown>;
   /** Renders the section's real component using the current draft data. */
   render: (data: SectionDraft) => ReactNode;
 }) {
@@ -446,12 +462,53 @@ export function SectionEditor({
   const [reorderListKey, setReorderListKey] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [failures, setFailures] = useState<string[]>([]);
+  const [signInHref, setSignInHref] = useState<string | null>(null);
   const nextTempId = useRef(0);
+  // Files uploaded in this session (path -> media id), so unused ones can be removed on Discard.
+  const uploads = useRef(new Map<string, number>());
+  const baselineRef = useRef(baseline);
+  baselineRef.current = baseline;
 
   const changeset = computeChangeset(baseline, draft, entry);
   const dirty = !isChangesetEmpty(changeset);
 
-  const ctxValue: EditModeContextValue = { hoveredId, setHoveredId, openId, setOpenId, draft, setDraft: setDraft as EditModeContextValue["setDraft"] };
+  /** Removes (best effort) uploaded files that no saved content uses. A failure is ignored: automatic cleanup catches them later. */
+  function cleanupUploads() {
+    const saved = JSON.stringify(baselineRef.current);
+    const unused: number[] = [];
+    uploads.current.forEach((id, path) => {
+      if (!saved.includes(JSON.stringify(path).slice(1, -1))) unused.push(id);
+    });
+    uploads.current.clear();
+    if (unused.length > 0) void Promise.resolve(discardUploads?.(unused)).catch(() => {});
+  }
+  const cleanupRef = useRef(cleanupUploads);
+  cleanupRef.current = cleanupUploads;
+
+  // While there are unconfirmed edits: warn before the tab closes / reloads, and let in-app links ask first.
+  useEffect(() => {
+    if (!dirty) return;
+    setUnsaved(true, () => cleanupRef.current());
+    function warn(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      e.returnValue = UNSAVED_MESSAGE;
+    }
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      setUnsaved(false);
+    };
+  }, [dirty]);
+
+  const ctxValue: EditModeContextValue = {
+    hoveredId,
+    setHoveredId,
+    openId,
+    setOpenId,
+    draft,
+    setDraft: setDraft as EditModeContextValue["setDraft"],
+    rememberUpload: (path, mediaId) => uploads.current.set(path, mediaId),
+  };
 
   function labelLookup(id: string): string | undefined {
     return resolveOpenId(entry, draft, id)?.label;
@@ -516,6 +573,14 @@ export function SectionEditor({
     setOpenId(null);
     setReorderListKey(null);
     setFailures([]);
+    setSignInHref(null);
+    cleanupUploads();
+  }
+
+  /** Nothing was saved (most likely the session expired): keep every edit, and offer a sign-in that opens beside this page so nothing is lost. */
+  function showSaveFailed(message: string) {
+    setFailures([message]);
+    setSignInHref("/admin/login?next=" + encodeURIComponent(window.location.pathname));
   }
 
   async function handleConfirm() {
@@ -523,9 +588,14 @@ export function SectionEditor({
     setPending(true);
     try {
       const result = await applyChangeset(changeset);
+      if (result.signedOut) {
+        showSaveFailed("Your sign-in has expired, so nothing was saved. Your changes are still here.");
+        return;
+      }
       const { baseline: newBaseline, draft: newDraft } = reconcileAfterApply(baseline, draft, changeset, result);
       setBaseline(newBaseline);
       setDraft(newDraft);
+      setSignInHref(null);
       if (result.failures.length > 0) {
         setFailures(result.failures.map((f) => describeFailure(entry, baseline, changeset, f)));
       } else {
@@ -537,7 +607,7 @@ export function SectionEditor({
       // likely the admin's own session cookie expired, so `requireToken()`
       // threw server-side. Nothing was applied; leave baseline and draft
       // untouched so the pending edits stay and a retry is possible.
-      setFailures(["Could not save changes — please check you're still signed in and try again."]);
+      showSaveFailed("Could not save changes — your sign-in may have expired, or the connection dropped. Your changes are still here.");
     } finally {
       setPending(false);
     }
@@ -567,6 +637,7 @@ export function SectionEditor({
         <EditModal
           key={openId}
           id={openId}
+          label={resolved.label}
           kind={resolved.control as EditModalKind}
           currentValue={resolved.currentValue}
           options={resolved.options}
@@ -579,9 +650,11 @@ export function SectionEditor({
         <EditModal
           key={openId}
           id={openId}
+          label={resolved.label}
           kind="item"
           currentValue={resolved.currentValue}
           itemFields={resolved.itemFields}
+          titleField={resolved.titleField}
           onSave={(value) => handleSaveItem(resolved.listKey, resolved.itemId, value as Fields)}
           onDelete={
             resolved.itemId !== null
@@ -645,6 +718,14 @@ export function SectionEditor({
             {failures.map((f, i) => (
               <li key={i}>{f}</li>
             ))}
+            {signInHref && (
+              <li>
+                <a href={signInHref} target="_blank" rel="noreferrer" className="font-semibold underline">
+                  Sign in again
+                </a>{" "}
+                (opens in a new tab), then press Confirm changes here again.
+              </li>
+            )}
           </ul>
         )}
         <div className="flex gap-3">

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { listMedia, type MediaRow } from "@/lib/admin/media-client";
 import { photoUrl } from "@/lib/portfolio-photo";
+import { useDialog } from "./useDialog";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -38,6 +39,8 @@ export function MediaPicker({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialog(dialogRef, onClose);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,12 +98,18 @@ export function MediaPicker({
       onClick={() => onClose?.()}
     >
       <div
+        ref={dialogRef}
         className="flex max-h-[85vh] w-full max-w-2xl flex-col gap-4 overflow-y-auto rounded-2xl bg-paper p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="field-label">{dialogLabel}</h2>
-          <button type="button" aria-label="Close" onClick={() => onClose?.()}>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => onClose?.()}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-2xl leading-none text-ink hover:bg-ink/5"
+          >
             ×
           </button>
         </div>
@@ -110,7 +119,7 @@ export function MediaPicker({
             type="button"
             role="tab"
             aria-selected={tab === "existing"}
-            className={tab === "existing" ? "font-semibold" : undefined}
+            className={`min-h-10 px-3 ${tab === "existing" ? "font-semibold" : ""}`}
             onClick={() => setTab("existing")}
           >
             Choose existing
@@ -119,7 +128,7 @@ export function MediaPicker({
             type="button"
             role="tab"
             aria-selected={tab === "upload"}
-            className={tab === "upload" ? "font-semibold" : undefined}
+            className={`min-h-10 px-3 ${tab === "upload" ? "font-semibold" : ""}`}
             onClick={() => setTab("upload")}
           >
             Upload new
