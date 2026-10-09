@@ -35,6 +35,10 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+// Always the production site URL (never a *.vercel.app preview hostname), so
+// link previews and structured data point at the real domain.
+const ogImageUrl = `${site.url}/og-image.jpg`;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -69,7 +73,7 @@ export const metadata: Metadata = {
   ],
   category: "business",
   alternates: {
-    canonical: "/",
+    canonical: site.url,
   },
   openGraph: {
     type: "website",
@@ -80,9 +84,10 @@ export const metadata: Metadata = {
     description: site.description,
     images: [
       {
-        url: "/og-image.jpg",
+        url: ogImageUrl,
         width: 1200,
         height: 630,
+        type: "image/jpeg",
         alt: `${site.name} — ${site.tagline}`,
       },
     ],
@@ -91,7 +96,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${site.name} | ${site.tagline}`,
     description: site.description,
-    images: ["/og-image.jpg"],
+    images: [{ url: ogImageUrl, alt: `${site.name} — ${site.tagline}` }],
   },
   robots: {
     index: true,
@@ -127,7 +132,22 @@ const jsonLd = {
       description: site.description,
       email: site.email,
       telephone: site.phone,
+      logo: {
+        "@type": "ImageObject",
+        url: `${site.url}/logo.png`,
+        width: 500,
+        height: 500,
+      },
+      image: ogImageUrl,
       sameAs: [site.social.linkedin],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        telephone: site.phone,
+        email: site.email,
+        areaServed: "Worldwide",
+        availableLanguage: "English",
+      },
       address: {
         "@type": "PostalAddress",
         streetAddress: site.address.street,
@@ -140,7 +160,7 @@ const jsonLd = {
       "@type": "LocalBusiness",
       "@id": `${site.url}/#localbusiness`,
       name: site.name,
-      image: `${site.url}/og-image.jpg`,
+      image: ogImageUrl,
       url: site.url,
       telephone: site.phone,
       priceRange: "$$",

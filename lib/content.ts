@@ -17,7 +17,7 @@ export const site = {
   tagline: "Garments Buying House — Bangladesh",
   url: "https://www.novasstrading.com",
   description:
-    "Nova SS Trading is a leading garments buying house in Bangladesh, sourcing high-quality knitwear, woven, sweaters, lingerie & accessories from trusted manufacturers for retailers and wholesalers worldwide.",
+    "Nova SS Trading is a Bangladesh garments buying house sourcing knitwear, woven, sweaters, lingerie & accessories for retailers and wholesalers worldwide.",
   email: "info@novasstrading.com",
   phone: "+880 1351-153898",
   phoneHref: "+8801351153898",
