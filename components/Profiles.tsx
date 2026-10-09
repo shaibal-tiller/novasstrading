@@ -1,50 +1,66 @@
-import { profiles } from "@/lib/content";
+import type { profiles as ProfilesContent } from "@/lib/content";
+import { Editable } from "./admin/Editable";
 import { Reveal } from "./Reveal";
+import { resolveMediaUrl } from "@/lib/media-url";
 
-export function Profiles() {
+export function Profiles({ profiles }: { profiles: typeof ProfilesContent }) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type DocumentWithId = (typeof profiles.documents)[number] & { id: number };
+  const documents = profiles.documents as DocumentWithId[];
+
   return (
     <section id="profiles" className="section-wrap">
       <div className="section-card section-card--light">
         <div className="max-w-2xl">
-          <p className="eyebrow">{profiles.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{profiles.title}</h2>
-          <p className="lede mt-5">{profiles.intro}</p>
+          <p className="eyebrow">
+            <Editable id="profiles.eyebrow" kind="text">{profiles.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="profiles.title" kind="text">{profiles.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="profiles.intro" kind="text">{profiles.intro}</Editable>
+          </p>
         </div>
 
         <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {profiles.documents.map((doc, i) => (
+          {documents.map((doc, i) => (
             <Reveal
               key={doc.title}
               as="article"
               delay={i * 80}
               className="group flex flex-col rounded-sm border border-ink/10 bg-canvas p-7 transition-colors hover:border-brass/50"
             >
-              <span className="grid h-11 w-11 place-items-center rounded-sm bg-ink text-ivory">
-                <DocIcon />
-              </span>
-              <h3 className="mt-5 font-display text-xl font-medium text-ink">
-                {doc.title}
-              </h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-muted">
-                {doc.body}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a
-                  href={doc.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary !py-2.5 !px-4 text-xs"
-                >
-                  View PDF
-                </a>
-                <a
-                  href={doc.href}
-                  download
-                  className="btn btn-outline !py-2.5 !px-4 text-xs"
-                >
-                  Download
-                </a>
-              </div>
+              <Editable id={`profiles.documents.${doc.id}`} kind="item" as="div" className="contents">
+                <span className="grid h-11 w-11 place-items-center rounded-sm bg-ink text-ivory">
+                  <DocIcon />
+                </span>
+                <h3 className="mt-5 font-display text-xl font-medium text-ink">
+                  {doc.title}
+                </h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-muted">
+                  {doc.body}
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <a
+                    href={resolveMediaUrl(doc.href)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary !py-2.5 !px-4 text-xs"
+                  >
+                    View PDF
+                  </a>
+                  <a
+                    href={resolveMediaUrl(doc.href)}
+                    download
+                    className="btn btn-outline !py-2.5 !px-4 text-xs"
+                  >
+                    Download
+                  </a>
+                </div>
+              </Editable>
             </Reveal>
           ))}
         </div>
@@ -66,3 +82,4 @@ function DocIcon() {
     </svg>
   );
 }
+

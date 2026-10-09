@@ -1,0 +1,17 @@
+RewriteEngine On
+
+# Some PHP handlers (CGI/LSAPI) strip the Authorization header; pass it through
+# so the Bearer session token reaches PHP.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# "/media" is both an API route (list/create media records) and the upload
+# folder. Send the bare path to the API before the server turns it into a
+# redirect to the "/media/" directory. Files inside it (media/abc.webp) do not
+# match and are served directly.
+RewriteRule ^media/?$ index.php [QSA,L]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+

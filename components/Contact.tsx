@@ -1,15 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { contact, site } from "@/lib/content";
+import type { contact as ContactContent, site as SiteContent } from "@/lib/content";
 import { clsx } from "@/lib/utils";
+import { trackEvent } from "@/lib/gtag";
+import { Editable } from "./admin/Editable";
 
 type Status = "idle" | "submitting" | "success";
 type FormState = { status: Status; errorMsg?: string };
 
 
-export function Contact() {
+export function Contact({
+  contact,
+  site,
+}: {
+  contact: typeof ContactContent;
+  site: typeof SiteContent;
+}) {
   const [state, setState] = useState<FormState>({ status: "idle" });
+
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type CardWithId = (typeof contact.cards)[number] & { id: number };
+  const cards = contact.cards as CardWithId[];
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,6 +54,8 @@ export function Contact() {
       if (res.ok && json.ok) {
         setState({ status: "success" });
         form.reset();
+        // GA4 key event — a no-op unless the visitor accepted analytics cookies.
+        trackEvent("contact_form_submit");
       } else {
         setState({ status: "idle", errorMsg: json.error ?? "Something went wrong. Please try again." });
       }
@@ -53,28 +69,36 @@ export function Contact() {
       <div className="section-card section-card--cream">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
           <div>
-            <p className="eyebrow">{contact.eyebrow}</p>
-            <h2 className="display-lg mt-5 text-ink">{contact.title}</h2>
-            <p className="lede mt-5 max-w-md">{contact.intro}</p>
+            <p className="eyebrow">
+              <Editable id="contact.eyebrow" kind="text">{contact.eyebrow}</Editable>
+            </p>
+            <h2 className="display-lg mt-5 text-ink">
+              <Editable id="contact.title" kind="text">{contact.title}</Editable>
+            </h2>
+            <p className="lede mt-5 max-w-md">
+              <Editable id="contact.intro" kind="text">{contact.intro}</Editable>
+            </p>
 
             <div className="mt-10 space-y-5">
-              {contact.cards.map((c) => (
+              {cards.map((c) => (
                 <div key={c.label}>
-                  <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-brass-dark">
-                    {c.label}
-                  </p>
-                  {c.href ? (
-                    <a
-                      href={c.href}
-                      target={c.href.startsWith("http") ? "_blank" : undefined}
-                      rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                      className="mt-1 block font-display text-lg text-ink transition-colors hover:text-brass-dark"
-                    >
-                      {c.value}
-                    </a>
-                  ) : (
-                    <p className="mt-1 max-w-xs text-ink-muted">{c.value}</p>
-                  )}
+                  <Editable id={`contact.cards.${c.id}`} kind="item" as="div" className="contents">
+                    <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-brass-dark">
+                      {c.label}
+                    </p>
+                    {c.href ? (
+                      <a
+                        href={c.href}
+                        target={c.href.startsWith("http") ? "_blank" : undefined}
+                        rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        className="mt-1 block font-display text-lg text-ink transition-colors hover:text-brass-dark"
+                      >
+                        {c.value}
+                      </a>
+                    ) : (
+                      <p className="mt-1 max-w-xs text-ink-muted">{c.value}</p>
+                    )}
+                  </Editable>
                 </div>
               ))}
             </div>
@@ -253,3 +277,4 @@ function Field({
     </div>
   );
 }
+

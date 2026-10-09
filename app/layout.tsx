@@ -2,7 +2,18 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { PageParticles } from "@/components/PageParticles";
 import { site } from "@/lib/content";
+import { getContent } from "@/lib/content-data";
+import { safeJsonForScript } from "@/lib/safe-json";
 import "./globals.css";
+
+// Cookie banner + GA4, only on a build with a measurement ID. The value is
+// inlined at build time (next.config.mjs `env`), so without one this require
+// is dead code and none of the banner's JS is bundled. (A static import —
+// or next/dynamic — would always ship code.)
+const ConsentBanner: typeof import("@/components/ConsentBanner").ConsentBanner | null = process.env
+  .NEXT_PUBLIC_GA_MEASUREMENT_ID
+  ? require("@/components/ConsentBanner").ConsentBanner
+  : null;
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -26,13 +37,17 @@ const plexMono = IBM_Plex_Mono({
   display: "swap",
 });
 
+// Always the production site URL (never a *.vercel.app preview hostname), so
+// link previews and structured data point at the real domain.
+const ogImageUrl = `${site.url}/og-image.jpg`;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#16191F",
 };
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: `${site.name} | ${site.tagline}`,
@@ -60,7 +75,7 @@ export const metadata: Metadata = {
   ],
   category: "business",
   alternates: {
-    canonical: "/",
+    canonical: site.url,
   },
   openGraph: {
     type: "website",
@@ -71,9 +86,10 @@ export const metadata: Metadata = {
     description: site.description,
     images: [
       {
-        url: "/og-image.jpg",
+        url: ogImageUrl,
         width: 1200,
         height: 630,
+        type: "image/jpeg",
         alt: `${site.name} — ${site.tagline}`,
       },
     ],
@@ -82,7 +98,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${site.name} | ${site.tagline}`,
     description: site.description,
-    images: ["/og-image.jpg"],
+    images: [{ url: ogImageUrl, alt: `${site.name} — ${site.tagline}` }],
   },
   robots: {
     index: true,
@@ -106,7 +122,32 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-const jsonLd = {
+/**
+ * The Google snippet comes from the content store (Site Info -> "Meta description" in the admin
+ * portal), so it can be edited without a deploy. Falls back to the text bundled with the code when
+ * the API is unreachable, the field is empty, or the value is unusable.
+ */
+async function liveDescription(): Promise<string> {
+  try {
+    const d = (await getContent()).site.description?.trim();
+    if (d && d.length >= 40 && d.length <= 320) return d;
+  } catch {
+    // getContent already falls back to bundled content; this is only a last guard.
+  }
+  return site.description;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const description = await liveDescription();
+  return {
+    ...baseMetadata,
+    description,
+    openGraph: { ...baseMetadata.openGraph, description },
+    twitter: { ...baseMetadata.twitter, description },
+  };
+}
+
+const buildJsonLd = (description: string) => ({
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -115,10 +156,25 @@ const jsonLd = {
       name: site.name,
       legalName: site.legalName,
       url: site.url,
-      description: site.description,
+      description,
       email: site.email,
       telephone: site.phone,
+      logo: {
+        "@type": "ImageObject",
+        url: `${site.url}/logo.png`,
+        width: 500,
+        height: 500,
+      },
+      image: ogImageUrl,
       sameAs: [site.social.linkedin],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer service",
+        telephone: site.phone,
+        email: site.email,
+        areaServed: "Worldwide",
+        availableLanguage: "English",
+      },
       address: {
         "@type": "PostalAddress",
         streetAddress: site.address.street,
@@ -131,7 +187,7 @@ const jsonLd = {
       "@type": "LocalBusiness",
       "@id": `${site.url}/#localbusiness`,
       name: site.name,
-      image: `${site.url}/og-image.jpg`,
+      image: ogImageUrl,
       url: site.url,
       telephone: site.phone,
       priceRange: "$$",
@@ -148,18 +204,20 @@ const jsonLd = {
       "@id": `${site.url}/#website`,
       url: site.url,
       name: site.name,
-      description: site.description,
+      description,
       publisher: { "@id": `${site.url}/#organization` },
       inLanguage: "en",
     },
   ],
-};
+});
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const jsonLd = buildJsonLd(await liveDescription());
   return (
     <html
       lang="en"
@@ -177,8 +235,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonForScript(jsonLd) }}
         />
+        {/* Analytics + cookie banner: only when a GA4 measurement ID is configured. */}
+        {ConsentBanner && gaMeasurementId ? <ConsentBanner measurementId={gaMeasurementId} /> : null}
       </body>
     </html>
   );

@@ -1,12 +1,19 @@
 "use client";
 
 import { useRef } from "react";
-import { products } from "@/lib/content";
+import type { products as ProductsContent } from "@/lib/content";
+import { Editable } from "./admin/Editable";
 import { ContentMedia } from "./ContentMedia";
 import { Reveal } from "./Reveal";
 
-export function ProductRange() {
+export function ProductRange({ products }: { products: typeof ProductsContent }) {
   const trackRef = useRef<HTMLDivElement>(null);
+
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type ProductWithId = (typeof products.items)[number] & { id: number };
+  const items = products.items as ProductWithId[];
 
   const scrollByCard = (dir: 1 | -1) => {
     const track = trackRef.current;
@@ -22,34 +29,42 @@ export function ProductRange() {
     <section id="products" className="section-wrap">
       <div className="section-card section-card--cream">
         <div className="max-w-2xl">
-          <p className="eyebrow">{products.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{products.title}</h2>
-          <p className="lede mt-5">{products.intro}</p>
+          <p className="eyebrow">
+            <Editable id="products.eyebrow" kind="text">{products.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="products.title" kind="text">{products.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="products.intro" kind="text">{products.intro}</Editable>
+          </p>
         </div>
 
         {/* Desktop / tablet: full grid */}
         <div className="mt-14 hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-5">
-          {products.items.map((p, i) => (
+          {items.map((p, i) => (
             <Reveal key={p.title} as="article" delay={i * 60} className="group">
-              <ContentMedia
-                src={p.image}
-                alt={p.alt}
-                aspect="aspect-[3/4]"
-                fit="contain"
-                sizes="(max-width: 1024px) 50vw, 18vw"
-                className="transition-transform duration-500 group-hover:scale-[1.02]"
-              />
-              <div className="mt-4 flex items-baseline gap-3">
-                <span className="font-mono text-xs text-brass-dark">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="font-display text-lg font-medium text-ink">
-                  {p.title}
-                </h3>
-              </div>
-              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-                {p.body}
-              </p>
+              <Editable id={`products.items.${p.id}`} kind="item" as="div" className="contents">
+                <ContentMedia
+                  src={p.image}
+                  alt={p.alt}
+                  aspect="aspect-[3/4]"
+                  fit="contain"
+                  sizes="(max-width: 1024px) 50vw, 18vw"
+                  className="transition-transform duration-500 group-hover:scale-[1.02]"
+                />
+                <div className="mt-4 flex items-baseline gap-3">
+                  <span className="font-mono text-xs text-brass-dark">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="font-display text-lg font-medium text-ink">
+                    {p.title}
+                  </h3>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                  {p.body}
+                </p>
+              </Editable>
             </Reveal>
           ))}
         </div>
@@ -60,27 +75,29 @@ export function ProductRange() {
             ref={trackRef}
             className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
-            {products.items.map((p, i) => (
+            {items.map((p, i) => (
               <article
                 key={p.title}
                 data-card
                 className="w-[28%] flex-none snap-start"
               >
-                <ContentMedia
-                  src={p.image}
-                  alt={p.alt}
-                  aspect="aspect-[3/4]"
-                  fit="contain"
-                  sizes="30vw"
-                />
-                <div className="mt-2.5 flex items-baseline gap-2">
-                  <span className="font-mono text-[0.65rem] text-brass-dark">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="font-display text-[0.82rem] font-medium leading-tight text-ink">
-                    {p.title}
-                  </h3>
-                </div>
+                <Editable id={`products.items.${p.id}`} kind="item" as="div" className="contents">
+                  <ContentMedia
+                    src={p.image}
+                    alt={p.alt}
+                    aspect="aspect-[3/4]"
+                    fit="contain"
+                    sizes="30vw"
+                  />
+                  <div className="mt-2.5 flex items-baseline gap-2">
+                    <span className="font-mono text-[0.65rem] text-brass-dark">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <h3 className="font-display text-[0.82rem] font-medium leading-tight text-ink">
+                      {p.title}
+                    </h3>
+                  </div>
+                </Editable>
               </article>
             ))}
           </div>
@@ -135,3 +152,4 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
     </svg>
   );
 }
+

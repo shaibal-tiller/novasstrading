@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import {
+  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -9,33 +10,69 @@ import {
   useState,
 } from "react";
 import { blurData } from "@/lib/blurData";
-import { portfolio } from "@/lib/content";
+import type { portfolio as PortfolioContent } from "@/lib/content";
+import {
+  FIT_CLASSES,
+  SIZE_CLASSES,
+  isPhotoHidden,
+  photoCaption,
+  photoBlur,
+  photoFit,
+  photoSize,
+  photoUrl,
+  type PortfolioPhoto,
+} from "@/lib/portfolio-photo";
 import { transparentImages } from "@/lib/transparentImages";
+import { useConnectionQuality } from "@/lib/use-connection";
 import { clsx } from "@/lib/utils";
+import { Editable } from "./admin/Editable";
+import { useEditMode } from "./admin/EditModeProvider";
 import { Reveal } from "./Reveal";
 
 /** Rows of photos shown before the grid asks to be expanded. */
 const COLLAPSED_ROWS = 2;
 
-export function Portfolio() {
-  const [active, setActive] = useState(portfolio.tabs[0].key);
+/** Grid thumbnail: next/image picks 128 / 256 / 384 px for 1x / 2x / 3x screens at this quality: about 1-5 KB per photo. */
+const THUMB_SIZES = "128px";
+const THUMB_QUALITY = 40;
+
+export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent }) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  // Each photo tile is wrapped in <Editable id="portfolio.photos.<id>"> (editor
+  // only); the photos themselves are managed by PortfolioPhotoManager.
+  type TabWithId = (typeof portfolio.tabs)[number] & { id: number };
+  const tabs = portfolio.tabs as TabWithId[];
+
+  const [active, setActive] = useState(tabs[0].key);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
-  // Measured from the live grid so "two rows" holds at every breakpoint,
-  // where the column count differs (2 / 3 / 4).
-  const [metrics, setMetrics] = useState({ perRow: 0, collapsedHeight: 0 });
+  // Full-screen view loads progressively: the grid-size picture (already cached from the
+  // grid) shows at once, and the big one fades in over it when it has finished loading.
+  const [fullLoaded, setFullLoaded] = useState(false);
+  // Slow / data-saving visitors get light thumbnails only and no background prefetching.
+  const conn = useConnectionQuality();
+  // Measured from the live grid so "two rows" holds at every breakpoint (the
+  // column count differs: 2 / 3 / 4) and with bigger tiles mixed in.
+  const [metrics, setMetrics] = useState({ ready: false, collapsedHeight: 0, visibleCount: 0 });
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const tab = portfolio.tabs.find((t) => t.key === active) ?? portfolio.tabs[0];
-  const photos = tab.photos;
+  // In the editor every photo shows (hidden ones dimmed); on the public site
+  // hidden photos are dropped (assembleContent already did, this is a backstop).
+  const editing = useEditMode() !== null;
 
-  const visibleCount =
-    metrics.perRow > 0 ? metrics.perRow * COLLAPSED_ROWS : photos.length;
-  const isOverflowing = metrics.perRow > 0 && photos.length > visibleCount;
+  const tab = tabs.find((t) => t.key === active) ?? tabs[0];
+  const allPhotos = (tab.photos ?? []) as PortfolioPhoto[];
+  const photos = editing ? allPhotos : allPhotos.filter((p) => !isPhotoHidden(p));
+
+  const visibleCount = metrics.ready ? metrics.visibleCount : photos.length;
+  const isOverflowing = metrics.ready && photos.length > visibleCount;
   const hiddenCount = Math.max(0, photos.length - visibleCount);
 
-  // Measure how many cards fit per row and where row two ends. Re-runs on tab
-  // switch (photo counts differ) and on resize (column count changes).
+  // Measure where the second row ends and how many cards sit above that line.
+  // Cards can span several columns/rows, so this looks at real positions rather
+  // than counting. Re-runs on tab switch and on resize (columns change).
   useLayoutEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -45,23 +82,25 @@ export function Portfolio() {
       if (cards.length === 0) return;
 
       // offsetTop reflects layout position only. getBoundingClientRect would
-      // fold in the cards' staggered fade-up transforms and mis-count the row.
-      const firstTop = cards[0].offsetTop;
-      const perRow =
-        cards.filter((c) => c.offsetTop === firstTop).length || 1;
+      // fold in the cards' staggered fade-up transforms and mis-measure.
+      const style = getComputedStyle(grid);
+      const gap = parseFloat(style.rowGap) || 0;
+      const rowHeight =
+        parseFloat(style.gridAutoRows) || Math.min(...cards.map((c) => c.offsetHeight));
+      if (!rowHeight) return; // no layout yet (hidden/detached) - keep everything visible
+      const collapsedHeight = rowHeight * COLLAPSED_ROWS + gap * (COLLAPSED_ROWS - 1);
+      const visibleCount = cards.filter((c) => c.offsetTop < collapsedHeight - 1).length;
 
-      const lastIdx = Math.min(perRow * COLLAPSED_ROWS, cards.length) - 1;
-      const last = cards[lastIdx];
-      const collapsedHeight = last.offsetTop + last.offsetHeight;
-
-      setMetrics({ perRow, collapsedHeight });
+      setMetrics({ ready: true, collapsedHeight, visibleCount });
     };
 
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(grid);
     return () => ro.disconnect();
-  }, [tab.key]);
+  }, [tab.key, photos.length]);
+
+  useEffect(() => setFullLoaded(false), [lightbox]);
 
   const close = useCallback(() => setLightbox(null), []);
   const step = useCallback(
@@ -72,17 +111,18 @@ export function Portfolio() {
     [photos.length],
   );
 
-  // Prefetch the neighbouring lightbox images so arrow navigation is instant
+  // Prefetch the neighbouring lightbox images so arrow navigation is instant - but never
+  // spend a slow or data-saving visitor's bandwidth on photos they have not asked for.
   useEffect(() => {
-    if (lightbox === null) return;
+    if (lightbox === null || !conn.ready || conn.slow) return;
     [1, -1].forEach((dir) => {
       const next = photos[(lightbox + dir + photos.length) % photos.length];
       [1080, 1920].forEach((w) => {
         const img = new window.Image();
-        img.src = `/_next/image?url=${encodeURIComponent(`/assets/${next.src}`)}&w=${w}&q=75`;
+        img.src = `/_next/image?url=${encodeURIComponent(photoUrl(next.src))}&w=${w}&q=75`;
       });
     });
-  }, [lightbox, photos]);
+  }, [lightbox, photos, conn.ready, conn.slow]);
 
   // Keyboard controls + scroll lock while the lightbox or gallery modal is open.
   // Escape closes whichever is on top: the single-image lightbox first, then
@@ -110,9 +150,15 @@ export function Portfolio() {
     <section id="portfolio" className="section-wrap">
       <div className="section-card section-card--light">
         <div className="max-w-2xl">
-          <p className="eyebrow">{portfolio.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{portfolio.title}</h2>
-          <p className="lede mt-5">{portfolio.intro}</p>
+          <p className="eyebrow">
+            <Editable id="portfolio.eyebrow" kind="text">{portfolio.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="portfolio.title" kind="text">{portfolio.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="portfolio.intro" kind="text">{portfolio.intro}</Editable>
+          </p>
         </div>
 
         {/* Tabs */}
@@ -121,7 +167,7 @@ export function Portfolio() {
           aria-label="Sourcing portfolio categories"
           className="mt-10 flex flex-wrap gap-2"
         >
-          {portfolio.tabs.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.key}
               role="tab"
@@ -138,7 +184,7 @@ export function Portfolio() {
                   : "border-ink/15 bg-transparent text-ink hover:border-brass hover:text-brass-dark",
               )}
             >
-              {t.label}
+              <Editable id={`portfolio.tabs.${t.id}`} kind="item" as="span">{t.label}</Editable>
             </button>
           ))}
         </div>
@@ -181,27 +227,45 @@ export function Portfolio() {
 
         {/* Photo grid — always clamped to two rows; "Show all" opens the full gallery in a modal */}
         <div
-          className="relative mt-10 overflow-hidden"
+          className="relative mt-10 overflow-hidden [container-type:inline-size]"
           style={{
             maxHeight: isOverflowing ? metrics.collapsedHeight : undefined,
           }}
         >
+          {/* Row height = one 3:4 tile, derived from the container width (cqw) so
+              wide / tall / featured tiles can span cells and everything still lines up. */}
           <div
             key={`grid-${tab.key}`}
             ref={gridRef}
-            className="grid gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+            className="grid grid-flow-dense gap-5 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 [grid-auto-rows:calc((100cqw-1.25rem)/2*1.3333)] md:[grid-auto-rows:calc((100cqw-2.5rem)/3*1.3333)] lg:[grid-auto-rows:calc((100cqw-3.75rem)/4*1.3333)]"
           >
             {photos.map((p, i) => {
               // Cards below the fold are hidden from keyboard & AT while folded.
               const isHidden = isOverflowing && i >= visibleCount;
-              return (
+              const span = SIZE_CLASSES[photoSize(p)];
+              const card = (
                 <PhotoCard
-                  key={p.src}
                   photo={p}
                   index={i}
                   onOpen={() => setLightbox(i)}
                   hidden={isHidden}
+                  fill
+                  className={editing ? "h-full w-full" : clsx("h-full w-full", span)}
+                  editorHidden={editing && isPhotoHidden(p)}
                 />
+              );
+              return editing && p.id !== undefined ? (
+                <Editable
+                  key={`photo-${p.id}`}
+                  id={`portfolio.photos.${p.id}`}
+                  kind="item"
+                  as="div"
+                  className={span}
+                >
+                  {card}
+                </Editable>
+              ) : (
+                <Fragment key={`${p.src}-${i}`}>{card}</Fragment>
               );
             })}
           </div>
@@ -235,19 +299,21 @@ export function Portfolio() {
 
         <Reveal className="mt-12 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-ink/10 pt-6">
           <span className="font-mono text-[0.7rem] uppercase tracking-[0.2em] text-loom">
-            {portfolio.extra.label}:
+            <Editable id="portfolio.extra.label" kind="text">{portfolio.extra.label}</Editable>:
           </span>
-          {portfolio.extra.items.map((x) => (
-            <span
-              key={x}
-              className="font-display text-base font-medium text-ink-muted"
-            >
-              {x}
-              <span aria-hidden className="ml-3 text-brass">
-                ·
+          <Editable id="portfolio.extra.items" kind="text" as="span" className="contents">
+            {portfolio.extra.items.map((x) => (
+              <span
+                key={x}
+                className="font-display text-base font-medium text-ink-muted"
+              >
+                {x}
+                <span aria-hidden className="ml-3 text-brass">
+                  ·
+                </span>
               </span>
-            </span>
-          ))}
+            ))}
+          </Editable>
         </Reveal>
       </div>
 
@@ -297,15 +363,33 @@ export function Portfolio() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="relative h-[76vh] w-full">
+              {/* 1. Instant: the picture the grid already loaded (the light thumb on slow
+                  connections, the sharper tile otherwise), so it comes from cache. */}
+              <Image
+                key={`low-${photos[lightbox].src}`}
+                src={photoUrl(photos[lightbox].src)}
+                alt=""
+                aria-hidden
+                fill
+                sizes={conn.ready && conn.slow ? THUMB_SIZES : photoSizeForSizes(photos[lightbox])}
+                quality={conn.ready && conn.slow ? THUMB_QUALITY : undefined}
+                placeholder={photoBlur(photos[lightbox], blurData) ? "blur" : "empty"}
+                blurDataURL={photoBlur(photos[lightbox], blurData)}
+                className="object-contain"
+              />
+              {/* 2. High-res fades in on top once it has loaded (lighter on slow connections). */}
               <Image
                 key={photos[lightbox].src}
-                src={`/assets/${photos[lightbox].src}`}
+                src={photoUrl(photos[lightbox].src)}
                 alt={photos[lightbox].alt}
                 fill
-                sizes="90vw"
-                placeholder={blurData[photos[lightbox].src] ? "blur" : "empty"}
-                blurDataURL={blurData[photos[lightbox].src]}
-                className="animate-fade-up object-contain"
+                sizes={conn.ready && conn.slow ? "(max-width: 768px) 100vw, 800px" : "90vw"}
+                quality={conn.ready && conn.slow ? 60 : undefined}
+                onLoad={() => setFullLoaded(true)}
+                className={clsx(
+                  "object-contain transition-opacity duration-500",
+                  fullLoaded ? "opacity-100" : "opacity-0",
+                )}
                 priority
               />
             </div>
@@ -315,11 +399,9 @@ export function Portfolio() {
                   {String(lightbox + 1).padStart(2, "0")} /{" "}
                   {String(photos.length).padStart(2, "0")}
                 </span>
-                <span className="text-sm">
-                  {photos[lightbox].alt.split("— ")[1] ?? photos[lightbox].alt}
-                </span>
+                <span className="text-sm">{photoCaption(photos[lightbox])}</span>
               </div>
-              {photos[lightbox].detail && (
+              {photos[lightbox].detail && photos[lightbox].detail!.length > 0 && (
                 <ul className="mt-3 space-y-1 border-t border-ivory/15 pt-3">
                   {photos[lightbox].detail!.map((line) => (
                     <li
@@ -371,7 +453,7 @@ export function Portfolio() {
               <div className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
                 {photos.map((p, i) => (
                   <PhotoCard
-                    key={p.src}
+                    key={`${p.src}-${i}`}
                     photo={p}
                     index={i}
                     onOpen={() => setLightbox(i)}
@@ -393,19 +475,35 @@ function PhotoCard({
   onOpen,
   hidden,
   showCaption,
+  fill,
+  className,
+  editorHidden,
 }: {
-  photo: { src: string; alt: string; detail?: string[] };
+  photo: PortfolioPhoto;
   index: number;
   onOpen: () => void;
   hidden?: boolean;
   showCaption?: boolean;
+  /** Fill the grid cell (main grid, whose row height is fixed) instead of using a 3:4 box. */
+  fill?: boolean;
+  className?: string;
+  /** Editor only: this photo is hidden from the public site; draw it dimmed with a tag. */
+  editorHidden?: boolean;
 }) {
-  const caption = photo.alt.split("— ")[1] ?? photo.alt;
+  const caption = photoCaption(photo);
   // A confirmed-transparent cutout is safe to letterbox (contain) on a tinted
   // card. An opaque photo — lifestyle or otherwise — carries its own baked-in
   // background, so contain would show that as a mismatched box; cover fills
   // the card completely instead, same as any normal gallery thumbnail.
   const isCutout = transparentImages.has(photo.src);
+  const fit = photoFit(photo);
+  const fitClass = fit ? FIT_CLASSES[fit] : isCutout ? "object-contain p-2" : "object-cover";
+  // Loading ladder: blur (inline) -> small thumb (a few KB, always) -> sharper tile that
+  // fades in over it, only after hydration and only on a connection that can afford it.
+  const conn = useConnectionQuality();
+  const [sharpLoaded, setSharpLoaded] = useState(false);
+  const upgrade = conn.ready && !conn.slow;
+  const letterboxed = fit === "whole" || (!fit && isCutout);
   return (
     <button
       type="button"
@@ -413,30 +511,65 @@ function PhotoCard({
       aria-label={`View ${photo.alt} full screen`}
       tabIndex={hidden ? -1 : undefined}
       aria-hidden={hidden || undefined}
-      className="group animate-fade-up relative text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass"
+      className={clsx(
+        "group animate-fade-up relative text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass",
+        editorHidden && "opacity-45",
+        className,
+      )}
       style={{ animationDelay: `${(index % 8) * 45}ms` }}
     >
       <div
         className={clsx(
-          "relative aspect-[3/4] w-full overflow-hidden rounded-sm border border-ink/5",
-          isCutout
+          "relative w-full overflow-hidden rounded-sm border border-ink/5",
+          fill ? "h-full" : "aspect-[3/4]",
+          letterboxed
             ? "bg-gradient-to-br from-ivory-light to-stone/50"
             : "bg-ivory",
         )}
       >
+        {/* Layer 1 - the thumb: tiny, shown right after the blur placeholder. */}
         <Image
-          src={`/assets/${photo.src}`}
+          src={photoUrl(photo.src)}
           alt={photo.alt}
           fill
           loading="lazy"
-          placeholder={blurData[photo.src] ? "blur" : "empty"}
-          blurDataURL={blurData[photo.src]}
-          sizes="(max-width: 768px) 50vw, 25vw"
+          quality={THUMB_QUALITY}
+          placeholder={photoBlur(photo, blurData) ? "blur" : "empty"}
+          blurDataURL={photoBlur(photo, blurData)}
+          sizes={THUMB_SIZES}
           className={clsx(
-            isCutout ? "object-contain p-2" : "object-cover",
+            fitClass,
             "transition-transform duration-700 ease-out group-hover:scale-[1.04]",
           )}
         />
+        {/* Layer 2 - the sharp tile, faded in over the thumb once loaded. */}
+        {upgrade && (
+          <Image
+            src={photoUrl(photo.src)}
+            alt=""
+            aria-hidden
+            fill
+            loading="lazy"
+            sizes={photoSizeForSizes(photo)}
+            onLoad={() => setSharpLoaded(true)}
+            className={clsx(
+              fitClass,
+              "transition-[opacity,transform] duration-700 ease-out group-hover:scale-[1.04]",
+              sharpLoaded ? "opacity-100" : "opacity-0",
+            )}
+          />
+        )}
+
+        {photo.badge === "new" && (
+          <span className="absolute left-2 top-2 rounded-full bg-brass px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-ivory shadow">
+            New
+          </span>
+        )}
+        {editorHidden && (
+          <span className="absolute right-2 top-2 rounded-full bg-ink px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.15em] text-ivory">
+            Hidden
+          </span>
+        )}
 
         {/* Hover veil with centred + */}
         <span
@@ -473,6 +606,14 @@ function PhotoCard({
       )}
     </button>
   );
+}
+
+/** `sizes` hint for next/image: bigger tiles need a bigger source so they stay sharp. */
+function photoSizeForSizes(photo: PortfolioPhoto): string {
+  const size = photoSize(photo);
+  return size === "normal" || size === "tall"
+    ? "(max-width: 768px) 50vw, 25vw"
+    : "(max-width: 768px) 100vw, 50vw";
 }
 
 function ChevronIcon({ className }: { className?: string }) {
@@ -540,3 +681,4 @@ function ArrowIcon({ flip = false }: { flip?: boolean }) {
     </svg>
   );
 }
+

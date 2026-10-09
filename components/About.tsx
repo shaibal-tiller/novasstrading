@@ -1,34 +1,54 @@
 "use client";
 
 import { useState } from "react";
-import { about } from "@/lib/content";
+import type { about as AboutContent } from "@/lib/content";
 import { clsx } from "@/lib/utils";
+import { Editable } from "./admin/Editable";
 import { ContentMedia } from "./ContentMedia";
 import { Reveal } from "./Reveal";
 
-export function About() {
+export function About({ about }: { about: typeof AboutContent }) {
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState<"mission" | "vision">("mission");
   const mv = tab === "mission" ? about.mission : about.vision;
+  const mvId = tab === "mission" ? "about.mission" : "about.vision";
+
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type BodyParaWithId = (typeof about.body)[number] & { id: number };
+  type HighlightWithId = (typeof about.highlights)[number] & { id: number };
+  const bodyParas = about.body as BodyParaWithId[];
+  const highlights = about.highlights as HighlightWithId[];
 
   return (
     <section id="about" className="section-wrap">
       <div className="section-card section-card--light">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
           <Reveal className="lg:sticky lg:top-28 lg:self-start">
-            <p className="eyebrow">{about.eyebrow}</p>
-            <h2 className="display-lg mt-5 text-ink">{about.title}</h2>
+            <p className="eyebrow">
+              <Editable id="about.eyebrow" kind="text">{about.eyebrow}</Editable>
+            </p>
+            <h2 className="display-lg mt-5 text-ink">
+              <Editable id="about.title" kind="text">{about.title}</Editable>
+            </h2>
 
             {/* Mobile: collapsible intro */}
             <div className="mt-6 sm:hidden">
               {expanded ? (
                 <div className="lede space-y-4">
-                  {about.body.map((p) => (
-                    <p key={p.slice(0, 24)}>{p}</p>
+                  {bodyParas.map((p) => (
+                    <p key={p.slice(0, 24)}>
+                      <Editable id={`about.body.${p.id}`} kind="item">{p}</Editable>
+                    </p>
                   ))}
                 </div>
               ) : (
-                <p className="lede line-clamp-3">{about.body[0]}</p>
+                <p className="lede line-clamp-3">
+                  <Editable id={`about.body.${bodyParas[0]?.id}`} kind="item">
+                    {bodyParas[0]}
+                  </Editable>
+                </p>
               )}
               <button
                 type="button"
@@ -42,16 +62,20 @@ export function About() {
 
             {/* Desktop: full intro */}
             <div className="lede mt-6 hidden max-w-xl space-y-4 sm:block">
-              {about.body.map((p) => (
-                <p key={p.slice(0, 24)}>{p}</p>
+              {bodyParas.map((p) => (
+                <p key={p.slice(0, 24)}>
+                  <Editable id={`about.body.${p.id}`} kind="item">{p}</Editable>
+                </p>
               ))}
             </div>
 
             <ul className="mt-8 space-y-3">
-              {about.highlights.map((h) => (
+              {highlights.map((h) => (
                 <li key={h} className="flex items-start gap-3 text-ink">
-                  <Check />
-                  <span className="font-medium">{h}</span>
+                  <Editable id={`about.highlights.${h.id}`} kind="item" as="span">
+                    <Check />
+                    <span className="font-medium">{h}</span>
+                  </Editable>
                 </li>
               ))}
             </ul>
@@ -81,13 +105,15 @@ export function About() {
                           : "border-ink/15 text-ink",
                       )}
                     >
-                      {k === "mission" ? about.mission.title : about.vision.title}
+                      <Editable id={`${k === "mission" ? "about.mission" : "about.vision"}.title`} kind="text">
+                        {k === "mission" ? about.mission.title : about.vision.title}
+                      </Editable>
                     </button>
                   ))}
                 </div>
                 <div className="mt-3 rounded-2xl border border-ink/10 bg-canvas p-5">
                   <p className="text-sm leading-relaxed text-ink-muted">
-                    {mv.body}
+                    <Editable id={`${mvId}.body`} kind="text">{mv.body}</Editable>
                   </p>
                 </div>
               </div>
@@ -108,9 +134,11 @@ export function About() {
                 delay={120}
                 className="relative z-10 -mt-10 ml-auto w-[88%] rounded-2xl border border-ink/10 bg-canvas p-6 shadow-[0_24px_50px_-30px_rgba(22,25,31,0.35)]"
               >
-                <h3 className="display-md text-loom">{about.mission.title}</h3>
+                <h3 className="display-md text-loom">
+                  <Editable id="about.mission.title" kind="text">{about.mission.title}</Editable>
+                </h3>
                 <p className="mt-3 text-sm leading-relaxed text-ink-muted">
-                  {about.mission.body}
+                  <Editable id="about.mission.body" kind="text">{about.mission.body}</Editable>
                 </p>
               </Reveal>
 
@@ -119,9 +147,11 @@ export function About() {
                 delay={180}
                 className="relative z-10 mt-5 w-[88%] rounded-2xl border border-ink/10 bg-canvas p-6 shadow-[0_24px_50px_-30px_rgba(22,25,31,0.35)]"
               >
-                <h3 className="display-md text-loom">{about.vision.title}</h3>
+                <h3 className="display-md text-loom">
+                  <Editable id="about.vision.title" kind="text">{about.vision.title}</Editable>
+                </h3>
                 <p className="mt-3 text-sm leading-relaxed text-ink-muted">
-                  {about.vision.body}
+                  <Editable id="about.vision.body" kind="text">{about.vision.body}</Editable>
                 </p>
               </Reveal>
             </div>
@@ -150,3 +180,4 @@ function Check() {
     </span>
   );
 }
+

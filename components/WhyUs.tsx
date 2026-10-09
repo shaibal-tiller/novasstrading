@@ -1,4 +1,5 @@
-import { whyUs } from "@/lib/content";
+import type { whyUs as WhyUsContent } from "@/lib/content";
+import { Editable } from "./admin/Editable";
 import { Reveal } from "./Reveal";
 
 const icons = [
@@ -10,23 +11,35 @@ const icons = [
   LeafIcon,
 ];
 
-export function WhyUs() {
+export function WhyUs({ whyUs }: { whyUs: typeof WhyUsContent }) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type ReasonWithId = (typeof whyUs.reasons)[number] & { id: number };
+  const reasons = whyUs.reasons as ReasonWithId[];
+
   return (
     <section className="section-wrap">
       <div className="section-card section-card--light">
         <div className="grid gap-8 lg:grid-cols-[1fr_1.4fr] lg:items-end">
           <div>
-            <p className="eyebrow">{whyUs.eyebrow}</p>
-            <h2 className="display-lg mt-5 text-ink">{whyUs.title}</h2>
+            <p className="eyebrow">
+              <Editable id="whyUs.eyebrow" kind="text">{whyUs.eyebrow}</Editable>
+            </p>
+            <h2 className="display-lg mt-5 text-ink">
+              <Editable id="whyUs.title" kind="text">{whyUs.title}</Editable>
+            </h2>
           </div>
-          <p className="lede max-w-xl lg:pb-2">{whyUs.intro}</p>
+          <p className="lede max-w-xl lg:pb-2">
+            <Editable id="whyUs.intro" kind="text">{whyUs.intro}</Editable>
+          </p>
         </div>
 
         <hr className="stitch my-12" />
 
         {/* Mobile: 2 × 3 compact grid (icon + title only). Tablet/desktop unchanged. */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-1 sm:gap-8 md:grid-cols-3">
-          {whyUs.reasons.map((r, i) => {
+          {reasons.map((r, i) => {
             const Icon = icons[i] ?? QualityIcon;
             return (
               <Reveal
@@ -35,15 +48,17 @@ export function WhyUs() {
                 delay={i * 80}
                 className="rounded-xl border border-ink/10 bg-ivory/60 p-4 sm:border-0 sm:bg-transparent sm:p-0"
               >
-                <span className="grid h-10 w-10 place-items-center rounded-sm bg-loom/10 text-loom sm:h-12 sm:w-12">
-                  <Icon />
-                </span>
-                <h3 className="mt-3 font-display text-base font-medium leading-snug text-ink sm:mt-5 sm:text-xl">
-                  {r.title}
-                </h3>
-                <p className="mt-3 hidden text-sm leading-relaxed text-ink-muted sm:block">
-                  {r.body}
-                </p>
+                <Editable id={`whyUs.reasons.${r.id}`} kind="item" as="div" className="contents">
+                  <span className="grid h-10 w-10 place-items-center rounded-sm bg-loom/10 text-loom sm:h-12 sm:w-12">
+                    <Icon />
+                  </span>
+                  <h3 className="mt-3 font-display text-base font-medium leading-snug text-ink sm:mt-5 sm:text-xl">
+                    {r.title}
+                  </h3>
+                  <p className="mt-3 hidden text-sm leading-relaxed text-ink-muted sm:block">
+                    {r.body}
+                  </p>
+                </Editable>
               </Reveal>
             );
           })}
@@ -145,3 +160,4 @@ function ClockIcon() {
     </svg>
   );
 }
+

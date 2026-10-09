@@ -1,5 +1,6 @@
-import Image from "next/image";
-import { partners } from "@/lib/content";
+import type { partners as PartnersContent } from "@/lib/content";
+import { Editable } from "./admin/Editable";
+import { ContentMedia } from "./ContentMedia";
 
 const MASK = {
   maskImage:
@@ -8,18 +9,32 @@ const MASK = {
     "linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent)",
 } as const;
 
-export function Partners() {
+export function Partners({ partners }: { partners: typeof PartnersContent }) {
+  // Local item-id widening: DB rows carry a numeric `id`; the static content
+  // type doesn't. See Task 8 brief — `id` is `undefined` at runtime here,
+  // which is safe since Editable never reads it outside edit mode.
+  type LogoWithId = (typeof partners.logos)[number] & { id: number };
+  type MembershipWithId = (typeof partners.memberships)[number] & { id: number };
+  const logos = partners.logos as LogoWithId[];
+  const memberships = partners.memberships as MembershipWithId[];
+
   // Repeat the logo set so the marquee loop stays dense.
-  const strip = Array.from({ length: 4 }, () => partners.logos).flat();
+  const strip = Array.from({ length: 4 }, () => logos).flat();
   const loop = [...strip, ...strip];
 
   return (
     <section id="partners" className="section-wrap">
       <div className="section-card section-card--cream overflow-hidden">
         <div className="max-w-2xl">
-          <p className="eyebrow">{partners.eyebrow}</p>
-          <h2 className="display-lg mt-5 text-ink">{partners.title}</h2>
-          <p className="lede mt-5">{partners.intro}</p>
+          <p className="eyebrow">
+            <Editable id="partners.eyebrow" kind="text">{partners.eyebrow}</Editable>
+          </p>
+          <h2 className="display-lg mt-5 text-ink">
+            <Editable id="partners.title" kind="text">{partners.title}</Editable>
+          </h2>
+          <p className="lede mt-5">
+            <Editable id="partners.intro" kind="text">{partners.intro}</Editable>
+          </p>
         </div>
 
         {/* Desktop / tablet: single strip */}
@@ -34,13 +49,16 @@ export function Partners() {
                 aria-hidden={i >= strip.length}
                 className="grid h-24 w-44 flex-shrink-0 place-items-center rounded-2xl border border-ink/10 bg-canvas px-6"
               >
-                <Image
-                  src={`/assets/${logo.src}`}
-                  alt={i < strip.length ? `${logo.name} logo` : ""}
-                  width={132}
-                  height={56}
-                  className="max-h-14 w-auto object-contain"
-                />
+                <Editable id={`partners.logos.${logo.id}`} kind="item" as="div" className="contents">
+                  <ContentMedia
+                    src={logo.src}
+                    alt={i < strip.length ? `${logo.name} logo` : ""}
+                    kind="logo"
+                    aspect="aspect-[132/56]"
+                    className="max-h-14"
+                    fit="contain"
+                  />
+                </Editable>
               </li>
             ))}
           </ul>
@@ -57,13 +75,16 @@ export function Partners() {
                     aria-hidden
                     className="grid h-16 w-28 flex-shrink-0 place-items-center rounded-xl border border-ink/10 bg-canvas px-4"
                   >
-                    <Image
-                      src={`/assets/${logo.src}`}
-                      alt=""
-                      width={96}
-                      height={40}
-                      className="max-h-9 w-auto object-contain"
-                    />
+                    <Editable id={`partners.logos.${logo.id}`} kind="item" as="div" className="contents">
+                      <ContentMedia
+                        src={logo.src}
+                        alt=""
+                        kind="logo"
+                        aspect="aspect-[96/40]"
+                        className="max-h-9"
+                        fit="contain"
+                      />
+                    </Editable>
                   </li>
                 ))}
               </ul>
@@ -76,21 +97,26 @@ export function Partners() {
             Memberships
           </h3>
           <ul className="mt-5 flex flex-wrap items-center gap-4">
-            {partners.memberships.map((m) => (
+            {memberships.map((m) => (
               <li
                 key={m.name}
                 className="flex items-center gap-3 rounded-2xl border border-ink/10 bg-canvas px-5 py-3"
               >
-                <Image
-                  src={`/assets/${m.src}`}
-                  alt={`${m.name} membership logo`}
-                  width={72}
-                  height={40}
-                  className="max-h-10 w-auto object-contain"
-                />
-                <span className="font-display text-base font-semibold text-ink/80">
-                  {m.name}
-                </span>
+                <Editable id={`partners.memberships.${m.id}`} kind="item" as="div" className="contents">
+                  <div className="h-10 w-[72px] flex-shrink-0">
+                    <ContentMedia
+                      src={m.src}
+                      alt={`${m.name} membership logo`}
+                      kind="logo"
+                      aspect="aspect-[72/40]"
+                      className="max-h-10"
+                      fit="contain"
+                    />
+                  </div>
+                  <span className="font-display text-base font-semibold text-ink/80">
+                    {m.name}
+                  </span>
+                </Editable>
               </li>
             ))}
           </ul>
@@ -99,3 +125,4 @@ export function Partners() {
     </section>
   );
 }
+
