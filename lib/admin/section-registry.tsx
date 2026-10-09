@@ -161,7 +161,7 @@ export const SECTION_REGISTRY: SectionEntry[] = [
       { path: "site.legalName", label: "Legal name", control: "text" },
       { path: "site.tagline", label: "Tagline", control: "text" },
       { path: "site.url", label: "Site URL", control: "url" },
-      { path: "site.description", label: "Meta description", control: "textarea" },
+      { path: "site.description", label: "Google description (about 150 characters)", control: "textarea" },
       { path: "site.email", label: "E-mail address", control: "text" },
       { path: "site.phone", label: "Phone (display)", control: "text" },
       { path: "site.phoneHref", label: "Phone (tel: digits)", control: "text" },

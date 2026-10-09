@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { PageParticles } from "@/components/PageParticles";
 import { site } from "@/lib/content";
+import { getContent } from "@/lib/content-data";
 import "./globals.css";
 
 // Cookie banner + GA4, only on a build with a measurement ID. The value is
@@ -45,7 +46,7 @@ export const viewport: Viewport = {
   themeColor: "#16191F",
 };
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: `${site.name} | ${site.tagline}`,
@@ -120,7 +121,32 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
 };
 
-const jsonLd = {
+/**
+ * The Google snippet comes from the content store (Site Info -> "Meta description" in the admin
+ * portal), so it can be edited without a deploy. Falls back to the text bundled with the code when
+ * the API is unreachable, the field is empty, or the value is unusable.
+ */
+async function liveDescription(): Promise<string> {
+  try {
+    const d = (await getContent()).site.description?.trim();
+    if (d && d.length >= 40 && d.length <= 320) return d;
+  } catch {
+    // getContent already falls back to bundled content; this is only a last guard.
+  }
+  return site.description;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const description = await liveDescription();
+  return {
+    ...baseMetadata,
+    description,
+    openGraph: { ...baseMetadata.openGraph, description },
+    twitter: { ...baseMetadata.twitter, description },
+  };
+}
+
+const buildJsonLd = (description: string) => ({
   "@context": "https://schema.org",
   "@graph": [
     {
@@ -129,7 +155,7 @@ const jsonLd = {
       name: site.name,
       legalName: site.legalName,
       url: site.url,
-      description: site.description,
+      description,
       email: site.email,
       telephone: site.phone,
       logo: {
@@ -177,19 +203,20 @@ const jsonLd = {
       "@id": `${site.url}/#website`,
       url: site.url,
       name: site.name,
-      description: site.description,
+      description,
       publisher: { "@id": `${site.url}/#organization` },
       inLanguage: "en",
     },
   ],
-};
+});
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
+  const jsonLd = buildJsonLd(await liveDescription());
   return (
     <html
       lang="en"
