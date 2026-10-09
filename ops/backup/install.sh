@@ -46,11 +46,14 @@ echo "rclone $("$BIN/rclone" version | head -1)"
 
 install -m 700 "$HERE/nova-backup.sh" "$STATE_DIR/nova-backup.sh"
 install -m 600 "$HERE/db-cnf.php" "$STATE_DIR/db-cnf.php"
-if [ -e "$STATE_DIR/staging.conf" ]; then
-  echo "kept your existing $STATE_DIR/staging.conf"
-else
-  install -m 600 "$HERE/staging.conf" "$STATE_DIR/staging.conf"
-fi
+for conf in staging production; do
+  if [ ! -f "$HERE/$conf.conf" ]; then continue; fi
+  if [ -e "$STATE_DIR/$conf.conf" ]; then
+    echo "kept your existing $STATE_DIR/$conf.conf"
+  else
+    install -m 600 "$HERE/$conf.conf" "$STATE_DIR/$conf.conf"
+  fi
+done
 
 if [ ! -f "$STATE_DIR/github_deploy_key" ]; then
   ssh-keygen -q -t ed25519 -N '' -C "nova-backup@$(hostname)" -f "$STATE_DIR/github_deploy_key"
