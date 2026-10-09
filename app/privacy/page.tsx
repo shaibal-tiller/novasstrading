@@ -100,14 +100,11 @@ export default function PrivacyPage() {
         </Section>
 
         <Section title="Who we share it with">
-          <p>We do not sell your information. We use a small number of service providers to run the site:</p>
-          <ul className="list-disc space-y-1.5 pl-6">
-            <li><strong>Vercel</strong> hosts the website (servers mainly in the United States).</li>
-            <li><strong>Exonhost</strong> (Bangladesh) hosts our site content, photos and company email.</li>
-            <li><strong>Brevo</strong> (France) delivers the enquiry email to us and the automatic confirmation to you.</li>
-            <li><strong>Google</strong> provides Analytics (only if you accept) and the embedded map.</li>
-            <li><strong>ip-api.com</strong> turns an IP address into an approximate location for the spam check on the contact form.</li>
-          </ul>
+          <p>
+            We do not sell your information. We share it only with trusted service providers who help us run the
+            website and answer your enquiries, such as website hosting, email delivery, and (only if you accept
+            analytics cookies) website analytics and maps, and only as much as they need to do that job.
+          </p>
           <p>
             Some of these providers are outside your country, so your information may be processed abroad. We may also
             disclose information if the law requires it.
