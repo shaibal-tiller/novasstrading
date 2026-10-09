@@ -3,6 +3,7 @@ import { Fraunces, Hanken_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { PageParticles } from "@/components/PageParticles";
 import { site } from "@/lib/content";
 import { getContent } from "@/lib/content-data";
+import { safeJsonForScript } from "@/lib/safe-json";
 import "./globals.css";
 
 // Cookie banner + GA4, only on a build with a measurement ID. The value is
@@ -234,7 +235,7 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonForScript(jsonLd) }}
         />
         {/* Analytics + cookie banner: only when a GA4 measurement ID is configured. */}
         {ConsentBanner && gaMeasurementId ? <ConsentBanner measurementId={gaMeasurementId} /> : null}
