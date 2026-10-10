@@ -53,6 +53,7 @@ export function PortfolioPhotoManager() {
   const tabs = useMemo(
     () =>
       (draft.items["portfolio.tabs"] ?? []).map((t) => ({
+        id: t.id,
         key: String(t.fields.key ?? ""),
         label: String(t.fields.label ?? t.fields.key ?? ""),
       })),
@@ -225,7 +226,26 @@ export function PortfolioPhotoManager() {
             </button>
           );
         })}
+        <button
+          type="button"
+          onClick={() => ctx?.setOpenId("portfolio.tabs.new")}
+          className="min-h-10 rounded-full border border-dashed border-brass px-4 py-1.5 text-sm font-semibold text-brass-dark hover:bg-brass/10"
+        >
+          + New tab
+        </button>
       </div>
+      {tabs.find((t) => t.key === tabKey) && (
+        <p className="mt-2 text-xs text-ink-muted">
+          Showing the “{tabLabel}” tab.{" "}
+          <button
+            type="button"
+            className="font-semibold text-brass-dark underline underline-offset-2"
+            onClick={() => ctx?.setOpenId(`portfolio.tabs.${tabs.find((t) => t.key === tabKey)!.id}`)}
+          >
+            Rename or delete this tab
+          </button>
+        </p>
+      )}
 
       {errors.length > 0 && (
         <ul role="alert" className="mt-3 text-sm text-red-700">

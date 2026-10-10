@@ -374,7 +374,7 @@ export const SECTION_REGISTRY: SectionEntry[] = [
     lists: [
       {
         listKey: "portfolio.tabs",
-        label: "Portfolio tabs",
+        label: "tab",
         titleField: "label",
         itemFields: [
           { key: "key", label: "Tab id (internal)", kind: "text", hidden: true, autoKeyFrom: "label" },
