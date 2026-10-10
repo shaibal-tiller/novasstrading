@@ -43,7 +43,12 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
   // Each photo tile is wrapped in <Editable id="portfolio.photos.<id>"> (editor
   // only); the photos themselves are managed by PortfolioPhotoManager.
   type TabWithId = (typeof portfolio.tabs)[number] & { id: number };
-  const tabs = portfolio.tabs as TabWithId[];
+  // In the editor every tab shows (a new one is still empty); visitors never see a tab with no
+  // photos on it. If every tab were empty, they all show rather than none.
+  const editing = useEditMode() !== null;
+  const everyTab = portfolio.tabs as TabWithId[];
+  const populated = everyTab.filter((t) => (t.photos ?? []).some((p) => !isPhotoHidden(p as PortfolioPhoto)));
+  const tabs = editing || populated.length === 0 ? everyTab : populated;
 
   const [active, setActive] = useState(tabs[0].key);
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -60,7 +65,6 @@ export function Portfolio({ portfolio }: { portfolio: typeof PortfolioContent })
 
   // In the editor every photo shows (hidden ones dimmed); on the public site
   // hidden photos are dropped (assembleContent already did, this is a backstop).
-  const editing = useEditMode() !== null;
 
   const tab = tabs.find((t) => t.key === active) ?? tabs[0];
   const allPhotos = (tab.photos ?? []) as PortfolioPhoto[];

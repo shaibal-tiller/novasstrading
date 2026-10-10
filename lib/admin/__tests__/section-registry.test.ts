@@ -151,6 +151,11 @@ describe("SECTION_REGISTRY", () => {
     expect(enumFields.length).toBeGreaterThan(0);
 
     for (const field of enumFields) {
+      // Choices that come from another list (a photo's category tab) are filled in by the editor.
+      if ("optionsFrom" in field && field.optionsFrom) {
+        expect(allLists.some((l) => l.listKey === field.optionsFrom!.listKey)).toBe(true);
+        continue;
+      }
       expect(field.options).toBeDefined();
       expect(field.options!.length).toBeGreaterThan(0);
       expect(new Set(field.options!).size).toBe(field.options!.length);

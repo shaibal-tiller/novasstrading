@@ -15,6 +15,7 @@ import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordi
 import { CSS } from "@dnd-kit/utilities";
 import { MAX_UPLOAD_BYTES } from "@/lib/media-limits";
 import { shrinkImage } from "@/lib/admin/shrink-image";
+import { weakPhotoDescription } from "@/lib/admin/tab-keys";
 import { PHOTO_SIZES, isPhotoHidden, photoSize, photoUrl, type PortfolioPhoto } from "@/lib/portfolio-photo";
 import { useEditMode } from "./EditModeProvider";
 import type { DraftItem, Fields, SectionDraft } from "./SectionEditor";
@@ -355,6 +356,7 @@ function PhotoThumb({
           {size !== "normal" && <Tag>{size}</Tag>}
           {photo.badge === "new" && <Tag>new</Tag>}
           {hidden && <Tag>hidden</Tag>}
+          {!hidden && weakPhotoDescription(photo.alt ?? "") && <Tag>needs description</Tag>}
         </span>
 
         <div

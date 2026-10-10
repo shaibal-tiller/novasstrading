@@ -2,6 +2,7 @@
 
 import { type FormEvent, type ReactNode, useRef, useState } from "react";
 import type { ItemField } from "@/lib/admin/section-registry";
+import { weakPhotoDescription } from "@/lib/admin/tab-keys";
 import { hasTitle, urlError } from "@/lib/admin/validate";
 import { MediaPicker, mediaSrc } from "./MediaPicker";
 import { useDialog } from "./useDialog";
@@ -112,7 +113,7 @@ function FieldInput({
   onOpenMedia,
 }: {
   fieldId: string;
-  field: Pick<ItemField, "kind" | "options" | "list">;
+  field: Pick<ItemField, "kind" | "options" | "list" | "optionLabels">;
   value: unknown;
   error?: string;
   onChange: (next: unknown) => void;
@@ -141,7 +142,7 @@ function FieldInput({
         >
           {(field.options ?? []).map((opt) => (
             <option key={opt} value={opt}>
-              {opt}
+              {field.optionLabels?.[opt] ?? opt}
             </option>
           ))}
         </select>
@@ -201,6 +202,7 @@ export function EditModal({
   options,
   onSave,
   onDelete,
+  deleteBlockedReason,
   onClose,
 }: {
   /** Internal id of the thing being edited; only shown when no human `label` is given. */
@@ -217,6 +219,8 @@ export function EditModal({
   options?: string[];
   onSave: (value: unknown) => void;
   onDelete?: () => void;
+  /** When set, "Delete this item" is disabled and this sentence explains why. */
+  deleteBlockedReason?: string;
   onClose: () => void;
 }) {
   const [showMediaPicker, setShowMediaPicker] = useState(false);
@@ -404,7 +408,7 @@ export function EditModal({
       }
     >
       <div className="flex flex-col gap-4">
-        {(itemFields ?? []).map((field) => {
+        {(itemFields ?? []).filter((f) => !f.hidden).map((field) => {
           const fieldId = `item-field-${field.key}`;
           return (
             <div key={field.key}>
@@ -420,6 +424,12 @@ export function EditModal({
                 onOpenMedia={() => setActiveItemMediaKey(field.key)}
               />
               <FieldError id={fieldId} message={errors[field.key]} />
+              {id.startsWith("portfolio.photos") && field.key === "alt" && weakPhotoDescription(String(itemValues.alt ?? "")) && (
+                <p className="mt-1.5 text-xs text-[#8a5a00]">
+                  Tip: describe what is in the picture (for example “Navy wool blazer over a white blouse”). Google and
+                  screen readers use this text, and a file name like IMG_1234 does not help.
+                </p>
+              )}
             </div>
           );
         })}
@@ -427,9 +437,17 @@ export function EditModal({
 
       <div className="flex flex-wrap gap-3">
         {isExistingItem && onDelete && (
-          <button type="button" className="btn btn-outline" onClick={onDelete}>
+          <button
+            type="button"
+            className="btn btn-outline disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={onDelete}
+            disabled={!!deleteBlockedReason}
+          >
             Delete this item
           </button>
+        )}
+        {isExistingItem && onDelete && deleteBlockedReason && (
+          <p className="basis-full text-sm text-ink-muted">{deleteBlockedReason}</p>
         )}
         <button type="submit" className="btn btn-primary">
           {isExistingItem ? "Save" : "Add"}
