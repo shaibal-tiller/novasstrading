@@ -26,7 +26,18 @@ function queued(): unknown[][] {
   return (window.dataLayer ?? []).map((entry) => Array.from(entry as ArrayLike<unknown>));
 }
 
+/** What /api/region answers for the visitor; `null` makes the request fail. */
+function region(answer: boolean | null) {
+  const fetchMock = vi.fn(async () => {
+    if (answer === null) throw new Error("offline");
+    return { ok: true, json: async () => ({ consentRequired: answer }) } as Response;
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+}
+
 beforeEach(() => {
+  region(true);
   window.localStorage.clear();
   delete window.dataLayer;
   delete window.gtag;
@@ -36,6 +47,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
 });
@@ -49,10 +61,10 @@ describe("ConsentBanner", () => {
     expect(window.gtag).toBeUndefined();
   });
 
-  it("shows the bar to an undecided visitor, with Consent Mode defaults denied and no Google request", () => {
+  it("shows the bar to an undecided visitor, with Consent Mode defaults denied and no Google request", async () => {
     render(<ConsentBanner measurementId={ID} />);
 
-    expect(screen.getByRole("region", { name: "Cookie consent" })).toHaveTextContent(
+    expect(await screen.findByRole("region", { name: "Cookie consent" })).toHaveTextContent(
       "We use analytics cookies to understand how visitors use this site.",
     );
     expect(screen.getByRole("button", { name: "Accept" })).toBeInTheDocument();
@@ -69,7 +81,7 @@ describe("ConsentBanner", () => {
 
   it("Accept stores \"granted\", grants analytics storage and loads gtag.js", async () => {
     render(<ConsentBanner measurementId={ID} />);
-    await userEvent.click(screen.getByRole("button", { name: "Accept" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Accept" }));
 
     expect(window.localStorage.getItem("nova_consent")).toBe("granted");
     expect(gtagScript()).toHaveAttribute("src", `https://www.googletagmanager.com/gtag/js?id=${ID}`);
@@ -83,12 +95,36 @@ describe("ConsentBanner", () => {
 
   it("Decline stores \"denied\" and never loads gtag.js", async () => {
     render(<ConsentBanner measurementId={ID} />);
-    await userEvent.click(screen.getByRole("button", { name: "Decline" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Decline" }));
 
     expect(window.localStorage.getItem("nova_consent")).toBe("denied");
     expect(gtagScript()).toBeNull();
     expect(queued().some((c) => c[0] === "config")).toBe(false);
     expect(screen.queryByRole("region", { name: "Cookie consent" })).toBeNull();
+  });
+
+  it("counts a visitor from a country with no opt-in rule, without a bar, and saves nothing", async () => {
+    region(false);
+    render(<ConsentBanner measurementId={ID} />);
+    await vi.waitFor(() => expect(gtagScript()).not.toBeNull());
+    expect(screen.queryByRole("region", { name: "Cookie consent" })).toBeNull();
+    expect(queued()).toContainEqual(["config", ID]);
+    expect(window.localStorage.getItem("nova_consent")).toBeNull();
+  });
+
+  it("asks when the country cannot be determined", async () => {
+    region(null);
+    render(<ConsentBanner measurementId={ID} />);
+    expect(await screen.findByRole("region", { name: "Cookie consent" })).toBeInTheDocument();
+    expect(gtagScript()).toBeNull();
+  });
+
+  it("a saved Decline wins even where no opt-in is required", () => {
+    const fetchMock = region(false);
+    window.localStorage.setItem("nova_consent", "denied");
+    render(<ConsentBanner measurementId={ID} />);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(gtagScript()).toBeNull();
   });
 
   it("remembers an earlier Accept: no bar, gtag.js loads straight away", () => {
@@ -127,7 +163,7 @@ describe("ConsentBanner", () => {
       throw new Error("SecurityError");
     });
     render(<ConsentBanner measurementId={ID} />);
-    await userEvent.click(screen.getByRole("button", { name: "Accept" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Accept" }));
     expect(gtagScript()).not.toBeNull();
   });
 
