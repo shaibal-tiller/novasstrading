@@ -15,10 +15,12 @@ import {
 /**
  * Cookie consent + Google Analytics, public pages only. Renders nothing (and
  * loads nothing) without a measurement ID or on /admin. Consent Mode v2
- * defaults are queued as "denied" first; gtag.js is requested only after the
- * visitor accepts — declined or undecided means no request to Google at all.
- * Nothing is rendered on the server; the bar appears after hydration only
- * for visitors who have not chosen yet.
+ * defaults are queued as "denied" first. A saved choice always wins. With no
+ * saved choice, /api/region says whether the visitor's country requires an
+ * opt-in (EU/EEA/UK/Switzerland, or unknown): if so the bar asks and gtag.js
+ * loads only after Accept; if not, they are counted without a bar (nothing is
+ * saved, so "Cookie settings" can still opt them out).
+ * Nothing is rendered on the server; the bar appears after hydration only.
  */
 export function ConsentBanner({
   measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
@@ -40,7 +42,23 @@ export function ConsentBanner({
     const stored = readConsent();
     if (stored === "granted") grantAnalytics(id);
     setChoice(stored);
-    setOpen(stored === null);
+    setOpen(false);
+
+    let cancelled = false;
+    if (stored === null) {
+      fetch("/api/region", { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : { consentRequired: true }))
+        .catch(() => ({ consentRequired: true }))
+        .then((data: { consentRequired?: boolean }) => {
+          if (cancelled || readConsent() !== null) return;
+          if (data.consentRequired === false) {
+            grantAnalytics(id);
+            setChoice("granted");
+          } else {
+            setOpen(true);
+          }
+        });
+    }
 
     const reopen = () => {
       reopened.current = true;
@@ -48,6 +66,7 @@ export function ConsentBanner({
     };
     window.openCookieSettings = reopen;
     return () => {
+      cancelled = true;
       if (window.openCookieSettings === reopen) delete window.openCookieSettings;
     };
   }, [active, id]);

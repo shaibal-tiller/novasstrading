@@ -85,9 +85,11 @@ export default function PrivacyPage() {
 
         <Section title="Cookies and analytics">
           <p>
-            We only set analytics cookies if you choose <strong>Accept</strong> in the banner. If you choose{" "}
+            If you are visiting from the European Economic Area, the United Kingdom or Switzerland, we only set
+            analytics cookies if you choose <strong>Accept</strong> in the banner. If you choose{" "}
             <strong>Decline</strong>, or you do not choose at all, no analytics cookies are set and nothing is sent to
-            Google Analytics. Your choice is remembered on your device (in your browser&apos;s local storage, under the
+            Google Analytics. In other countries we do not show the banner and count visits by default, and you can
+            switch analytics off at any time. Your choice is remembered on your device (in your browser&apos;s local storage, under the
             name <code className="rounded bg-ivory px-1.5 py-0.5 text-sm">nova_consent</code>), and you can change it at
             any time{hasAnalytics ? <> using <CookieSettingsLink className="text-brass-dark underline underline-offset-2" /> here or in the page footer</> : <> from the &ldquo;Cookie settings&rdquo; link in the page footer</>}.
           </p>
