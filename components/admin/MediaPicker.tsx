@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { BUNDLED_PHOTOS } from "@/lib/admin/bundled-photos.generated";
 import { listMedia, type MediaRow } from "@/lib/admin/media-client";
 import { photoUrl } from "@/lib/portfolio-photo";
 import { useDialog } from "./useDialog";
@@ -39,6 +40,7 @@ export function MediaPicker({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [group, setGroup] = useState("All");
   const dialogRef = useRef<HTMLDivElement>(null);
   useDialog(dialogRef, onClose);
 
@@ -59,6 +61,10 @@ export function MediaPicker({
   const filtered = (media ?? []).filter((m) =>
     accept === "image" ? m.mime_type.startsWith("image/") : m.mime_type === "application/pdf"
   );
+
+  // Pictures that ship inside the website (the original portfolio, product ranges, logos).
+  const groups = ["All", ...Array.from(new Set(BUNDLED_PHOTOS.map((b) => b.group)))];
+  const bundled = accept === "image" ? BUNDLED_PHOTOS.filter((b) => group === "All" || b.group === group) : [];
 
   async function handleUpload(file: File) {
     setUploadError(null);
@@ -140,7 +146,7 @@ export function MediaPicker({
             {loadError && <p className="text-sm text-red-600">{loadError}</p>}
             {!loadError && media === null && <p className="field-label">Loading…</p>}
             {!loadError && media !== null && filtered.length === 0 && (
-              <p className="field-label">No media found.</p>
+              <p className="field-label">{accept === "image" ? "No uploaded pictures yet." : "No media found."}</p>
             )}
             <ul className="grid grid-cols-3 gap-3">
               {filtered.map((m) => (
@@ -165,6 +171,47 @@ export function MediaPicker({
                 </li>
               ))}
             </ul>
+
+            {accept === "image" && (
+              <div className="mt-6 border-t border-ink/10 pt-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="field-label">Website pictures</h3>
+                  <select
+                    aria-label="Show website pictures from"
+                    className="field !w-auto !py-1.5 text-sm"
+                    value={group}
+                    onChange={(e) => setGroup(e.target.value)}
+                  >
+                    {groups.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <ul className="mt-3 grid grid-cols-3 gap-3">
+                  {bundled.map((b) => (
+                    <li key={b.path}>
+                      <button
+                        type="button"
+                        onClick={() => onSelect(b.path)}
+                        aria-label={`Choose website picture ${b.path}`}
+                        className="flex w-full flex-col items-center gap-1 rounded-xl border border-ink/10 p-2 text-left"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={mediaSrc(b.path)}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          className="aspect-square w-full rounded-lg object-cover"
+                        />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         ) : (
           <div>

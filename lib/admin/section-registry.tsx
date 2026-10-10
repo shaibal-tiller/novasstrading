@@ -82,8 +82,6 @@
 
 import { PHOTO_FITS, PHOTO_SIZES } from "@/lib/portfolio-photo";
 
-/** The portfolio tab ids the photo "tab" field may take (see portfolio.tabs items). */
-const PORTFOLIO_TAB_KEYS = ["woman", "man", "kids", "lingerie"];
 
 export type FieldControl = "text" | "textarea" | "url" | "enum";
 export type ItemFieldKind = FieldControl | "media" | "document";
@@ -107,6 +105,14 @@ export type ItemField = {
    * field, including ordinary multi-line text fields like `body`/`products`.
    */
   list?: boolean;
+  /** Not shown in the edit box (an internal value the editor fills in itself). */
+  hidden?: boolean;
+  /** When this field is empty on save, fill it with a short unique id made from the field named here. */
+  autoKeyFrom?: string;
+  /** For "enum" fields whose choices are another list's items (e.g. a photo's category tab). */
+  optionsFrom?: { listKey: string; valueField: string; labelField: string };
+  /** What to show for each option instead of its raw value. Filled in from `optionsFrom` at edit time. */
+  optionLabels?: Record<string, string>;
 };
 
 export type ListSpec = {
@@ -371,8 +377,8 @@ export const SECTION_REGISTRY: SectionEntry[] = [
         label: "Portfolio tabs",
         titleField: "label",
         itemFields: [
-          { key: "key", label: "Tab id (internal)", kind: "text" },
-          { key: "label", label: "Tab label", kind: "text" },
+          { key: "key", label: "Tab id (internal)", kind: "text", hidden: true, autoKeyFrom: "label" },
+          { key: "label", label: "Tab name (shown on the website)", kind: "text" },
           { key: "categories", label: "Categories (one per line)", kind: "textarea", list: true },
         ],
       },
@@ -387,7 +393,13 @@ export const SECTION_REGISTRY: SectionEntry[] = [
         customManager: true,
         itemFields: [
           { key: "src", label: "Photo", kind: "media" },
-          { key: "tab", label: "Category tab", kind: "enum", options: PORTFOLIO_TAB_KEYS },
+          {
+            key: "tab",
+            label: "Category tab",
+            kind: "enum",
+            options: [],
+            optionsFrom: { listKey: "portfolio.tabs", valueField: "key", labelField: "label" },
+          },
           { key: "caption", label: "Caption (shown under the photo; blank = use the description)", kind: "text" },
           { key: "alt", label: "Description (for screen readers; \"Category — caption\" style)", kind: "text" },
           { key: "detail", label: "Detail lines shown in the full-screen view (one per line)", kind: "textarea", list: true },

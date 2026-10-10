@@ -1,5 +1,6 @@
 "use client";
 
+import { tabKeyFrom } from "@/lib/admin/tab-keys";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { FieldControl, ItemField, ListSpec, SectionEntry } from "@/lib/admin/section-registry";
 import { setUnsaved, UNSAVED_MESSAGE } from "@/lib/admin/unsaved";
@@ -375,6 +376,20 @@ type ResolvedField =
       currentValue: Fields | null;
     };
 
+/** Fills in choices that come from another list (a photo's category tab is any tab that exists now). */
+function withDynamicOptions(fields: ItemField[], draft: SectionDraft): ItemField[] {
+  return fields.map((f) => {
+    if (!f.optionsFrom) return f;
+    const { listKey, valueField, labelField } = f.optionsFrom;
+    const rows = draft.items[listKey] ?? [];
+    const options = rows.map((r) => String(r.fields[valueField] ?? "")).filter(Boolean);
+    const optionLabels = Object.fromEntries(
+      rows.map((r) => [String(r.fields[valueField] ?? ""), String(r.fields[labelField] ?? r.fields[valueField] ?? "")]),
+    );
+    return { ...f, options, optionLabels };
+  });
+}
+
 function resolveOpenId(entry: SectionEntry, draft: SectionDraft, openId: string): ResolvedField | null {
   const scalar = entry.scalarFields.find((f) => f.path === openId);
   if (scalar) {
@@ -400,7 +415,7 @@ function resolveOpenId(entry: SectionEntry, draft: SectionDraft, openId: string)
         type: "item",
         listKey: list.listKey,
         itemId: null,
-        itemFields: list.itemFields,
+        itemFields: withDynamicOptions(list.itemFields, draft),
         titleField: list.titleField,
         label: list.label,
         currentValue: null,
@@ -417,7 +432,7 @@ function resolveOpenId(entry: SectionEntry, draft: SectionDraft, openId: string)
       type: "item",
       listKey: list.listKey,
       itemId,
-      itemFields: list.itemFields,
+      itemFields: withDynamicOptions(list.itemFields, draft),
       titleField: list.titleField,
       label: list.label,
       currentValue: item.fields,
@@ -425,6 +440,15 @@ function resolveOpenId(entry: SectionEntry, draft: SectionDraft, openId: string)
   }
 
   return null;
+}
+
+/** A portfolio tab that still has photos cannot be deleted: its photos would have no place to show. */
+function tabDeleteBlock(resolved: ResolvedField, draft: SectionDraft): string | undefined {
+  if (resolved.type !== "item" || resolved.listKey !== "portfolio.tabs" || resolved.itemId === null) return undefined;
+  const key = String(resolved.currentValue?.key ?? "");
+  const count = (draft.items["portfolio.photos"] ?? []).filter((p) => p.fields.tab === key).length;
+  if (count === 0) return undefined;
+  return `This tab still has ${count} photo${count === 1 ? "" : "s"}. Move them to another tab or delete them first (Manage photos), then you can delete the tab.`;
 }
 
 /** The human label for one list row, from the list's `titleField`. */
@@ -522,9 +546,16 @@ export function SectionEditor({
     setOpenId(null);
   }
 
-  function handleSaveItem(listKey: string, itemId: number | string | null, values: Fields) {
+  function handleSaveItem(listKey: string, itemId: number | string | null, rawValues: Fields) {
     setDraft((prev) => {
       const items = prev.items[listKey] ?? [];
+      // Internal ids the editor makes itself (a new portfolio tab's id comes from its name).
+      const values: Fields = { ...rawValues };
+      for (const f of entry.lists.find((l) => l.listKey === listKey)?.itemFields ?? []) {
+        if (!f.autoKeyFrom || String(values[f.key] ?? "").trim() !== "") continue;
+        const taken = items.filter((i) => i.id !== itemId).map((i) => String(i.fields[f.key] ?? ""));
+        values[f.key] = tabKeyFrom(String(values[f.autoKeyFrom] ?? ""), taken);
+      }
       if (itemId === null) {
         const tempId = `new-${nextTempId.current++}`;
         return { ...prev, items: { ...prev.items, [listKey]: [...items, { id: tempId, fields: values }] } };
@@ -661,6 +692,7 @@ export function SectionEditor({
               ? () => handleDeleteItem(resolved.listKey, resolved.itemId as number | string)
               : undefined
           }
+          deleteBlockedReason={tabDeleteBlock(resolved, draft)}
           onClose={() => setOpenId(null)}
         />
       );
